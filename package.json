@@ -10,24 +10,19 @@
     "lint": "next lint",
     "deploy:gcp": "gcloud builds submit --tag gcr.io/supplychain-ai-production/supplychain-ai && gcloud run deploy supplychain-ai --image gcr.io/supplychain-ai-production/supplychain-ai --platform managed --region us-central1 --allow-unauthenticated --env-vars-file=.env.yaml",
     "sentry:setup": "node scripts/add-sentry-to-apis.mjs",
-    "sentry:check": "node scripts/check-api-routes.mjs"
+    "sentry:check": "node scripts/check-api-routes.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.11",
-    "@ai-sdk/openai": "^1.3.22",
     "@ai-sdk/react": "^1.2.9",
     "@copilotkit/react-core": "^1.9.1",
     "@copilotkit/react-textarea": "^1.9.1",
     "@copilotkit/react-ui": "^1.9.1",
     "@copilotkit/runtime": "^1.9.1",
     "@copilotkit/runtime-client-gql": "^1.9.1",
-    "@google/adk": "^1.2.0",
-    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.10.0",
     "@internationalized/date": "^3.8.2",
-    "@iqai/adk": "^0.8.1",
-    "@mem0/vercel-ai-provider": "^1.0.6",
-    "@modelcontextprotocol/sdk": "^1.29.0",
     "@radix-ui/react-accordion": "^1.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-aspect-ratio": "^1.1.1",
@@ -144,7 +139,8 @@
     "@types/react-window": "^1.8.8",
     "postcss": "^8",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   },
   "packageManager": "pnpm@9.15.4"
 }

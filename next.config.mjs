@@ -21,8 +21,6 @@ const nextConfig = {
   },
   // Exclude packages that bundle their own zod v4 from webpack bundling
   serverExternalPackages: [
-    '@modelcontextprotocol/sdk',
-    '@iqai/adk',
     '@copilotkit/runtime',
     '@langchain/core',
     '@ag-ui/langgraph',
@@ -57,4 +55,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default nextConfig;
