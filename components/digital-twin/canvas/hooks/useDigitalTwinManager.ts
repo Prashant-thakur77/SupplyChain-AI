@@ -27,6 +27,8 @@ export interface DigitalTwinManagerProps {
   focusDecisionId?: string;
   /** Override the incident stream endpoint (the public demo uses /api/demo/incident). */
   incidentEndpoint?: string;
+  /** Hide the Control Tower side panel (the demo shows its stats inside the incident panel). */
+  hideControlTower?: boolean;
 }
 
 export function useDigitalTwinManager({

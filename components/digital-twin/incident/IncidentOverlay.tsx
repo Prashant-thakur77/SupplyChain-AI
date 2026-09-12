@@ -9,6 +9,16 @@ import { cn } from "@/lib/utils"
 import type { DecisionRow, IncidentResult } from "@/types/agent"
 import { routeColor } from "./route-colors"
 
+function Stat({ label, value, tone }: { label: string; value: string; tone: "amber" | "green" | "red" }) {
+  const cls = { amber: "border-theme-amber/30 bg-theme-amber-soft text-theme-amber", green: "border-theme-green/30 bg-theme-green-soft text-theme-green", red: "border-theme-red/30 bg-theme-red-soft text-theme-red" }[tone]
+  return (
+    <div className={cn("rounded-theme-md border px-2.5 py-2", cls)}>
+      <div className="text-lg font-bold leading-tight">{value}</div>
+      <div className="text-[10px] font-medium uppercase tracking-wide opacity-80">{label}</div>
+    </div>
+  )
+}
+
 /** Turn a streamed IncidentResult into the row shape the DecisionCard renders. */
 export function toDecisionRow(r: IncidentResult, userId = "demo"): DecisionRow | null {
   if (!r.decision) return null
@@ -47,6 +57,13 @@ export function IncidentOverlay({ onClose, local, className }: Props) {
       </header>
       {!collapsed && (
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
+          {incident && (
+            <div className="grid grid-cols-3 gap-2">
+              <Stat label="Downstream" value={String(incident.assessment.affected_node_ids.length)} tone="amber" />
+              <Stat label="Lanes reroutable" value={`${incident.plan?.feasible_count ?? 0}/${(incident.plan?.feasible_count ?? 0) + (incident.plan?.infeasible_count ?? 0)}`} tone="green" />
+              <Stat label="Revenue at risk" value={incident.impact ? `$${Math.round(incident.impact.revenue_at_risk_usd / 1000)}k` : "—"} tone="red" />
+            </div>
+          )}
           <AgentActivityPanel events={events} status={status} error={error} compact />
           {incident?.plan && ranked.length > 0 && (
             <div className="rounded-theme-md border border-theme-border-subtle p-2.5">

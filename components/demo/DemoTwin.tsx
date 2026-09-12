@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ReactFlowProvider } from "reactflow"
+import { ReactFlowProvider, getNodesBounds, useReactFlow } from "reactflow"
 import { ArrowRight, Bot, GitBranch, Inbox, Loader2, Play, Radar } from "lucide-react"
 import DigitalTwinCanvas from "@/components/digital-twin/canvas/digital-twin-canvas"
 import { useIncident } from "@/components/digital-twin/incident/useIncident"
@@ -14,12 +14,25 @@ function DemoInner() {
   const setControlTowerMode = useDigitalTwinStore((s) => s.setControlTowerMode)
   const incident = useIncident({ endpoint: "/api/demo/incident", supplyChainId: DEMO_SUPPLY_CHAIN_ID, userId: "demo", persist: false })
   const [active, setActive] = useState<string | null>(null)
+  const rf = useReactFlow()
   useEffect(() => { setControlTowerMode(true); return () => setControlTowerMode(false) }, [setControlTowerMode])
+
+  /** Keep the graph in the strip between the Control Tower (left) and the incident panel (right). */
+  const refit = () => {
+    const nodes = useDigitalTwinStore.getState().nodes
+    if (!nodes.length) return
+    const b = getNodesBounds(nodes as any)
+    // Pad left for the control tower and right for the incident panel so the twin lands in the free band.
+    rf.fitBounds({ x: b.x - 40, y: b.y - 40, width: (b.width + 40) / 0.63, height: b.height + 80 }, { duration: 500 })
+  }
+  useEffect(() => { const t = setTimeout(refit, 400); return () => clearTimeout(t) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const run = async (key: string) => {
     const sc = DEMO_SCENARIOS.find((s) => s.key === key)!
     setActive(key)
+    refit()
     await incident.start(sc.event)
+    setTimeout(refit, 300)
   }
 
   return (
@@ -58,7 +71,7 @@ function DemoInner() {
         )}
       </aside>
       <div className="relative min-h-[480px] flex-1">
-        <DigitalTwinCanvas initialNodes={demoArch.nodes} initialEdges={demoArch.edges} viewOnly userId="demo" incidentEndpoint="/api/demo/incident" />
+        <DigitalTwinCanvas initialNodes={demoArch.nodes} initialEdges={demoArch.edges} viewOnly userId="demo" incidentEndpoint="/api/demo/incident" hideControlTower />
       </div>
     </div>
   )

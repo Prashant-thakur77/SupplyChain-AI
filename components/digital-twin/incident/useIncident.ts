@@ -34,7 +34,7 @@ export function routeOverlayEdges(candidates: RouteCandidate[], rankedIds: strin
 
 export function useIncident(opts: Options) {
   const stream = useGraphStream()
-  const { nodes, edges, setNodes, setEdges, setDisruptedNodes, setDisruptedEdges, setIncident, incident, selectedRouteId, setSelectedRouteId, clearDisruptions, setIsAnalyzingDisruption } = useDigitalTwinStore()
+  const { nodes, edges, setOverlay, setDisruptedNodes, setDisruptedEdges, setIncident, incident, selectedRouteId, setSelectedRouteId, clearDisruptions, setIsAnalyzingDisruption } = useDigitalTwinStore()
 
   const applyResult = useCallback((result: IncidentResult) => {
     const failed = new Set(result.assessment.failed_node_ids)
@@ -42,20 +42,25 @@ export function useIncident(opts: Options) {
     const ranked = result.ranking?.ranked_candidate_ids ?? []
     const overlay = result.plan ? routeOverlayEdges(result.plan.candidates, ranked) : []
     const onRoute = new Set(overlay.flatMap((e) => [e.source, e.target]))
-    const st = useDigitalTwinStore.getState()
-    setNodes(st.nodes.map((n: Node) => ({ ...n, data: { ...n.data, incidentState: failed.has(n.id) ? "failed" : onRoute.has(n.id) && !downstream.has(n.id) ? "onRoute" : downstream.has(n.id) ? "downstream" : undefined } })))
-    setEdges([...st.edges.filter((e: Edge) => e.type !== "route"), ...overlay])
-    setDisruptedNodes([...failed, ...downstream])
-    setDisruptedEdges(result.plan ? [] : [])
+    const states: Record<string, "failed" | "downstream" | "onRoute"> = {}
+    for (const n of useDigitalTwinStore.getState().nodes as Node[]) {
+      if (failed.has(n.id)) states[n.id] = "failed"
+      else if (onRoute.has(n.id)) states[n.id] = "onRoute"
+      else if (downstream.has(n.id)) states[n.id] = "downstream"
+    }
+    setOverlay(overlay, states)
+    // Failed nodes pulse red; downstream nodes that now sit on a reroute are shown as recovered (green ring) rather than disrupted.
+    setDisruptedNodes([...failed, ...[...downstream].filter((id) => !onRoute.has(id))])
+    setDisruptedEdges(result.assessment.failed_edge_ids)
     setIncident(result)
-  }, [setNodes, setEdges, setDisruptedNodes, setDisruptedEdges, setIncident])
+  }, [setOverlay, setDisruptedNodes, setDisruptedEdges, setIncident])
 
   const start = useCallback(async (event: IncidentEvent) => {
     const st = useDigitalTwinStore.getState()
     setDisruptedNodes(event.failed_node_ids)
     setIsAnalyzingDisruption(true)
     setIncident(null)
-    const body = { supplyChainId: opts.supplyChainId, userId: opts.userId, event, persist: opts.persist ?? true, nodes: st.nodes.filter((n) => n.type !== "group"), edges: st.edges.filter((e) => e.type !== "route") }
+    const body = { supplyChainId: opts.supplyChainId, userId: opts.userId, event, persist: opts.persist ?? true, nodes: st.nodes.filter((n) => n.type !== "group"), edges: st.edges }
     const result = await stream.start<IncidentResult>(opts.endpoint ?? "/api/agent/incident", body)
     setIsAnalyzingDisruption(false)
     if (result?.assessment) {
@@ -94,12 +99,6 @@ export function useIncident(opts: Options) {
     applyResult(result)
     setSelectedRouteId(row.chosen_option_id ?? row.recommended_option_id)
   }, [applyResult, setSelectedRouteId])
-
-  // Keep overlay edge emphasis in sync with the selected option.
-  useEffect(() => {
-    if (!incident) return
-    setEdges(useDigitalTwinStore.getState().edges.map((e) => (e.type === "route" ? { ...e, data: { ...e.data, selected: e.data?.routeId === selectedRouteId } } : e)))
-  }, [selectedRouteId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return { ...stream, start, clear, showDecision, incident, selectedRouteId, selectRoute: setSelectedRouteId, nodes, edges }
 }

@@ -34,7 +34,7 @@ interface CustomSimulationToolbarProps extends Omit<React.ComponentProps<typeof 
   edges: Edge[];
 }
 
-export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly = false, supplyChainId, userId, focusDecisionId, incidentEndpoint }: DigitalTwinManagerProps) {
+export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly = false, supplyChainId, userId, focusDecisionId, incidentEndpoint, hideControlTower = false }: DigitalTwinManagerProps) {
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [contextMenu, setContextMenu] = React.useState<{ id: string; top: number; left: number } | null>(null);
   const [disruptionModalNodeId, setDisruptionModalNodeId] = React.useState<string | null>(null);
@@ -42,6 +42,8 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
   const { simulateDisruption, clearDisruptions } = useDisruptionSimulation();
   const [incidentUserId, setIncidentUserId] = React.useState<string | undefined>(userId);
   React.useEffect(() => { if (!userId) getUserData().then((u) => setIncidentUserId(u?.id ?? undefined)).catch(() => undefined); }, [userId]);
+  const overlayEdges = useDigitalTwinStore((s) => s.overlayEdges);
+  const nodeStates = useDigitalTwinStore((s) => s.nodeStates);
   const incident = useIncident({ endpoint: incidentEndpoint, supplyChainId: supplyChainId ?? 'canvas', userId: incidentUserId, persist: !!supplyChainId && !!incidentUserId });
 
   // Deep link from the Decision Inbox: /digital-twin/view/<id>?decision=<decisionId>
@@ -105,6 +107,12 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
     selectedElement,
     handleDeleteNode
   } = useDigitalTwinManager({ initialNodes, initialEdges, viewOnly });
+
+  // Merge the incident overlay (route edges + node states) into what React Flow renders, without touching canvas state.
+  const renderedNodes = React.useMemo(
+    () => (Object.keys(nodeStates).length ? nodes.map((n) => (nodeStates[n.id] ? { ...n, data: { ...n.data, incidentState: nodeStates[n.id] } } : n)) : nodes),
+    [nodes, nodeStates]);
+  const renderedEdges = React.useMemo(() => (overlayEdges.length ? [...edges, ...overlayEdges] : edges), [edges, overlayEdges]);
 
   // Add keyboard event listener for Delete key and Ctrl+S
   React.useEffect(() => {
@@ -236,7 +244,7 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
         {/* Only show LeftPanel in edit mode */}
         {!viewOnly && !isControlTowerMode && <LeftPanel {...leftPanelProps} />}
         
-        <ControlTowerPanel onIncident={(event) => incident.start(event)} />
+        {!hideControlTower && <ControlTowerPanel onIncident={(event) => incident.start(event)} />}
 
         <div 
           className={`flex-1 h-full ${viewOnly ? '' : 'border-l'} transition-all duration-200 relative ${
@@ -351,8 +359,8 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
           </div>
 
           <ReactFlow
-            nodes={nodes}
-            edges={edges}
+            nodes={renderedNodes}
+            edges={renderedEdges}
             onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
@@ -365,6 +373,7 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
+            minZoom={0.2}
             preventScrolling={false}
             panOnDrag
             zoomOnScroll

@@ -12,7 +12,7 @@ const NODES = [
   N("shenzhen", "Shenzhen Plant", "factory", "CN", 22.54, 114.06, 100, 2, 40, 260, "factoryNode"),
   N("singapore", "Port of Singapore", "port", "SG", 1.29, 103.85, 80, 2, 340, 120, "portNode"),
   N("colombo", "Port of Colombo", "port", "LK", 6.93, 79.85, 60, 3, 340, 400, "portNode"),
-  N("suez", "Suez Canal", "port", "EG", 30.0, 32.5, 70, 4, 640, 260, "portNode"),
+  N("suez", "Suez Canal", "port", "EG", 30.0, 32.5, 70, 3, 640, 260, "portNode"),
   N("capetown", "Cape Town", "port", "ZA", -33.9, 18.4, 50, 2, 640, 540, "portNode"),
   N("rotterdam", "Port of Rotterdam", "port", "NL", 51.9, 4.5, 90, 1, 940, 160, "portNode"),
   N("hamburg", "Port of Hamburg", "port", "DE", 53.5, 10.0, 80, 1, 940, 400, "portNode"),

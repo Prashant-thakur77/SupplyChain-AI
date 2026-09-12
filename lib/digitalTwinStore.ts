@@ -22,6 +22,10 @@ interface DigitalTwinState {
   // Incident (Strands incident graph result + route overlay)
   incident: IncidentResult | null;
   selectedRouteId: string | null;
+  /** Route overlay edges and per-node incident states — merged into the canvas at render time (the canvas owns nodes/edges). */
+  overlayEdges: Edge[];
+  nodeStates: Record<string, 'failed' | 'downstream' | 'onRoute'>;
+  setOverlay: (overlayEdges: Edge[], nodeStates: Record<string, 'failed' | 'downstream' | 'onRoute'>) => void;
   incidentEvents: Array<GraphEvent & { at: number }>;
   incidentStatus: 'idle' | 'running' | 'done' | 'error';
   incidentError: string | null;
@@ -71,6 +75,9 @@ export const useDigitalTwinStore = create<DigitalTwinState>((set, get) => ({
   disruptionAnalysis: null,
   incident: null,
   selectedRouteId: null,
+  overlayEdges: [],
+  nodeStates: {},
+  setOverlay: (overlayEdges, nodeStates) => set({ overlayEdges, nodeStates }),
   incidentEvents: [],
   incidentStatus: 'idle',
   incidentError: null,
@@ -127,13 +134,12 @@ export const useDigitalTwinStore = create<DigitalTwinState>((set, get) => ({
   setControlTowerMode: (mode) => set({ 
     isControlTowerMode: mode, 
     // Clear disruptions when exiting control tower mode
-    ...(mode === false ? { disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null, incident: null, selectedRouteId: null, incidentEvents: [], incidentStatus: 'idle', incidentError: null } : {})
+    ...(mode === false ? { disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null, incident: null, selectedRouteId: null, incidentEvents: [], incidentStatus: 'idle', incidentError: null, overlayEdges: [], nodeStates: {} } : {})
   }),
   setSelectedSupplyChain: (id) => set({ selectedSupplyChain: id }),
   setDisruptedNodes: (nodes) => set({ disruptedNodes: nodes }),
   setDisruptedEdges: (edges) => set({ disruptedEdges: edges }),
-  clearDisruptions: () => set((s) => ({ disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null, incident: null, selectedRouteId: null, incidentEvents: [], incidentStatus: 'idle', incidentError: null,
-    edges: s.edges.filter((e) => e.type !== 'route'), nodes: s.nodes.map((n) => n.data?.incidentState ? { ...n, data: { ...n.data, incidentState: undefined } } : n) })),
+  clearDisruptions: () => set({ disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null, incident: null, selectedRouteId: null, incidentEvents: [], incidentStatus: 'idle', incidentError: null, overlayEdges: [], nodeStates: {} }),
   setDisruptionAnalysis: (analysis) => set({ disruptionAnalysis: analysis }),
   setIsAnalyzingDisruption: (isAnalyzing) => set({ isAnalyzingDisruption: isAnalyzing }),
   
