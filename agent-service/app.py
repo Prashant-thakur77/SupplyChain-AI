@@ -287,10 +287,64 @@ def invocations(payload: dict):
         return incident_sync(IncidentIn(**payload))
     if action == "analysis":
         return analysis_sync(AnalysisIn(**payload))
+    if action == "report_simulation":
+        return report_simulation(SimulationIn(**payload))
+    if action == "report_strategy":
+        return report_strategy(SimulationIn(**payload))
+    if action == "report_forecast":
+        return report_forecast(ForecastReportIn(**payload))
+    if action == "report_live_intel":
+        return report_live_intel(LiveIntelIn(**payload))
     inp = ChatIn(**{k: v for k, v in payload.items() if k in ChatIn.model_fields} | ({"message": payload["prompt"]} if "prompt" in payload else {}))
     _twin(inp)
     agent = copilot.build(_hooks("chat", inp), inp.supply_chain_id)
     return {"text": str(agent(inp.message))}
+
+
+# ---- Report endpoints for the existing web screens ------------------------------------------------------------------
+from agents import reports  # noqa: E402
+
+
+class SimulationIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    simulation: dict
+    impact: Optional[dict] = None
+    twin: Optional[Twin] = None
+
+
+class ForecastReportIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    horizon_days: int = 30
+    node_label: Optional[str] = None
+    twin: Optional[Twin] = None
+
+
+class LiveIntelIn(BaseModel):
+    supply_chain_id: str = "canvas"
+    user_id: str = "system"
+    nodes: list[dict]
+
+
+@app.post("/reports/simulation", dependencies=[Depends(auth)])
+def report_simulation(inp: SimulationIn):
+    return reports.run_simulation_report(_hooks("simulation", inp), _twin(inp), inp.simulation).model_dump()
+
+
+@app.post("/reports/strategy", dependencies=[Depends(auth)])
+def report_strategy(inp: SimulationIn):
+    return reports.run_strategy_report(_hooks("strategy_report", inp), _twin(inp), inp.simulation, inp.impact).model_dump()
+
+
+@app.post("/reports/forecast", dependencies=[Depends(auth)])
+def report_forecast(inp: ForecastReportIn):
+    return reports.run_forecast_report(_hooks("forecast_report", inp), _twin(inp), inp.horizon_days, inp.node_label).model_dump()
+
+
+@app.post("/reports/live-intel", dependencies=[Depends(auth)])
+def report_live_intel(inp: LiveIntelIn):
+    return reports.run_live_intel(_hooks("live_intel", inp), inp.nodes).model_dump()
 
 
 if __name__ == "__main__":

@@ -191,3 +191,142 @@ class GraphEvent(BaseModel):
     node: Optional[str] = None
     elapsed_ms: Optional[int] = None
     payload: Optional[dict[str, Any]] = None
+
+
+# ---- Report shapes consumed by the existing web UI (camelCase on purpose — they are the UI's contract) ----------------
+class CostBreakdown(BaseModel):
+    category: str
+    amount: str
+    percentage: float
+
+
+class FinancialImpact(BaseModel):
+    totalCostImpact: str
+    costBreakdown: list[CostBreakdown]
+
+
+class OperationalImpact(BaseModel):
+    averageDelay: str
+    inventoryReduction: str
+    recoveryTime: str
+    affectedNodes: int
+
+
+class SimMitigation(BaseModel):
+    title: str
+    estimatedCost: str
+    timeToImplement: str
+    riskReduction: str
+    feasibility: Literal["HIGH", "MEDIUM", "LOW"]
+
+
+class CascadingEffect(BaseModel):
+    affectedNode: str
+    impactType: str
+    severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+    timeline: str
+    propagationPath: list[str]
+    probability: float = Field(ge=0, le=1)
+    financialImpact: str
+    mitigationComplexity: Literal["LOW", "MEDIUM", "HIGH"]
+
+
+class NetworkAnalysis(BaseModel):
+    totalNodes: int
+    totalEdges: int
+    networkDensity: float
+    criticalNodes: list[str]
+    singlePointsOfFailure: list[str]
+    alternativeRoutes: int
+    averageShortestPath: float
+
+
+class SimulationReport(BaseModel):
+    executiveSummary: str
+    keyFindings: list[str]
+    financialImpact: FinancialImpact
+    operationalImpact: OperationalImpact
+    criticalPath: str
+    riskFactors: list[str]
+    mitigationStrategies: list[SimMitigation]
+    cascadingEffects: list[CascadingEffect]
+    networkAnalysis: NetworkAnalysis
+    confidenceScore: float = Field(ge=0, le=1)
+    analysisDepth: Literal["BASIC", "INTERMEDIATE", "ADVANCED", "EXPERT"] = "ADVANCED"
+
+
+class ResourceRequirements(BaseModel):
+    personnel: int
+    equipment: list[str]
+    partnerships: list[str]
+
+
+class StrategyItem(BaseModel):
+    id: int
+    title: str
+    description: str
+    priority: Literal["Critical", "High", "Medium", "Low", "Strategic"]
+    timeframe: str
+    costEstimate: str
+    impactReduction: str
+    status: Literal["ready", "planning", "recommended", "in-progress", "completed"] = "recommended"
+    category: Literal["immediate", "shortTerm", "longTerm"]
+    feasibility: Literal["HIGH", "MEDIUM", "LOW"]
+    dependencies: list[str]
+    riskFactors: list[str]
+    successMetrics: list[str]
+    resourceRequirements: ResourceRequirements
+
+
+class RiskMitigationMetrics(BaseModel):
+    currentRisk: float
+    targetRisk: float
+    costToImplement: str
+    expectedROI: str
+    paybackPeriod: str
+    riskReduction: str
+
+
+class StrategyReport(BaseModel):
+    immediate: list[StrategyItem]
+    shortTerm: list[StrategyItem]
+    longTerm: list[StrategyItem]
+    riskMitigationMetrics: RiskMitigationMetrics
+    keyInsights: list[str]
+    marketIntelligence: list[str]
+    bestPractices: list[str]
+    contingencyPlans: list[str]
+
+
+class ForecastScenario(BaseModel):
+    scenarioName: str
+    scenarioType: Literal["disruption", "natural", "economic", "political", "operational"]
+    description: str
+    disruptionSeverity: int = Field(ge=10, le=95)
+    disruptionDuration: int = Field(ge=3, le=90)
+    affectedNode: str
+    monteCarloRuns: int = 1000
+    distributionType: Literal["normal", "log-normal", "uniform"] = "normal"
+    failureThreshold: float = Field(ge=10, le=80)
+    bufferPercent: float = Field(ge=5, le=30)
+    probability: float = Field(ge=0, le=1, default=0.3)
+
+
+class ForecastReport(BaseModel):
+    scenarios: list[ForecastScenario] = Field(min_length=2, max_length=4)
+    overallRiskScore: float = Field(ge=0, le=100)
+    confidenceScore: float = Field(ge=0, le=1)
+    forecastSummary: str
+
+
+class NodeRisk(BaseModel):
+    nodeId: str
+    riskScore: float = Field(ge=0.1, le=0.99)
+    reason: str
+
+
+class LiveIntelReport(BaseModel):
+    disruptionsFound: bool
+    nodeRisks: list[NodeRisk]
+    description: str
+    sources: list[Source] = Field(default_factory=list)

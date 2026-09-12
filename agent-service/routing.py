@@ -241,3 +241,81 @@ def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[s
         baseline = {"cost": candidates[0].baseline_cost, "days": candidates[0].baseline_days}
     return ReroutePlan(candidates=candidates, severed_pairs=br.severed_pairs, feasible_count=feasible,
                        infeasible_count=infeasible, severity=sev, baseline=baseline)
+
+
+# ---- Network statistics & Monte Carlo cascade (deterministic, used by the simulation report) --------------------------
+@dataclass
+class NetworkStats:
+    total_nodes: int
+    total_edges: int
+    density: float
+    single_points_of_failure: list[str]
+    critical_nodes: list[str]
+    alternative_routes: int
+    average_shortest_path: float
+
+
+def network_stats(twin: Twin) -> NetworkStats:
+    g = build_graph(twin)
+    n, m = len(twin.nodes), len(twin.edges)
+    density = m / (n * (n - 1)) if n > 1 else 0.0
+    spof: list[str] = []
+    crit: list[tuple[float, str]] = []
+    for node in twin.nodes:
+        plan = reroute_plan(twin, [node.id], [], k=1)
+        if plan.severed_pairs and plan.infeasible_count > 0:
+            spof.append(node.id)
+        br = blast_radius(twin, [node.id], [])
+        crit.append((len(br.downstream_node_ids) + (1 if plan.infeasible_count else 0), node.id))
+    crit.sort(reverse=True)
+    critical = [nid for score, nid in crit if score > 0][:5]
+    alt = 0
+    lengths: list[int] = []
+    ids = [x.id for x in twin.nodes]
+    for a in ids:
+        for b in ids:
+            if a == b:
+                continue
+            p = shortest_path(g, a, b)
+            if p:
+                lengths.append(len(p.path) - 1)
+                alt += max(0, len(k_best_routes(twin, a, b, [], [], k=2)) - 1)
+    return NetworkStats(n, m, round(density, 3), spof, critical, alt, round(sum(lengths) / len(lengths), 2) if lengths else 0.0)
+
+
+@dataclass
+class CascadeResult:
+    runs: int
+    node_hit_probability: dict[str, float]
+    mean_nodes_hit: float
+    p_network_failure: float
+
+
+def monte_carlo_cascade(twin: Twin, failed_node_ids: list[str], runs: int = 1000, severity: float = 0.7,
+                        failure_threshold_pct: float = 40.0, seed: int = 7) -> CascadeResult:
+    """Each downstream hop propagates with probability severity * risk_multiplier (capped at 0.95)."""
+    import random as _r
+
+    rng = _r.Random(seed)
+    g = build_graph(twin)
+    hits: dict[str, int] = {n.id: 0 for n in twin.nodes}
+    total_hit = 0
+    failures = 0
+    n_total = max(len(twin.nodes), 1)
+    for _ in range(runs):
+        down = set(failed_node_ids)
+        frontier = list(failed_node_ids)
+        while frontier:
+            u = frontier.pop()
+            for e in g.adj.get(u, []):
+                if e.target in down:
+                    continue
+                if rng.random() < min(0.95, severity * e.risk_multiplier):
+                    down.add(e.target)
+                    frontier.append(e.target)
+        for nid in down:
+            hits[nid] = hits.get(nid, 0) + 1
+        total_hit += len(down)
+        if 100.0 * len(down) / n_total >= failure_threshold_pct:
+            failures += 1
+    return CascadeResult(runs, {k: round(v / runs, 3) for k, v in hits.items()}, round(total_hit / runs, 2), round(failures / runs, 3))

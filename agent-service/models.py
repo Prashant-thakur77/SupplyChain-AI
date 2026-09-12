@@ -39,19 +39,23 @@ def gemini_keys(role: str) -> list[str]:
     return out
 
 
-def make_model(role: str, api_key: str | None = None, model_id: str | None = None):
+MAX_OUTPUT_TOKENS = 16384
+
+
+def make_model(role: str, api_key: str | None = None, model_id: str | None = None, json_mode: bool = False):
+    """Build a provider model for a role. `json_mode` asks Gemini for a guaranteed-JSON response (used for large nested reports)."""
     temperature = ROLE_TEMPERATURE.get(role, 0.3)
     if settings.agent_model_provider == "bedrock":
         from strands.models import BedrockModel
 
-        return BedrockModel(model_id=model_id or settings.bedrock_model_id, region_name=settings.aws_region, temperature=temperature)
+        return BedrockModel(model_id=model_id or settings.bedrock_model_id, region_name=settings.aws_region, temperature=temperature,
+                            max_tokens=MAX_OUTPUT_TOKENS)
     from strands.models.gemini import GeminiModel
 
-    return GeminiModel(
-        client_args={"api_key": api_key or settings.gemini_key(role)},
-        model_id=model_id or settings.gemini_model_id,
-        params={"temperature": temperature, "max_output_tokens": 4096},
-    )
+    params: dict = {"temperature": temperature, "max_output_tokens": MAX_OUTPUT_TOKENS}
+    if json_mode:
+        params["response_mime_type"] = "application/json"
+    return GeminiModel(client_args={"api_key": api_key or settings.gemini_key(role)}, model_id=model_id or settings.gemini_model_id, params=params)
 
 
 def is_transient(err: BaseException) -> bool:
@@ -59,7 +63,7 @@ def is_transient(err: BaseException) -> bool:
     return any(tok.lower() in msg.lower() for tok in _TRANSIENT)
 
 
-def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: int = 4) -> T:
+def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: int = 4, json_mode: bool = False) -> T:
     """Call `attempt(model)` with fresh models until one succeeds.
 
     Attempt order: primary key → other keys → fallback model on the primary key. Backoff 1.5s·2^n with jitter.
@@ -76,7 +80,7 @@ def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: i
     last: BaseException | None = None
     for n, (key, mid) in enumerate(plans):
         try:
-            return attempt(make_model(role, api_key=key, model_id=mid))
+            return attempt(make_model(role, api_key=key, model_id=mid, json_mode=json_mode))
         except BaseException as e:  # noqa: BLE001 — we classify below
             last = e
             if not is_transient(e) or n == len(plans) - 1:
