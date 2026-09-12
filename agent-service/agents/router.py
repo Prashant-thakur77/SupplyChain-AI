@@ -2,7 +2,7 @@
 from routing import ReroutePlan
 from schemas import Assessment, RouteRanking, Twin
 
-from .base import make_agent
+from .base import call_structured, make_agent
 
 PROMPT = """You are the Router. You NEVER compute routes yourself — the candidates you receive were computed exactly by a Dijkstra engine.
 Rank the feasible candidates for an operations manager weighing added cost, added days, and risk (max_risk on the path and node risk levels).
@@ -11,8 +11,8 @@ Decide whether simply waiting is viable (only if the disruption is likely to cle
 Explain trade-offs in plain language an operator can repeat to their boss."""
 
 
-def build(hooks):
-    return make_agent("router", PROMPT, hooks=hooks)
+def build(hooks, structured: bool = False, model=None):
+    return make_agent("router", PROMPT, hooks=hooks, structured_output_model=RouteRanking if structured else None, model=model)
 
 
 def run_router(agent, twin: Twin, a: Assessment, plan: ReroutePlan) -> RouteRanking:
@@ -22,11 +22,12 @@ def run_router(agent, twin: Twin, a: Assessment, plan: ReroutePlan) -> RouteRank
         f"days={c.transit_days:.0f} (+{c.added_days:.0f}) | max_risk={c.max_risk} | node_risks={[risk.get(n, 0) for n in c.path]} | feasible={c.feasible}"
         for c in plan.candidates
     )
-    res = agent(
+    out = call_structured(
+        agent,
         f"Disruption: {a.title} ({a.severity.value}) — {a.summary}\nSevered pairs: {plan.severed_pairs}\nCandidates:\n{cands}\n\nRank them.",
-        structured_output_model=RouteRanking,
+        RouteRanking,
     )
-    r: RouteRanking = res.structured_output
+    r: RouteRanking = out
     feasible = {c.id: c for c in plan.candidates if c.feasible}
     r.ranked_candidate_ids = [i for i in r.ranked_candidate_ids if i in feasible] or sorted(
         feasible, key=lambda i: (feasible[i].added_cost, feasible[i].added_days)

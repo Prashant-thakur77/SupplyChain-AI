@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from schemas import Event, Twin
 from tools.intel import get_weather, search_news
 
-from .base import make_agent
+from .base import call_structured, make_agent
 
 
 class EventList(BaseModel):
@@ -20,15 +20,16 @@ twin's exact ids. Use kind="news" or kind="weather". Give each event a short uni
 Return an empty list if nothing relevant. Never invent sources — every event needs at least one real source URL from your searches."""
 
 
-def build(hooks):
-    return make_agent("sentinel", PROMPT, tools=[search_news, get_weather], hooks=hooks)
+def build(hooks, model=None):
+    return make_agent("sentinel", PROMPT, tools=[search_news, get_weather], hooks=hooks, model=model)
 
 
 def run_sentinel(agent, twin: Twin) -> list[Event]:
     places = "\n".join(f"- {n.id}: {n.label} ({n.type}, {n.country or ''} lat={n.lat} lng={n.lng})" for n in twin.nodes)
     lanes = "\n".join(f"- {e.id}: {e.source} -> {e.target} via {e.mode}" for e in twin.edges)
-    res = agent(
+    out = call_structured(
+        agent,
         f"Twin '{twin.name}' (id {twin.supply_chain_id}).\nNodes:\n{places}\nLanes:\n{lanes}\n\nScan for disruptions now.",
-        structured_output_model=EventList,
+        EventList,
     )
-    return res.structured_output.events
+    return out.events

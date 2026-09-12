@@ -73,8 +73,10 @@ class Assessment(BaseModel):
     summary: str
     severity: Severity
     confidence: float = Field(ge=0, le=1)
-    affected_node_ids: list[str]
-    affected_edge_ids: list[str]
+    failed_node_ids: list[str] = Field(default_factory=list, description="Nodes that are actually down / unusable")
+    failed_edge_ids: list[str] = Field(default_factory=list, description="Lanes that are actually cut")
+    affected_node_ids: list[str] = Field(default_factory=list, description="Downstream nodes whose flow is impacted")
+    affected_edge_ids: list[str] = Field(default_factory=list)
     sources: list[Source]
     needs_review: bool
     category: Literal["GEOPOLITICAL", "WEATHER", "LOGISTICS", "SUPPLIER", "MARKET", "OTHER"] = "OTHER"

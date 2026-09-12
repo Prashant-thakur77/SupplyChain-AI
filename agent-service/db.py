@@ -103,10 +103,12 @@ def insert_notification(user_id: str, supply_chain_id: str, a: Assessment, kind:
             "category": a.category,
             "confidence": a.confidence,
             "needsReview": a.needs_review,
+            "failedNodes": a.failed_node_ids,
+            "failedEdges": a.failed_edge_ids,
             "affectedNodes": a.affected_node_ids,
             "affectedEdges": a.affected_edge_ids,
             "supplyChainId": supply_chain_id,
-            "fingerprint": fingerprint(a.title, a.affected_node_ids),
+            "fingerprint": fingerprint(a.title, a.failed_node_ids or a.affected_node_ids),
             "sources": [s.model_dump() for s in a.sources],
         },
     }

@@ -20,7 +20,7 @@ class FakeAgent:
 
 def _assessment():
     return Assessment(event_id="e", title="Singapore closed", summary="s", severity=Severity.HIGH, confidence=0.9,
-                      affected_node_ids=["singapore"], affected_edge_ids=[], sources=[Source(title="x", url="u")], needs_review=False)
+                      failed_node_ids=["singapore"], affected_node_ids=["rotterdam", "berlin"], affected_edge_ids=[], sources=[Source(title="x", url="u")], needs_review=False)
 
 
 def test_router_prompt_contains_candidates_and_sanitises_ids():
@@ -41,4 +41,4 @@ def test_analyst_backfills_sources_and_review_flag():
     fake = FakeAgent(lambda M: M(event_id="x", title="t", summary="s", severity=Severity.HIGH, confidence=0.4,
                                  affected_node_ids=[], affected_edge_ids=[], sources=[], needs_review=False))
     a = analyst.run_analyst(fake, twin(), ev, [])
-    assert a.event_id == "ev1" and a.sources[0].url == "u" and a.affected_node_ids == ["singapore"] and a.needs_review
+    assert a.event_id == "ev1" and a.sources[0].url == "u" and a.failed_node_ids == ["singapore"] and a.needs_review
