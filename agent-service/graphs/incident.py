@@ -148,9 +148,10 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
             f"Supply chain id: {supply_chain_id}\nDisruption: {a.model_dump_json()}\nSevered pairs: {plan.severed_pairs}\n"
             f"Best feasible reroute adds {delay} days; infeasible lanes: {plan.infeasible_count}.\n"
             f"Route candidates (computed exactly by the routing engine — do not recompute):\n{_candidates_block(twin, plan)}\n\n"
-            "router: rank the feasible candidates and decide whether waiting is viable.\n"
-            "impact: quantify the business impact (call estimate_impact_numbers first).\n"
-            "strategist: using the router and impact outputs above, write the mitigation plan."
+            "Instructions by role — only follow the line for your own role:\n"
+            "- router: rank the feasible candidates by added cost/days/risk and decide whether waiting is viable.\n"
+            "- impact: quantify the business impact; you are the only node with estimate_impact_numbers — call it first.\n"
+            "- strategist: you receive the router and impact outputs as input; write the mitigation plan. Do not call tools you don't have."
         )
 
         def attempt(model):

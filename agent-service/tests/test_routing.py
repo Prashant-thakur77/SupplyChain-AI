@@ -64,3 +64,30 @@ def test_reroute_plan_feasible_severity():
 def test_lane_not_using_failed_node_is_not_rerouted():
     plan = reroute_plan(twin(), ["colombo"], [])
     assert plan.severed_pairs == [] and plan.candidates == [] and plan.severity == "LOW"
+
+
+def test_lanes_multiple_sources_and_sinks():
+    from routing import lanes_through
+    t = twin()
+    t.nodes.append(TwinNode(id="hanoi", label="HANOI", type="factory"))
+    t.nodes.append(TwinNode(id="paris", label="PARIS", type="warehouse"))
+    t.edges += [TwinEdge(id="e6", source="hanoi", target="singapore", cost=800, transit_days=4),
+                TwinEdge(id="e7", source="rotterdam", target="paris", cost=400, transit_days=1, mode="road")]
+    lanes = lanes_through(t, ["singapore"], [])
+    # Both factories reach both warehouses through Singapore on their healthy shortest path.
+    assert set(lanes) == {("shenzhen", "berlin"), ("shenzhen", "paris"), ("hanoi", "berlin"), ("hanoi", "paris")}
+
+
+def test_lanes_edge_failure_only():
+    from routing import lanes_through
+    plan = reroute_plan(twin(), [], ["e2"])
+    assert plan.severed_pairs == [("shenzhen", "berlin")] and plan.candidates[0].path == ["shenzhen", "colombo", "rotterdam", "berlin"]
+
+
+def test_lanes_cyclic_twin_falls_back_to_segments():
+    from routing import lanes_through
+    t = Twin(supply_chain_id="c", nodes=[TwinNode(id=i, label=i) for i in "abc"],
+             edges=[TwinEdge(id="ab", source="a", target="b", cost=1, transit_days=1), TwinEdge(id="bc", source="b", target="c", cost=1, transit_days=1),
+                    TwinEdge(id="ca", source="c", target="a", cost=1, transit_days=1), TwinEdge(id="ac", source="a", target="c", cost=5, transit_days=5)])
+    lanes = lanes_through(t, ["b"], [])
+    assert lanes == [("a", "c")]
