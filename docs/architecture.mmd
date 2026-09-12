@@ -1,0 +1,40 @@
+flowchart LR
+  subgraph Browser["Browser"]
+    UI["Digital twin canvas<br/>Decision Inbox · Alerts · /demo"]
+  end
+
+  subgraph Web["Next.js 16 · Cloud Run"]
+    API["/api/agent/* proxies (SSE)"]
+    DEC["/api/decisions"]
+    CRON["/api/cron/scan<br/>(Cloud Scheduler, every 15 min)"]
+  end
+
+  subgraph Agents["agent-service · Strands Agents SDK (Python)"]
+    direction TB
+    S["Sentinel<br/>search_news · get_weather"] --> A["Analyst<br/>compute_blast_radius"]
+    A -->|"severity ≥ HIGH"| RE["Routing engine<br/>Dijkstra · Yen k-best · blast radius<br/><i>deterministic, no LLM</i>"]
+    RE --> G
+    subgraph G["Strands Graph (GraphBuilder)"]
+      direction LR
+      R["Router"] --> ST["Strategist"]
+      I["Impact<br/>estimate_impact_numbers"] --> ST
+    end
+    ST --> D["Decision<br/>ranked options + rationale"]
+    C["Copilot (streaming)"]
+    F["Forecaster · Scenario · Simulation reports"]
+  end
+
+  subgraph Data["Supabase Postgres · RLS"]
+    T[("supply_chains · nodes · edges<br/>notifications · decisions · route_plans<br/>agent_traces · audit_logs")]
+  end
+
+  EXT["Tavily · OpenWeather · Mem0"]
+  MODEL{{"Gemini (default)<br/>Amazon Bedrock — AGENT_MODEL_PROVIDER=bedrock"}}
+
+  UI --> API & DEC
+  API --> Agents
+  CRON --> Agents
+  Agents --> T
+  Web --> T
+  Agents --> EXT
+  Agents --> MODEL

@@ -11,7 +11,8 @@
     "deploy:gcp": "gcloud builds submit --tag gcr.io/supplychain-ai-production/supplychain-ai && gcloud run deploy supplychain-ai --image gcr.io/supplychain-ai-production/supplychain-ai --platform managed --region us-central1 --allow-unauthenticated --env-vars-file=.env.yaml",
     "sentry:setup": "node scripts/add-sentry-to-apis.mjs",
     "sentry:check": "node scripts/check-api-routes.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "deploy:agents": "gcloud run deploy supplychain-agents --source agent-service --region us-central1 --allow-unauthenticated --port 8080 --env-vars-file=agent-service/.env.yaml"
   },
   "dependencies": {
     "@copilotkit/react-core": "^1.9.1",

@@ -1,443 +1,135 @@
 <p align="center">
-  <h1 align="center">🔷 SupplyChain AI</h1>
-  <p align="center"><strong>Autonomous supply chain resilience — sense, decide, reroute</strong></p>
+  <h1 align="center">SupplyChain AI</h1>
+  <p align="center"><strong>An autonomous supply-chain resilience agent. It watches your network 24/7 and only interrupts you with a decision.</strong></p>
   <p align="center">
-    An AI-powered supply chain digital twin platform built on <strong>Google ADK</strong> with autonomous multi-agent orchestration, real-time weather & geopolitical intelligence, chaos simulation, and strategic decision-making.
+    <a href="https://strandsagents.com"><img alt="Built with Strands Agents" src="https://img.shields.io/badge/built%20with-Strands%20Agents-232F3E?logo=amazonaws&logoColor=white"></a>
+    <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
+    <img alt="Python" src="https://img.shields.io/badge/agent--service-Python%203.10%2B-3776AB?logo=python&logoColor=white">
+    <img alt="Next.js" src="https://img.shields.io/badge/web-Next.js%2016-black?logo=nextdotjs">
   </p>
 </p>
 
----
-
-## ✨ Overview
-
-**SupplyChain AI** is a next-generation supply chain intelligence platform that combines **autonomous AI agents**, **digital twin visualization**, and **multi-agent orchestration** to help businesses proactively identify, assess, and mitigate supply chain risks before they cause damage.
-
-Built on **Next.js 16** with **Google Gemini 2.5 Flash** and the **Google Agentic Development Kit (ADK)**, the platform provides an immersive experience for supply chain professionals to model their networks, simulate disruptions, and receive actionable intelligence — all autonomously and in real time.
-
-**Deployed on Google Cloud Run** via a multi-stage Dockerized pipeline for production-grade scalability.
+> **Live demo (no login):** `<LIVE_URL>/demo` · **Video (5 min):** `<VIDEO_URL>` · **Track:** Agents for Humans → *Professional Agents*
 
 ---
 
-## 🚀 Key Features
+## Try it in 30 seconds
 
-### 🗺️ Interactive Digital Twin & Copilot
-- Interactive supply chain network visualization using **React Flow** with drag-and-drop node management (suppliers, factories, warehouses, distributors, retailers)
-- Real-time connection mapping with transport modes, costs, and risk multipliers
-- Geographic mapping with **Leaflet** integration showing live node positions
-- **Live Status Monitoring**: Nodes dynamically change state and appearance based on real-time intelligence, risk levels, and active disruptions
-- **CopilotKit Integration**: A natural language AI copilot embedded directly in the digital twin — query your supply chain health, ask for risk summaries, and get instant answers conversationally
+1. Open **`/demo`**. You get a real twin: an EU electronics importer shipping Shenzhen → Singapore → Suez → Rotterdam → Berlin.
+2. Click **"Port of Singapore closed"**.
+3. Watch the Strands incident graph run live — *Analyst → routing engine → Router ∥ Impact → Strategist* — the failed port pulse red, three exact reroutes get drawn on the map, and one **decision card** appears: `Shenzhen → Colombo → Suez → Rotterdam → Berlin (+$1,000, +5 days, low risk)` vs *wait* vs *mitigate*, with the agent's rationale and sources.
+4. Click **Approve**. In the full app that writes the decision, the audit log and a notification; the agent remembers it for next time.
 
-### 🤖 Autonomous Multi-Agent AI System (Google ADK)
-Thirteen specialized AI agents powered by **Google Gemini 2.5 Flash** via the **Google ADK** (`@google/adk`) framework, operating both on-demand and autonomously in the background:
+Then ask the copilot in the sidebar: *"What if Suez is blocked?"* — it calls the deterministic routing tools and answers with exact numbers.
 
-| Agent | Type | Purpose |
-|-------|------|---------|
-| **Intelligence** | On-demand | Gathers real-time news, weather, and market intelligence via **Tavily** web search |
-| **Forecast** | On-demand | Predictive analytics and trend analysis using historical data with persistent storage |
-| **Scenario** | On-demand | What-if modeling and disruption simulation generation |
-| **Impact** | On-demand | Quantitative risk assessment and financial impact scoring |
-| **Strategy** | On-demand | Mitigation planning and strategic recommendations with execution tracking |
-| **Strategy Execution** | On-demand | Tracks and monitors the implementation of approved strategies |
-| **Orchestrator** | On-demand | Coordinates all agents for comprehensive multi-step analysis |
-| **Route Optimization** | On-demand | Calculates optimal alternate transit paths when nodes fail, using graph traversal |
-| **Automated Alerts** | Autonomous | Continuously scans global news (Tavily) every 3 minutes, correlating threats to specific supply chain nodes with AI-powered severity classification |
-| **Weather Intelligence** | Autonomous | Scans all node coordinates and transit route midpoints via OpenWeather API every 3 hours, classifying adverse conditions with AI severity assessment |
-| **News Polling** | Autonomous | Fetches and deduplicates breaking supply chain news every 2 minutes with URL-level deduplication |
-| **News Simulation** | On-demand | Generates AI-powered news impact scenarios for simulation exercises |
-| **Live Intelligence** | On-demand | Real-time intelligence gathering for specific nodes and regions |
+## The problem
 
-#### Agent Infrastructure
-- **Tracing & Observability**: Every agent execution is wrapped in `withTrace()`, logging session ID, duration, success/failure, and token usage to the `agent_traces` table in Supabase
-- **Audit Logging**: All agent actions are recorded in the `audit_logs` table via a fire-and-forget `logAudit()` pipeline for full accountability
-- **Multi-Level Deduplication**: URL-based, node-based, and content-based deduplication prevents notification spam across all autonomous agents
-- **Deterministic Cooldowns**: Both in-memory timers and database-timestamp checks prevent redundant API calls
-- **Intelligent Rate-Limit Fallbacks**: If Gemini API quota is exhausted, agents automatically fall back to playbook-based mitigation strategies instead of failing, ensuring 100% operational uptime
+Operations and logistics managers at small and mid-size manufacturers and importers find out about a port closure, a strike or a typhoon **from the news**, then spend a day in spreadsheets working out what it hits, what the alternatives cost, and who to call. It is repetitive, judgement-heavy, and it happens at 2 a.m.
 
+## What the agent does
 
-### 🔬 Simulation & Chaos Engine
-- Monte Carlo risk simulations with multi-variable sensitivity analysis
-- Disruption scenario modeling with template-based and custom configurations
-- **Professional Template Library**: Pre-built disruption templates (port closure, supplier bankruptcy, natural disaster, etc.)
-- Inject artificial disruptions (latency, price spikes, node failures) and watch the digital twin react in real-time with pulsing red states
-- **Cascading Failure Maps**: Visualize how a single node failure propagates through the entire supply chain graph
-- **Strategy Finalization**: Approved mitigation strategies are tracked through implementation with execution roadmaps
-- **Forecast Scenarios**: AI-generated forward-looking risk projections persisted to Supabase for longitudinal analysis
+| Background (nobody watching) | When it matters (you are asked once) |
+|---|---|
+| **Sentinel** scans news and weather for every node and lane of every twin, every 15 minutes (Cloud Scheduler → `/api/cron/scan`). | **Decision Inbox**: one card per incident with ranked options, exact cost/time/risk deltas, the recommendation, the rationale, sources, and a confidence badge. |
+| **Analyst** grades each candidate event against *your* twin: severity, confidence, blast radius. Below `HIGH` it is logged as an alert and nobody is interrupted. | **Approve / Reject / Snooze** — approval records the choice, notifies the team and feeds the agent's memory. |
+| **Routing engine** (pure Python: Dijkstra, Yen's k-shortest, blast radius) computes the real alternatives. The LLM never invents a route or a number. | **Incident view on the twin**: failed node, downstream nodes, candidate routes in colour, click to pick. |
+| **Router ∥ Impact → Strategist** run as a **Strands Graph** and produce typed outputs: ranking + trade-offs, revenue at risk, an executable mitigation plan. | **Trace drawer**: every agent run (duration, tokens) from `agent_traces` — auditable, not a black box. |
 
-### 📰 News Room & Timeline
-- **Chronological Timeline**: All intelligence (geopolitical threats, weather alerts, live news) organized in a time-ordered, scrollable feed
-- **Chain Segregation**: Alerts are strictly isolated to their affected supply chain — no cross-contamination between chains
-- **Smart Severity Filtering**: Defaults to showing only `CRITICAL` and `HIGH` impact events; `MEDIUM` and `LOW` accessible via dropdown selector
-- **Alert Detail Sheets**: Click any timeline event to open a full analysis sheet with source citations, affected nodes, credibility scores, and AI-generated impact summaries
-- **Category Tags**: Events are tagged as `GEOPOLITICAL`, `WEATHER`, `Live News`, or `Supply Chain Alert` for instant visual classification
+Who it is for: the person who owns "keep the goods moving" at a company with 5–50 suppliers and no control tower. Why it matters: one avoided week of stock-out pays for years of this.
 
-### 📊 Dashboard & Analytics
-- Real-time supply chain health metrics with trend indicators
-- Risk score visualization with **Recharts** and **D3.js**
-- **Notification Feed**: Live-streaming threat alerts with read/unread state management and optimistic UI updates
-- **Activity Log**: Full audit trail of all agent actions, user operations, and system events fetched from the `audit_logs` table
-- Strategy execution tracking with progress monitoring
+## Architecture
 
-### 🧠 Memory & Trend Analysis
-- **Mem0 Integration**: Persistent memory layer that remembers past disruptions and intelligence to identify longitudinal patterns
-- **ADK Session Memory**: Agent sessions maintain context across interactions for smarter, contextual responses
-- **Delta Risk Calculation**: Compares current risk levels against historical baselines to highlight escalating threats
-- **Pattern Recognition**: Detects recurring failure points in the supply chain lifecycle
+![Architecture](docs/architecture.png)
 
----
-
-## 🏗️ Architecture
-
-```
-supplychain-ai/
-├── app/
-│   ├── (main)/                         # Authenticated routes
-│   │   ├── dashboard/                  # Analytics dashboard + notification feed
-│   │   ├── digital-twin/              # Supply chain visualization + Copilot
-│   │   │   └── view/[id]/             # Individual twin view (dynamic route)
-│   │   ├── news-room/                 # Segregated intelligence timeline
-│   │   ├── risk-prediction/           # Risk prediction UI
-│   │   ├── simulation/                # Chaos simulation engine
-│   │   │   ├── mitigationstrategy/    # Strategy execution dashboard
-│   │   │   └── result/                # Simulation results view
-│   │   └── profile/                   # User profile management
-│   ├── api/
-│   │   ├── agent/                     # AI Agent endpoints (13 agents)
-│   │   │   ├── automated-alerts/      # Autonomous threat scanner
-│   │   │   ├── weather-intelligence/  # Autonomous weather monitor
-│   │   │   ├── news-polling/          # Autonomous news fetcher
-│   │   │   ├── news-simulation/       # News impact simulator
-│   │   │   ├── live-intelligence/     # Real-time intelligence
-│   │   │   ├── forecast/              # Forecasting agent
-│   │   │   ├── impact/                # Impact assessment agent
-│   │   │   ├── info/                  # Intelligence gathering agent
-│   │   │   ├── orchestrator/          # Multi-agent orchestrator
-│   │   │   ├── route-optimization/    # Route optimization agent
-│   │   │   ├── scenario/              # Scenario generation agent
-│   │   │   ├── strategy/              # Strategy planning agent
-│   │   │   │   └── finalize/          # Strategy finalization
-│   │   │   └── strategy-execution/    # Strategy execution tracker
-│   │   ├── audit-logs/                # Audit log retrieval API
-│   │   ├── risk-prediction/           # Risk prediction proxy
-│   │   ├── coordination/             # Agent coordination layer
-│   │   ├── copilotkit*/               # CopilotKit chat endpoints (3 variants)
-│   │   ├── forecast-scenarios/        # Forecast scenario persistence
-│   │   ├── news/                      # News management API
-│   │   ├── suggestions/               # AI suggestion engine
-│   │   └── strategy/                  # Strategy listing & execution
-│   ├── auth/                          # Auth callback handlers
-│   └── signin/                        # Authentication UI
-├── components/
-│   ├── digital-twin/                  # Twin visualization components
-│   │   ├── canvas/                    # React Flow canvas components
-│   │   ├── display/                   # Node display components
-│   │   ├── forms/                     # Node/edge creation forms
-│   │   ├── layout/                    # Layout components
-│   │   └── utils/                     # Graph utility functions
-│   ├── simulation/                    # Simulation UI (16 components)
-│   │   ├── simulation-page.tsx        # Main simulation orchestrator
-│   │   ├── professional-template-selection.tsx
-│   │   ├── enhanced-scenario-configuration-form.tsx
-│   │   ├── forecast-scenarios.tsx     # AI forecast visualization
-│   │   ├── FinalizeStrategyPanel.tsx  # Strategy approval UI
-│   │   └── ImplementationRoadmapPanel.tsx
-│   ├── news-room/                     # News Room components
-│   │   ├── timeline-event-card.tsx    # Individual event rendering
-│   │   ├── alert-details-sheet.tsx    # Full alert detail modal
-│   │   └── news-room-header.tsx       # Severity filter controls
-│   ├── dashboard/                     # Dashboard widgets
-│   │   ├── notification-feed/         # Live notification feed
-│   │   └── dashboard-page.tsx         # Main dashboard view
-│   ├── risk-prediction/              # Risk prediction components
-│   ├── orchestrator/                  # Agent orchestration UI
-│   ├── copilot/                       # CopilotKit chat interface
-│   ├── strategy-dashboard.tsx         # Strategy management view
-│   ├── cascading-failure-map.tsx      # Failure propagation visualization
-│   ├── node-impact-grid.tsx           # Node impact assessment grid
-│   └── ui/                            # shadcn/ui component library
-├── lib/
-│   ├── adk/                           # Google ADK integration layer
-│   │   ├── core/
-│   │   │   ├── trace.ts               # Agent tracing & observability
-│   │   │   └── session.ts             # Session state management
-│   │   ├── mcp/                       # Model Context Protocol adapters
-│   │   └── types.ts                   # ADK type definitions
-│   ├── ai-config.ts                   # Centralized AI model & key configuration
-│   ├── audit-logger.ts                # Audit logging pipeline (fire-and-forget)
-│   ├── supabase/                      # Supabase client setup (anon + service role)
-│   ├── clients/                       # External API client wrappers
-│   ├── stores/                        # Zustand state management
-│   ├── monitoring.ts                  # Sentry + custom observability
-│   ├── digitalTwinStore.ts            # Digital twin state store
-│   ├── template-selector.ts           # Simulation template engine
-│   ├── seed-data.ts                   # Demo data seeding
-│   ├── fixed-tavily.ts                # Tavily API wrapper with error handling
-│   ├── zod-patch.ts                   # Zod 3.25 ↔ ADK compatibility shim
-│   └── validation/                    # Input validation schemas
-├── types/
-│   └── supply-chain.ts                # Core TypeScript type definitions
-├── constants/                         # Application constants
-├── hooks/                             # Custom React hooks
-├── utils/                             # Shared utility functions
-├── scripts/                           # Build & deployment scripts
-├── supabase/                          # Supabase migrations
-├── public/                            # Static assets
-├── Dockerfile                         # Multi-stage Docker build for Cloud Run
-├── instrumentation.ts                 # Sentry server-side instrumentation
-└── instrumentation-client.ts          # Sentry client-side instrumentation
+```mermaid
+flowchart LR
+  UI["Browser · twin canvas · Decision Inbox · /demo"] --> API["Next.js 16<br/>/api/agent/* (SSE proxies) · /api/decisions · /api/cron/scan"]
+  API --> AS["agent-service (Python · FastAPI · Strands Agents)"]
+  AS --> RE["Routing engine — Dijkstra · Yen k-best · blast radius (deterministic)"]
+  AS --> G["Strands Graph: Router ∥ Impact → Strategist"]
+  AS --> DB[("Supabase Postgres · RLS")]
+  API --> DB
+  AS --> EXT["Tavily · OpenWeather · Mem0"]
+  AS --> M{{"Gemini (default) | Amazon Bedrock (env switch)"}}
 ```
 
----
+Two services, one contract:
 
-## 🛠️ Tech Stack
+- **`agent-service/`** — every LLM call in the product. FastAPI on port 8080, plus the **Amazon Bedrock AgentCore Runtime contract** (`POST /invocations`, `GET /ping`) so the same container deploys to AgentCore unchanged (`agent-service/agentcore_entry.py`).
+- **Next.js app** — twin canvas, Decision Inbox, alerts, simulation and forecast screens. `app/api/agent/*` are thin proxies (SSE passthrough) so the UI never talks to a model directly.
 
-| Category | Technology |
-|----------|-----------|
-| **Framework** | Next.js 16.2.4 (App Router, Turbopack) |
-| **Language** | TypeScript 5 |
-| **AI Models** | Google Gemini 2.5 Flash (with 1.5 Flash quota fallbacks) |
-| **Agent Framework** | Google ADK (`@google/adk` v1.2.0) for autonomous agent orchestration |
-| **AI Chat Interface** | CopilotKit (`@copilotkit/react-core`, `@copilotkit/runtime`) |
+Full details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · deployment: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
-| **Database** | Supabase (PostgreSQL with Row Level Security) |
-| **Caching** | Upstash Redis |
-| **Intelligence APIs** | Tavily API (real-time global news), OpenWeather API (live weather) |
-| **Memory** | Mem0 AI (persistent disruption memory) |
-| **UI Components** | shadcn/ui + Radix UI primitives |
-| **Styling** | Tailwind CSS 3.4 |
-| **Animations** | GSAP 3.15, Framer Motion |
-| **Visualization** | React Flow (interactive node graph), Recharts, D3.js, Leaflet Maps |
-| **State Management** | Zustand |
-| **Monitoring** | Sentry (server + client + edge instrumentation) |
-| **Validation** | Zod 3.25 (with v4-mini compatibility shim for ADK) |
-| **Deployment** | Google Cloud Run (Dockerized multi-stage build) |
-| **Container** | Docker (Node 22 Alpine, standalone output) |
-| **Package Manager** | pnpm 11.5.2 |
+## How Strands is used
 
----
+| Agent (`agent-service/agents/`) | Tools (`@tool`) | Typed output (Pydantic) | Where it runs |
+|---|---|---|---|
+| `sentinel` | `search_news`, `get_weather` | `EventList` | `/scan` (background loop) |
+| `analyst` | `compute_blast_radius` | `Assessment` | stage 1 of the incident graph |
+| `router` | — (receives engine candidates) | `RouteRanking` | node in the **incident Graph** |
+| `impact` | `estimate_impact_numbers` | `ImpactEstimate` | node in the incident Graph |
+| `strategist` | `recall_memory` | `MitigationPlan` | node in the incident Graph |
+| `forecaster`, `scenario` | `search_news`, `recall_memory` | `Forecast`, `ScenarioSet` | analysis Graph + report screens |
+| `copilot` | all twin/intel/memory tools | streamed via `Agent.stream_async` | chat (`/chat`) |
+| `reports.*` (`simulation`, `strategy_report`, `forecast_report`, `live_intel`) | deterministic facts injected | UI report schemas | simulation / strategy / forecast / live-intel screens |
 
-## 🗄️ Database Schema
+- **Multi-agent orchestration with `strands.multiagent.GraphBuilder`** — [`graphs/incident.py`](agent-service/graphs/incident.py) (`router ∥ impact → strategist`, two entry points, execution order captured for the UI) and [`graphs/analysis.py`](agent-service/graphs/analysis.py) (`intel → forecast ∥ scenario → strategy → report`).
+- **Structured output everywhere** — `structured_output_model` on every call and on Graph nodes; large nested reports fall back to Gemini JSON mode and are validated with Pydantic (`agents/base.py`).
+- **Hooks for observability** — [`tracing.py`](agent-service/tracing.py) registers `BeforeInvocationEvent`/`AfterInvocationEvent` and writes one `agent_traces` row per agent run (session, duration, tokens). The Decision Inbox's *Trace* drawer reads them.
+- **Resilience** — `models.invoke_with_retry` rotates API keys, then falls back across models on 429/503; graph failures degrade to a deterministic, `needs_review` decision instead of an error.
+- **Provider switch** — `AGENT_MODEL_PROVIDER=gemini|bedrock`. Bedrock uses `BedrockModel` (`us.anthropic.claude-sonnet-4-6` by default); nothing else changes.
+- **AgentCore-ready** — `/invocations` dispatches on `payload.action` (`incident`, `scan`, `reroute`, `analysis`, `chat`, …).
 
-SupplyChain AI uses **Supabase PostgreSQL** with the following key tables:
+### Why the routing is deterministic
 
-| Table | Purpose |
-|-------|---------|
-| `supply_chains` | User-created supply chain definitions |
-| `nodes` | Supply chain nodes (suppliers, factories, warehouses, etc.) |
-| `edges` | Connections between nodes (routes, transport modes, costs) |
-| `notifications` | All alerts, news, and intelligence events (live news, weather, threats) |
-| `forecasts` | AI-generated forecast data with risk scores, weather, news, and market data |
-| `weather_intelligence` | Live weather data for all node coordinates and transit midpoints |
-| `audit_logs` | Complete audit trail of all agent and user actions |
-| `agent_traces` | Agent execution observability (session, duration, success/failure) |
-| `sessions` | ADK session state persistence for agent memory |
-| `agent_queue` | Agent-to-Agent (A2A) communication queue |
-| `pending_approvals` | Human-in-the-loop strategy approval workflow |
+Operators will act on these numbers. `agent-service/routing.py` computes blast radius, k-best alternate lanes (Yen on Dijkstra) and exact added cost/days, and the Router agent only ranks and explains. Unit-tested: `agent-service/tests/test_routing.py`.
 
-All tables enforce **Row Level Security (RLS)** so users can only access their own data.
-
----
-
-## ⚡ Getting Started
-
-### Prerequisites
-
-- **Node.js** ≥ 22
-- **Python** ≥ 3.10 (for the ML risk prediction API)
-- **pnpm** 11+ (recommended)
-- **Docker** (for Cloud Run deployment)
-- API keys for required services (see Environment Variables)
-
-### Installation
+## Run locally
 
 ```bash
-# Clone the repository
-git clone https://github.com/Prashant-thakur77/SupplyChain-AI.git
-cd supplychain-ai
+# 1. agent-service (Python 3.10+, uv)
+cd agent-service
+uv sync --extra dev --extra memory
+cp .env.example .env        # GOOGLE_API_KEY (or AWS creds + AGENT_MODEL_PROVIDER=bedrock), SUPABASE_*, TAVILY, OPENWEATHER
+uv run pytest               # 26 tests, no network
+uv run python app.py        # http://localhost:8080/ping
 
-# Install dependencies
+# 2. web app
+cd ..
 pnpm install
-
-# Start the development server (Turbopack)
-pnpm dev
+cp .env.example .env.local  # Supabase keys, AGENT_SERVICE_URL/SECRET, CRON_SECRET
+pnpm test                   # vitest
+pnpm dev                    # http://localhost:3000/demo works without a database
 ```
 
-### ML Risk Prediction API
+Database: run `supabase/migrations/*.sql` in the Supabase SQL editor (base tables, agent tables, decisions).
 
-```bash
-# Navigate to the ML directory
-cd ../Market-Supply
+## Environment variables
 
-# Install Python dependencies
-pip install xgboost scikit-learn pandas numpy fastapi uvicorn python-multipart joblib shap
+| Variable | Where | Purpose |
+|---|---|---|
+| `AGENT_MODEL_PROVIDER` | agent-service | `gemini` (default) or `bedrock` |
+| `GEMINI_MODEL_ID`, `GOOGLE_API_KEY[_AGENTS|_ORCHESTRATOR]` | agent-service | Gemini model + keys (rotated on quota) |
+| `BEDROCK_MODEL_ID`, `AWS_REGION` (+ AWS credentials) | agent-service | Bedrock model |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | both | data + traces |
+| `TAVILY_API_KEY`, `OPENWEATHER_API_KEY`, `MEM0_API_KEY` | agent-service | news, weather, memory (all optional — tools degrade gracefully) |
+| `AGENT_SERVICE_URL`, `AGENT_SERVICE_SECRET` | web | how Next.js reaches the agents |
+| `CRON_SECRET` | web | protects `/api/cron/scan` |
 
-# Train the model (first time only, ~7s on GPU)
-python ml/train.py
+## Deploy
 
-# Start the FastAPI server
-uvicorn api.main:app --reload --port 8001
-```
+- **Cloud Run** (current): `pnpm deploy:agents` then `pnpm deploy:gcp`; a Cloud Scheduler job calls `/api/cron/scan` every 15 minutes. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+- **Amazon Bedrock AgentCore**: `pip install bedrock-agentcore-starter-toolkit && cd agent-service && agentcore configure -e agentcore_entry.py && agentcore launch`, then point `AGENT_SERVICE_URL` at the runtime. Set `AGENT_MODEL_PROVIDER=bedrock`.
 
-The Next.js app at **http://localhost:3000** and the ML API at **http://localhost:8001** must run simultaneously.
+## Tests
 
-### Environment Setup
+- `agent-service`: routing (Dijkstra, Yen, blast radius, lane detection), schemas, tools (mocked HTTP), agent post-processing, graph gates, API (`TestClient`).
+- web: SSE parser (incl. CRLF), decision formatting, CSV/Excel twin import.
 
-Create a `.env` file in the root directory:
+## Disclosure
 
-```env
-# ─── Supabase ────────────────────────────────────────
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+The digital-twin canvas, Supabase schema and simulation screens come from the author's earlier open-source work. Everything the agent does was built during the hackathon: the Strands `agent-service` (agents, tools, graphs, hooks, provider switch, AgentCore contract), the deterministic routing engine, the Decision Inbox and incident view, the background scan loop, the public demo, and these docs.
 
-# ─── AI Services (Required) ─────────────────────────
-GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key
-GOOGLE_API_KEY=your_google_api_key
+## License
 
-# ─── Multi-Key Quota Management (Optional) ──────────
-GOOGLE_API_KEY_ORCHESTRATOR=your_key
-GOOGLE_API_KEY_AGENTS=your_key
-GOOGLE_API_KEY_DIGITAL_TWIN=your_key
-GOOGLE_API_KEY_SUGGESTIONS=your_key
-
-# ─── Intelligence APIs ──────────────────────────────
-TAVILY_API_KEY=your_tavily_key
-OPENWEATHER_API_KEY=your_openweather_key
-
-# ─── Memory ─────────────────────────────────────────
-MEM0_API_KEY=your_mem0_key
-
-# ─── Caching ────────────────────────────────────────
-UPSTASH_REDIS_URL=your_redis_url
-UPSTASH_REDIS_TOKEN=your_redis_token
-
-# ─── Monitoring (Optional) ──────────────────────────
-SENTRY_DSN=your_sentry_dsn
-NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
-
-# ─── CopilotKit ─────────────────────────────────────
-NEXT_PUBLIC_COPILOTKIT_ENABLED=true
-
-# ─── ML Risk Prediction API ─────────────────────────
-RISK_MODEL_API_URL=http://localhost:8001
-```
-
----
-
-## 🐳 Deployment (Google Cloud Run)
-
-SupplyChain AI uses a multi-stage Docker build optimized for production:
-
-```bash
-# Build the Docker image
-docker build -t supplychain-ai .
-
-# Run locally
-docker run -p 3000:3000 --env-file .env supplychain-ai
-
-# Deploy to Google Cloud Run
-gcloud run deploy supplychain-ai \
-  --source . \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars "NODE_ENV=production"
-```
-
-The Dockerfile uses:
-- **Node 22 Alpine** base image for minimal footprint
-- **Multi-stage build** (deps → builder → runner) for optimized image size
-- **Standalone output** mode from Next.js for minimal production bundle
-- **Non-root user** (`nextjs:nodejs`) for security
-
----
-
-## 📡 API Reference
-
-### Agent Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/agent/automated-alerts` | Autonomous threat scan for a specific supply chain |
-| `POST` | `/api/agent/weather-intelligence` | Weather scan across all nodes & transit midpoints |
-| `GET` | `/api/agent/news-polling` | Fetch and deduplicate breaking supply chain news |
-| `POST` | `/api/agent/forecast` | Generate predictive supply chain forecasts |
-| `GET` | `/api/agent/forecast` | Retrieve cached forecasts |
-| `POST` | `/api/agent/orchestrator` | Multi-agent coordinated analysis |
-| `POST` | `/api/agent/impact` | Quantitative risk impact assessment |
-| `POST` | `/api/agent/scenario` | Disruption scenario generation |
-| `POST` | `/api/agent/strategy` | Mitigation strategy planning |
-| `POST` | `/api/agent/strategy/finalize` | Finalize and approve a strategy |
-| `POST` | `/api/agent/strategy-execution` | Track strategy execution progress |
-| `POST` | `/api/agent/route-optimization` | Calculate alternate routes around failed nodes |
-| `POST` | `/api/agent/info` | Intelligence gathering & node analysis |
-| `POST` | `/api/agent/live-intelligence` | Real-time intelligence for specific regions |
-| `POST` | `/api/agent/news-simulation` | Generate news impact simulation |
-
-
-### Other Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/audit-logs` | Fetch audit logs for a user |
-| `GET` | `/api/forecast-scenarios` | Retrieve persisted forecast scenarios |
-| `POST` | `/api/suggestions` | AI-generated supply chain suggestions |
-| `POST` | `/api/copilotkit` | CopilotKit chat endpoint |
-| `POST` | `/api/copilotkit-digital-twin` | Digital twin-specific copilot |
-
----
-
-## 🔄 Autonomous Agent Lifecycle
-
-```
-┌────────────────────────────────────────────────── ────┐
-│                   Frontend (Dashboard)                │
-│                                                       │
-│  ┌────────── ───┐ ┌──────────┐ ┌───────────────────┐  │
-│  │ Notification │ │ News Room│ │  Weather Timeline │  │
-│  │    Feed      │ │ Timeline │ │   (Segregated)    │  │
-│  └──────┬───────┘ └────┬─────┘ └────────┬──────────┘  │
-│         │              │                │             │
-└─────────┼──────────────┼────────────────┼─────────────┘
-          │              │                │
-    Every 30s       Every 2min       Every 3hrs
-          │              │                │
-          ▼              ▼                ▼
-┌──────────────┐ ┌──────────────┐ ┌───────────────── ─┐
-│  Automated   │ │ News Polling │ │    Weather        │
-│  Alerts Agent│ │    Agent     │ │ Intelligence Agent│
-│  (Tavily +   │ │ (Tavily raw  │ │ (OpenWeather +    │
-│   Gemini AI) │ │  dedup)      │ │  Gemini AI)       │
-└──────┬───────┘ └──────┬───────┘ └────────┬──────────┘
-       │                │                  │
-       ▼                ▼                  ▼
-┌────────────────────────────────────────────────┐
-│              Supabase PostgreSQL               │
-│  notifications │ weather_intelligence │ audit  │
-└────────────────────────────────────────────────┘
-```
-
----
-
-## ✅ Roadmap
-
-
-- [x] Full migration to Google ADK (`@google/adk`)
-- [x] Autonomous weather intelligence agent (OpenWeather + AI classification)
-- [x] Autonomous threat scanning agent (Tavily + AI correlation)
-- [x] News Room with chain-segregated chronological timelines
-- [x] Multi-level deduplication engine (URL, node, content)
-- [x] Comprehensive audit logging pipeline
-- [x] Agent tracing and observability system
-- [x] Route optimization agent with graph-based alternate path calculation
-- [x] Intelligent rate-limit fallbacks (playbook-based)
-- [x] Google Cloud Run deployment pipeline
-- [x] CopilotKit natural language integration
-- [ ] Predictive demand forecasting using historical Supabase data
-- [ ] Multi-model LLM ensemble for risk verification
-- [ ] Webhook-based external alert integrations
-- [ ] Mobile-responsive progressive web app
-
----
-
-
-*Built with ❤️ by the SupplyChain AI Team*
+MIT — see [LICENSE](LICENSE).
