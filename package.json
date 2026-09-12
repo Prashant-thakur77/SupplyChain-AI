@@ -14,8 +14,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ai-sdk/google": "^1.2.11",
-    "@ai-sdk/react": "^1.2.9",
     "@copilotkit/react-core": "^1.9.1",
     "@copilotkit/react-textarea": "^1.9.1",
     "@copilotkit/react-ui": "^1.9.1",
@@ -64,7 +62,6 @@
     "@upstash/redis": "^1.35.0",
     "@vercel/analytics": "^1.5.0",
     "@vercel/speed-insights": "^1.2.0",
-    "ai": "^4.3.9",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -89,7 +86,6 @@
     "lucide-react": "^0.454.0",
     "marked": "^15.0.12",
     "media-chrome": "^4.11.1",
-    "mem0ai": "^2.1.31",
     "next": "16.2.4",
     "next-themes": "latest",
     "nuqs": "^2.4.3",

@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     agent_model_provider: str = "gemini"  # gemini | bedrock
-    gemini_model_id: str = "gemini-2.5-flash"
+    gemini_model_id: str = "gemini-flash-latest"  # resolves to the newest Gemini Flash (3.8 at time of writing)
     google_api_key: str = ""
     google_api_key_agents: str = ""
     google_api_key_orchestrator: str = ""

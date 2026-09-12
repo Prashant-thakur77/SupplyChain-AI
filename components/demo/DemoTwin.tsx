@@ -9,6 +9,7 @@ import { CopilotProvider } from "@/components/copilot/copilot-provider"
 import { useDigitalTwinStore } from "@/lib/digitalTwinStore"
 import { DEMO_SCENARIOS, DEMO_SUPPLY_CHAIN_ID, demoArch } from "@/lib/demo-twin"
 import { cn } from "@/lib/utils"
+import { StrandsChat } from "@/components/copilot/StrandsChat"
 
 function DemoInner() {
   const setControlTowerMode = useDigitalTwinStore((s) => s.setControlTowerMode)
@@ -65,6 +66,10 @@ function DemoInner() {
           <div className="flex items-center gap-2"><GitBranch className="h-3.5 w-3.5 text-theme-blue" /> Routes are computed by Dijkstra — the model only ranks and explains.</div>
           <div className="flex items-center gap-2"><Inbox className="h-3.5 w-3.5 text-theme-blue" /> Approving writes to the Decision Inbox and the audit log.</div>
           <div className="flex items-center gap-2"><Bot className="h-3.5 w-3.5 text-theme-blue" /> Every step is a Strands Agent with a typed output.</div>
+        </div>
+        <div>
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-theme-text-muted">Ask the copilot</p>
+          <StrandsChat endpoint="/api/demo/chat" compact suggestions={["What if Suez is blocked?", "Which node is our single point of failure?", "Cheapest route Shenzhen → Berlin?"]} placeholder="Ask about this twin…" />
         </div>
         {incident.status === "idle" && !incident.incident && (
           <p className="text-xs text-theme-text-muted">Tip: after a run, click a coloured route on the canvas to select it, then approve. Right-click any node to invent your own disruption. <ArrowRight className="inline h-3 w-3" /></p>

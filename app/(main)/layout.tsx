@@ -6,7 +6,6 @@ import "@copilotkit/react-ui/styles.css"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
-import AIChatOverlay from "@/components/ui/ai-chat-overlay"
 import { ISCAChat } from "@/components/copilot/ISCA/ISCAChat"
 import { CopilotProvider } from "@/components/copilot/copilot-provider"
 import { supabaseClient } from "@/lib/supabase/client"
@@ -117,8 +116,6 @@ export default function MainLayout({
           <Toaster />
         </SidebarProvider>
 
-        {/* Add AI Chat Overlay */}
-        {/* <AIChatOverlay /> */}
         
         {/* Add ISCA Chat Assistant */}
         <ISCAChat />

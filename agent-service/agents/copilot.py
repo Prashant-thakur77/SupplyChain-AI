@@ -10,10 +10,11 @@ before answering questions about the network. When asked 'what if X fails', call
 exact numbers from the tools. Be concise and concrete, cite tool results, and use short markdown. Never identify as a generic LLM."""
 
 
-def build(hooks, supply_chain_id: str):
+def build(hooks, supply_chain_id: str, model=None):
     return make_agent(
         "copilot",
         PROMPT + f"\nCurrent supply chain id: {supply_chain_id}",
         tools=[load_twin, compute_blast_radius, find_reroutes, estimate_impact_numbers, search_news, get_weather, recall_memory],
         hooks=hooks,
+        model=model,
     )

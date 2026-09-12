@@ -201,18 +201,35 @@ def analysis_sync(inp: AnalysisIn):
 
 @app.post("/chat", dependencies=[Depends(auth)])
 async def chat(inp: ChatIn):
+    """Streams the copilot. Transient provider errors before the first token rotate key/model like the batch paths."""
+    from models import is_transient, make_model, model_plans
+
     _twin(inp)
-    agent = copilot.build(_hooks("chat", inp), inp.supply_chain_id)
+    hooks = _hooks("chat", inp)
 
     async def gen():
-        try:
-            async for ev in agent.stream_async(inp.message):
-                if "data" in ev:
-                    yield {"event": "token", "data": json.dumps({"text": ev["data"]})}
-                elif "current_tool_use" in ev and ev["current_tool_use"].get("name"):
-                    yield {"event": "tool", "data": json.dumps({"name": ev["current_tool_use"]["name"]})}
-        except Exception as ex:  # noqa: BLE001
-            yield {"event": "error", "data": json.dumps({"error": str(ex)})}
+        last_err: Optional[Exception] = None
+        for key, mid in model_plans("copilot"):
+            agent = copilot.build(hooks, inp.supply_chain_id, model=make_model("copilot", api_key=key, model_id=mid))
+            emitted = False
+            try:
+                async for ev in agent.stream_async(inp.message):
+                    if "data" in ev:
+                        emitted = True
+                        yield {"event": "token", "data": json.dumps({"text": ev["data"]})}
+                    elif "current_tool_use" in ev and ev["current_tool_use"].get("name"):
+                        yield {"event": "tool", "data": json.dumps({"name": ev["current_tool_use"]["name"]})}
+                last_err = None
+                break
+            except Exception as ex:  # noqa: BLE001
+                last_err = ex
+                if emitted or not is_transient(ex):
+                    break
+                print(f"[chat] transient error ({str(ex)[:60]}…) — switching model")
+                await asyncio.sleep(1.0)
+        if last_err is not None:
+            msg = "The model is rate-limited right now — please try again in a minute." if is_transient(last_err) else str(last_err)
+            yield {"event": "error", "data": json.dumps({"error": msg})}
         yield {"event": "final", "data": "{}"}
 
     return EventSourceResponse(gen())

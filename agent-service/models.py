@@ -25,7 +25,7 @@ ROLE_TEMPERATURE: dict[str, float] = {
     "orchestrator": 0.3,
 }
 
-FALLBACK_GEMINI_MODELS = ["gemini-3-flash-preview", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]
+FALLBACK_GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-2.5-flash"]
 _TRANSIENT = ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
 
 
@@ -63,21 +63,23 @@ def is_transient(err: BaseException) -> bool:
     return any(tok.lower() in msg.lower() for tok in _TRANSIENT)
 
 
+def model_plans(role: str, max_attempts: int = 5) -> list[tuple[str | None, str | None]]:
+    """(api_key, model_id) attempts in order: primary key → second key → fallback models on the primary key."""
+    if settings.agent_model_provider == "bedrock":
+        return [(None, None)] * max_attempts
+    keys = gemini_keys(role) or [None]
+    plans: list[tuple[str | None, str | None]] = [(keys[0], None)] + ([(keys[1], None)] if len(keys) > 1 else [])
+    plans += [(keys[0], m) for m in FALLBACK_GEMINI_MODELS if m != settings.gemini_model_id]
+    return plans[:max_attempts]
+
+
 def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: int = 5, json_mode: bool = False) -> T:
     """Call `attempt(model)` with fresh models until one succeeds.
 
     Attempt order: primary key → other keys → fallback model on the primary key. Backoff 1.5s·2^n with jitter.
     Non-transient errors are raised immediately.
     """
-    plans: list[tuple[str | None, str | None]] = []
-    if settings.agent_model_provider == "bedrock":
-        plans = [(None, None)] * max_attempts
-    else:
-        keys = gemini_keys(role) or [None]
-        # Quota is usually per project+model, so after one key rotation we switch models rather than keys.
-        plans = [(keys[0], None)] + ([(keys[1], None)] if len(keys) > 1 else [])
-        plans += [(keys[0], m) for m in FALLBACK_GEMINI_MODELS if m != settings.gemini_model_id]
-        plans = plans[:max_attempts]
+    plans = model_plans(role, max_attempts)
 
     last: BaseException | None = None
     for n, (key, mid) in enumerate(plans):

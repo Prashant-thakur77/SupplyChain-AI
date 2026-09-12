@@ -1,5 +1,7 @@
 "use client";
 
+import { FileSpreadsheet } from 'lucide-react';
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -215,6 +217,13 @@ export default function DigitalTwinDashboard() {
           >
             <RefreshCWIcon className={`${refreshing ? 'animate-spin' : ''}`} size={12} />
             Sync
+          </button>
+          <button
+            onClick={() => setView('import')}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs border border-theme-border-subtle text-theme-text-secondary hover:text-theme-text-primary hover:border-theme-border-default transition-colors rounded-theme-md bg-theme-bg-surface"
+          >
+            <FileSpreadsheet size={13} />
+            <span className="whitespace-nowrap">Import CSV / Excel</span>
           </button>
           <button
             onClick={() => setView('create')}

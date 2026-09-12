@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useQueryState, parseAsString, parseAsInteger, parseAsArrayOf } from 'nuqs';
+import { ImportTwinDialog, type ImportPayload } from '@/components/digital-twin/forms/ImportTwinDialog';
+import { saveSupplyChainToDatabase } from '@/lib/api/supply-chain';
+import { useUser } from '@/lib/stores/user';
+import { toast } from 'sonner';
 import { decompressArchData } from '@/lib/utils/url-compression';
 import DigitalTwinDashboard from '@/components/digital-twin/display/dashboard';
 import CreationForm from '@/components/digital-twin/forms/creation-form';
@@ -22,6 +26,7 @@ const SupplyChainGlobe = dynamic(() => import("@/components/supply-chain"), { ss
 export default function DigitalTwinClientPage() {
   const [twinId, setTwinId] = useQueryState('twinId', parseAsString);
   const [view, setView] = useQueryState('view', parseAsString);
+  const { userData } = useUser();
   const [archParam] = useQueryState('arch', parseAsString);
   const [formParam] = useQueryState('form', parseAsString);
   const [activeTwinData, setActiveTwinData] = useState<any>(null);
@@ -370,6 +375,33 @@ export default function DigitalTwinClientPage() {
     );
   }
 
+  // Build a twin from CSV/Excel-imported nodes & edges, persist it, then open it on the canvas.
+  const handleImportSuccess = async (payload: ImportPayload) => {
+    if (!userData?.id) {
+      toast.error('You need to be signed in to import a supply chain.');
+      throw new Error('Not authenticated');
+    }
+    try {
+      const saved = await saveSupplyChainToDatabase({
+        name: payload.name,
+        description: 'Imported from CSV/Excel',
+        timestamp: new Date().toISOString(),
+        organisation: { id: userData.id, name: userData.organisation_name, industry: userData.industry, sub_industry: userData.sub_industry, location: userData.location },
+        nodes: payload.nodes,
+        edges: payload.edges,
+      } as any);
+      const sid: string = (saved as any)?.supply_chain_id;
+      if (!sid) throw new Error('Save did not return a supply chain id.');
+      localStorage.setItem(`supplyChain-${sid}`, JSON.stringify({ name: payload.name, industry: 'Imported', nodes: payload.nodes, edges: payload.edges, supply_chain_id: sid, fromImport: true, fromDatabase: true, createdAt: new Date().toISOString() }));
+      toast.success(`Imported "${payload.name}" — ${payload.nodes.length} nodes, ${payload.edges.length} edges`);
+      setView(null, { scroll: false });
+      setTwinId(sid);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to import supply chain.');
+      throw err;
+    }
+  };
+
   // The dashboard is always rendered, and the dialog is overlaid on top.
   return (
     <>
@@ -395,6 +427,8 @@ export default function DigitalTwinClientPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <ImportTwinDialog isOpen={view === 'import'} onClose={() => setView(null, { scroll: false })} onImport={handleImportSuccess} />
     </>
   );
 } 
