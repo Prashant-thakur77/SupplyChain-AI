@@ -8,11 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy:gcp": "gcloud builds submit --tag gcr.io/supplychain-ai-production/supplychain-ai && gcloud run deploy supplychain-ai --image gcr.io/supplychain-ai-production/supplychain-ai --platform managed --region us-central1 --allow-unauthenticated --env-vars-file=.env.yaml",
+    "deploy:gcp": "gcloud run deploy supplychain-ai --source . --project prism-ai-production --region us-central1 --allow-unauthenticated --memory 1Gi --env-vars-file=.env.yaml",
     "sentry:setup": "node scripts/add-sentry-to-apis.mjs",
     "sentry:check": "node scripts/check-api-routes.mjs",
     "test": "vitest run",
-    "deploy:agents": "gcloud run deploy supplychain-agents --source agent-service --region us-central1 --allow-unauthenticated --port 8080 --env-vars-file=agent-service/.env.yaml"
+    "deploy:agents": "gcloud run deploy supplychain-agents --source agent-service --project prism-ai-production --region us-central1 --allow-unauthenticated --port 8080 --memory 1Gi --timeout 300 --env-vars-file=agent-service/.env.yaml"
   },
   "dependencies": {
     "@copilotkit/react-core": "^1.9.1",
