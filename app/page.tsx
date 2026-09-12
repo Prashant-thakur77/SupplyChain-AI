@@ -362,10 +362,10 @@ export default function Home() {
         <div className="nav-links">
           <a href="#how-it-works" onClick={(e) => smoothScroll(e, 'how-it-works')}>How It Works</a>
           <a href="#analytics" onClick={(e) => smoothScroll(e, 'analytics')}>Analytics</a>
-          <Link href="/docs">Documentation</Link>
+          <a href="https://github.com/Prashant-thakur77/SupplyChain-AI" target="_blank" rel="noreferrer">GitHub</a>
         </div>
         <div className="nav-right">
-          <Link href="/dashboard" className="btn-primary">Request Access</Link>
+          <Link href="/demo" className="btn-primary">Live demo</Link>
           <div className="user-circle">
             <User size={14} style={{color: '#5C5850'}} />
           </div>
@@ -379,8 +379,8 @@ export default function Home() {
       <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
         <a href="#how-it-works" onClick={(e) => { setMobileMenuOpen(false); smoothScroll(e, 'how-it-works'); }}>How It Works</a>
         <a href="#analytics" onClick={(e) => { setMobileMenuOpen(false); smoothScroll(e, 'analytics'); }}>Analytics</a>
-        <Link href="/docs" onClick={() => setMobileMenuOpen(false)}>Documentation</Link>
-        <Link href="/dashboard" className="btn-primary btn-mobile" onClick={() => setMobileMenuOpen(false)}>Request Access</Link>
+        <a href="https://github.com/Prashant-thakur77/SupplyChain-AI" target="_blank" rel="noreferrer">GitHub</a>
+        <Link href="/demo" className="btn-primary btn-mobile" onClick={() => setMobileMenuOpen(false)}>Live demo</Link>
       </div>
 
       <main style={{ flex: 1 }}>
@@ -391,19 +391,17 @@ export default function Home() {
             <div className="hero-left">
               <div className="badge">
                 <div className="badge-dot" />
-                POWERED BY MULTI-AGENT AI
+                BUILT WITH STRANDS AGENTS · RUNS IN THE BACKGROUND
               </div>
               <h1 className="hero-headline">
-                Know <span>Every Risk</span><br />Before It Becomes<br />a Crisis
+                Your supply chain,<br /><span>watched 24/7.</span><br />You only get the decision.
               </h1>
               <p className="hero-sub">
-                We simulate your supply chain as a living digital twin and deploy autonomous AI agents to surface risks before they cascade into disruptions.
+                An autonomous agent watches your ports, suppliers and lanes. When something breaks it computes the blast radius, finds the cheapest viable reroute, drafts the mitigation — and pings you with one ranked decision to approve.
               </p>
               <div className="cta-row">
-                <Link href="/dashboard" className="btn-hero">Get Started</Link>
-                <a href="#how-it-works" onClick={(e) => smoothScroll(e, 'how-it-works')} className="btn-outline">
-                  See It In Action →
-                </a>
+                <Link href="/demo" className="btn-hero">Try the live demo</Link>
+                <Link href="/signin" className="btn-outline">Sign in →</Link>
               </div>
               <div className="trust-row">
                 <div className="flag-pills">
@@ -523,11 +521,11 @@ export default function Home() {
             <h2 className="solution-heading">From reactive damage control to proactive prevention</h2>
             <div className="pain-list" style={{ marginBottom: '24px' }}>
               <div className="check-item"><span className="check-v">✓</span><span>Live Digital Twin with real-time node status changes</span></div>
-              <div className="check-item"><span className="check-v">✓</span><span>6 Gemini agents autonomously investigating disruptions</span></div>
-              <div className="check-item"><span className="check-v">✓</span><span>Monte Carlo simulations before disruptions occur</span></div>
-              <div className="check-item"><span className="check-v">✓</span><span>Mem0-powered memory learns from every past event</span></div>
+              <div className="check-item"><span className="check-v">✓</span><span>Eight Strands agents: Sentinel finds it, Analyst grades it, Router ranks exact reroutes</span></div>
+              <div className="check-item"><span className="check-v">✓</span><span>Deterministic routing engine — Dijkstra, not guesses — so every cost and day is exact</span></div>
+              <div className="check-item"><span className="check-v">✓</span><span>A Decision Inbox: approve, reject or snooze — the agent handles the rest and remembers</span></div>
             </div>
-            <Link href="/dashboard" className="btn-hero">See the Platform →</Link>
+            <Link href="/demo" className="btn-hero">Break a port in the demo →</Link>
           </div>
         </div>
 
@@ -614,46 +612,46 @@ export default function Home() {
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div className="feature-grid rev">
               <div className="feature-text">
-                <div className="eyebrow">Multi-Agent AI</div>
-                <h2 className="feature-heading">Six specialized agents. One unified intelligence.</h2>
+                <div className="eyebrow">Strands Agents SDK</div>
+                <h2 className="feature-heading">Eight specialised agents. One incident graph.</h2>
                 <p className="feature-body">
-                  Google Gemini-powered agents work in concert — the Orchestrator delegates to Intelligence, Forecast, Scenario, Impact, and Strategy agents — each specialized, all coordinated.
+                  Built on the Strands Agents SDK: Sentinel → Analyst → routing engine → Router ∥ Impact → Strategist → Decision, wired as a Strands Graph with typed outputs at every node. Model-agnostic — Gemini today, Amazon Bedrock with one environment variable.
                 </p>
-                <Link href="/dashboard" className="btn-hero" style={{ width: 'fit-content' }}>
-                  Explore the Agents →
-                </Link>
+                <a href="https://github.com/Prashant-thakur77/SupplyChain-AI#how-strands-is-used" target="_blank" rel="noreferrer" className="btn-hero" style={{ width: 'fit-content' }}>
+                  Read the architecture →
+                </a>
               </div>
               <div className="feature-visual">
                 <div className="agent-grid">
                   <div className="agent-card">
                     <div className="agent-dot" style={{ background: '#2748E8' }} />
-                    <div className="agent-name">Orchestrator</div>
-                    <div className="agent-role">Coordination & routing</div>
+                    <div className="agent-name">Sentinel</div>
+                    <div className="agent-role">Watches news & weather</div>
                   </div>
                   <div className="agent-card">
                     <div className="agent-dot" style={{ background: '#7C3AED' }} />
-                    <div className="agent-name">Intelligence</div>
-                    <div className="agent-role">Tavily search & news</div>
+                    <div className="agent-name">Analyst</div>
+                    <div className="agent-role">Severity, confidence, blast radius</div>
                   </div>
                   <div className="agent-card">
                     <div className="agent-dot" style={{ background: '#1A7F4B' }} />
-                    <div className="agent-name">Forecast</div>
-                    <div className="agent-role">Trend analysis</div>
+                    <div className="agent-name">Router</div>
+                    <div className="agent-role">Ranks exact reroutes</div>
                   </div>
                   <div className="agent-card">
                     <div className="agent-dot" style={{ background: '#B45309' }} />
-                    <div className="agent-name">Scenario</div>
-                    <div className="agent-role">What-if modeling</div>
+                    <div className="agent-name">Impact</div>
+                    <div className="agent-role">Revenue at risk, delay</div>
                   </div>
                   <div className="agent-card">
                     <div className="agent-dot" style={{ background: '#B91C1C' }} />
-                    <div className="agent-name">Impact</div>
-                    <div className="agent-role">Financial scoring</div>
+                    <div className="agent-name">Strategist</div>
+                    <div className="agent-role">Executable mitigation</div>
                   </div>
                   <div className="agent-card">
                     <div className="agent-dot" style={{ background: '#5C5850' }} />
-                    <div className="agent-name">Strategy</div>
-                    <div className="agent-role">Mitigation plans</div>
+                    <div className="agent-name">Forecaster · Scenario · Copilot</div>
+                    <div className="agent-role">Forward risk, what-ifs, chat</div>
                   </div>
                 </div>
               </div>
@@ -711,8 +709,8 @@ export default function Home() {
 
         {/* 9. CTA Section */}
         <div className="cta-section">
-          <h2 className="cta-heading">Ready to prevent your next supply chain crisis?</h2>
-          <Link href="/dashboard" className="btn-hero" style={{ padding: '16px 40px', fontSize: '1rem' }}>
+          <h2 className="cta-heading">Stop finding out from the news.</h2>
+          <Link href="/demo" className="btn-hero" style={{ padding: '16px 40px', fontSize: '1rem' }}>
             Request Access →
           </Link>
           <p className="cta-sub">No credit card required · Enterprise-ready · Backed by Google ADK</p>
