@@ -1,0 +1,243 @@
+"""Pure graph math for the twin. No LLM here.
+
+- shortest_path: weighted Dijkstra (directed — supply flows one way)
+- k_best_routes: Yen's k-shortest loopless paths around failed nodes/edges
+- blast_radius: downstream reachability from a failure
+- reroute_plan: everything the Router agent needs, with exact cost/day deltas
+"""
+from __future__ import annotations
+
+import heapq
+from dataclasses import dataclass, field
+from typing import Optional
+
+from schemas import RouteCandidate, Twin, TwinEdge
+
+
+@dataclass
+class Graph:
+    labels: dict[str, str]
+    adj: dict[str, list[TwinEdge]]
+    edges: dict[str, TwinEdge]
+
+
+@dataclass
+class Path:
+    path: list[str]
+    edge_ids: list[str]
+    cost: float
+    days: float
+    max_risk: float
+
+
+@dataclass
+class BlastRadius:
+    downstream_node_ids: list[str]
+    broken_edge_ids: list[str]
+    severed_pairs: list[tuple[str, str]]
+
+
+@dataclass
+class ReroutePlan:
+    candidates: list[RouteCandidate]
+    severed_pairs: list[tuple[str, str]]
+    feasible_count: int
+    infeasible_count: int
+    severity: str
+    baseline: dict[str, float] = field(default_factory=dict)
+
+
+def build_graph(twin: Twin) -> Graph:
+    labels = {n.id: n.label for n in twin.nodes}
+    adj: dict[str, list[TwinEdge]] = {n.id: [] for n in twin.nodes}
+    for e in twin.edges:
+        adj.setdefault(e.source, []).append(e)
+        adj.setdefault(e.target, [])
+        labels.setdefault(e.source, e.source)
+        labels.setdefault(e.target, e.target)
+    return Graph(labels=labels, adj=adj, edges={e.id: e for e in twin.edges})
+
+
+def _weight(e: TwinEdge, weight: str) -> float:
+    return e.cost if weight == "cost" else e.transit_days
+
+
+def _path_from_edges(g: Graph, nodes: list[str], edge_ids: list[str]) -> Path:
+    es = [g.edges[i] for i in edge_ids]
+    return Path(
+        path=nodes,
+        edge_ids=edge_ids,
+        cost=sum(e.cost for e in es),
+        days=sum(e.transit_days for e in es),
+        max_risk=max((e.risk_multiplier for e in es), default=1.0),
+    )
+
+
+def shortest_path(
+    g: Graph,
+    src: str,
+    dst: str,
+    avoid_nodes: Optional[set[str]] = None,
+    avoid_edges: Optional[set[str]] = None,
+    weight: str = "cost",
+) -> Optional[Path]:
+    avoid_nodes = avoid_nodes or set()
+    avoid_edges = avoid_edges or set()
+    if src in avoid_nodes or dst in avoid_nodes:
+        return None
+    if src == dst:
+        return Path(path=[src], edge_ids=[], cost=0, days=0, max_risk=1.0)
+
+    dist: dict[str, float] = {src: 0.0}
+    prev: dict[str, tuple[str, TwinEdge]] = {}
+    pq: list[tuple[float, str]] = [(0.0, src)]
+    while pq:
+        d, u = heapq.heappop(pq)
+        if u == dst:
+            break
+        if d > dist.get(u, float("inf")):
+            continue
+        for e in g.adj.get(u, []):
+            if e.target in avoid_nodes or e.id in avoid_edges:
+                continue
+            nd = d + _weight(e, weight)
+            if nd < dist.get(e.target, float("inf")):
+                dist[e.target] = nd
+                prev[e.target] = (u, e)
+                heapq.heappush(pq, (nd, e.target))
+    if dst not in dist:
+        return None
+
+    nodes, edge_ids, cur = [dst], [], dst
+    while cur != src:
+        p, e = prev[cur]
+        nodes.append(p)
+        edge_ids.append(e.id)
+        cur = p
+    nodes.reverse()
+    edge_ids.reverse()
+    return _path_from_edges(g, nodes, edge_ids)
+
+
+def blast_radius(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str]) -> BlastRadius:
+    g = build_graph(twin)
+    failed = set(failed_node_ids)
+    broken = {e.id for e in twin.edges if e.source in failed or e.target in failed} | set(failed_edge_ids)
+
+    # Downstream = everything reachable (following edge direction) from the failure.
+    seeds = set(failed) | {g.edges[i].target for i in broken if i in g.edges}
+    seen: set[str] = set()
+    stack = list(seeds)
+    while stack:
+        u = stack.pop()
+        for e in g.adj.get(u, []):
+            if e.target not in seen and e.target not in failed:
+                seen.add(e.target)
+                stack.append(e.target)
+    downstream = sorted(seen - failed)
+
+    preds = {g.edges[i].source for i in broken if i in g.edges and g.edges[i].source not in failed}
+    succs = {g.edges[i].target for i in broken if i in g.edges and g.edges[i].target not in failed}
+    severed = sorted({(p, s) for p in preds for s in succs if p != s})
+    return BlastRadius(downstream_node_ids=downstream, broken_edge_ids=sorted(broken), severed_pairs=severed)
+
+
+def _to_candidate(g: Graph, p: Path, idx: int, origin: str, destination: str, base: Optional[Path]) -> RouteCandidate:
+    bc = base.cost if base else p.cost
+    bd = base.days if base else p.days
+    return RouteCandidate(
+        id=f"r{idx}",
+        origin=origin,
+        destination=destination,
+        path=p.path,
+        labels=[g.labels.get(n, n) for n in p.path],
+        modes=[g.edges[i].mode for i in p.edge_ids],
+        cost=p.cost,
+        transit_days=p.days,
+        max_risk=p.max_risk,
+        baseline_cost=bc,
+        baseline_days=bd,
+        added_cost=p.cost - bc,
+        added_days=p.days - bd,
+        feasible=True,
+    )
+
+
+def k_best_routes(
+    twin: Twin,
+    origin: str,
+    destination: str,
+    failed_node_ids: list[str],
+    failed_edge_ids: list[str],
+    k: int = 3,
+) -> list[RouteCandidate]:
+    """Yen's k-shortest loopless paths on cost, avoiding failures. Baseline = healthy-network shortest path."""
+    g = build_graph(twin)
+    base = shortest_path(g, origin, destination)
+    avoid_n, avoid_e = set(failed_node_ids), set(failed_edge_ids)
+    first = shortest_path(g, origin, destination, avoid_n, avoid_e)
+    if not first:
+        return []
+
+    A: list[Path] = [first]
+    B: list[tuple[float, int, Path]] = []
+    counter = 0
+    for _ in range(1, k):
+        prev_path = A[-1]
+        for i in range(len(prev_path.path) - 1):
+            spur = prev_path.path[i]
+            root_nodes = prev_path.path[: i + 1]
+            root_edges = prev_path.edge_ids[:i]
+            removed = set(avoid_e)
+            for p in A:
+                if p.path[: i + 1] == root_nodes and len(p.edge_ids) > i:
+                    removed.add(p.edge_ids[i])
+            sp = shortest_path(g, spur, destination, avoid_n | set(root_nodes[:-1]), removed)
+            if not sp:
+                continue
+            total = _path_from_edges(g, root_nodes[:-1] + sp.path, root_edges + sp.edge_ids)
+            if all(total.path != p.path for p in A) and all(total.path != b[2].path for b in B):
+                counter += 1
+                heapq.heappush(B, (total.cost, counter, total))
+        if not B:
+            break
+        A.append(heapq.heappop(B)[2])
+    return [_to_candidate(g, p, i + 1, origin, destination, base) for i, p in enumerate(A)]
+
+
+def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str], k: int = 3) -> ReroutePlan:
+    br = blast_radius(twin, failed_node_ids, failed_edge_ids)
+    g = build_graph(twin)
+    candidates: list[RouteCandidate] = []
+    feasible = infeasible = 0
+    idx = 0
+    for p, s in br.severed_pairs:
+        routes = k_best_routes(twin, p, s, failed_node_ids, failed_edge_ids, k)
+        if routes:
+            feasible += 1
+            for r in routes:
+                idx += 1
+                r.id = f"r{idx}"
+                candidates.append(r)
+        else:
+            infeasible += 1
+            idx += 1
+            candidates.append(
+                RouteCandidate(
+                    id=f"r{idx}", origin=p, destination=s, path=[], labels=[g.labels.get(p, p), g.labels.get(s, s)], modes=[],
+                    cost=0, transit_days=0, max_risk=0, baseline_cost=0, baseline_days=0, added_cost=0, added_days=0, feasible=False,
+                )
+            )
+    candidates.sort(key=lambda c: (not c.feasible, c.added_cost, c.added_days))
+
+    if infeasible:
+        sev = "CRITICAL"
+    elif any(c.added_cost > 0 or c.added_days > 0 for c in candidates):
+        sev = "HIGH" if any(c.added_days >= 5 for c in candidates if c.feasible) else "MEDIUM"
+    else:
+        sev = "LOW"
+    baseline = {}
+    if candidates and candidates[0].feasible:
+        baseline = {"cost": candidates[0].baseline_cost, "days": candidates[0].baseline_days}
+    return ReroutePlan(candidates=candidates, severed_pairs=br.severed_pairs, feasible_count=feasible,
+                       infeasible_count=infeasible, severity=sev, baseline=baseline)
