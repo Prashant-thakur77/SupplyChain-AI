@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   try {
     const id = body.supplyChainId ?? "canvas"
     const twin = body.nodes ? rfToTwin(body.nodes, body.edges ?? [], id) : body.supplyChainId ? await loadTwinForAgent(id) : undefined
-    return await agentClient.proxyStream("/chat", { supply_chain_id: id, user_id: body.userId ?? "anonymous", message: body.message, twin })
+    return await agentClient.proxyStream("/chat", { supply_chain_id: id, user_id: body.userId ?? "anonymous", message: body.message, history: Array.isArray(body.history) ? body.history.slice(-20) : [], twin })
   } catch (e) {
     const { body: eb, status } = agentErrorResponse(e)
     return NextResponse.json(eb, { status })

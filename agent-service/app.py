@@ -69,6 +69,7 @@ class ChatIn(BaseModel):
     supply_chain_id: str
     user_id: str
     message: str
+    history: list[dict] = []  # prior turns [{role: user|assistant, text}]
     twin: Optional[Twin] = None
 
 
@@ -225,7 +226,7 @@ async def chat(inp: ChatIn):
     async def gen():
         last_err: Optional[Exception] = None
         for key, mid in model_plans("copilot"):
-            agent = copilot.build(hooks, inp.supply_chain_id, model=make_model("copilot", api_key=key, model_id=mid))
+            agent = copilot.build(hooks, inp.supply_chain_id, model=make_model("copilot", api_key=key, model_id=mid), history=inp.history)
             emitted = False
             try:
                 async for ev in agent.stream_async(inp.message):
@@ -333,7 +334,7 @@ def invocations(payload: dict):
         return report_live_intel(LiveIntelIn(**payload))
     inp = ChatIn(**{k: v for k, v in payload.items() if k in ChatIn.model_fields} | ({"message": payload["prompt"]} if "prompt" in payload else {}))
     _twin(inp)
-    agent = copilot.build(_hooks("chat", inp), inp.supply_chain_id)
+    agent = copilot.build(_hooks("chat", inp), inp.supply_chain_id, history=inp.history)
     return {"text": str(agent(inp.message))}
 
 

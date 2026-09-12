@@ -35,10 +35,11 @@ export function StrandsChat({ supplyChainId, userId, nodes, edges, endpoint = "/
     const q = text.trim()
     if (!q || busy) return
     setInput("")
+    const history = msgs.filter((m) => m.text).map((m) => ({ role: m.role, text: m.text }))
     setMsgs((m) => [...m, { role: "user", text: q }, { role: "assistant", text: "", tools: [] }])
     setBusy(true)
     try {
-      const res = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json", accept: "text/event-stream" }, body: JSON.stringify({ supplyChainId, userId, message: q, nodes, edges }) })
+      const res = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json", accept: "text/event-stream" }, body: JSON.stringify({ supplyChainId, userId, message: q, history, nodes, edges }) })
       if (!res.ok || !res.body) throw new Error((await res.json().catch(() => ({})))?.detail ?? `Request failed (${res.status})`)
       await consumeSse(res, (event, data) => {
         setMsgs((m) => {
