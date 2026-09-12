@@ -29,3 +29,13 @@ def test_secret_enforced(monkeypatch):
     c = TestClient(app)
     assert c.post("/reroute", json={"supply_chain_id": "t", "failed_node_ids": []}).status_code == 401
     assert c.post("/reroute", json={"supply_chain_id": "t", "failed_node_ids": []}, headers={"x-agent-secret": "s3cret"}).status_code == 200
+
+
+def test_sentinel_endpoint_uses_agent(monkeypatch):
+    from schemas import Event, Source
+    monkeypatch.setattr("app.settings.agent_service_secret", "")
+    monkeypatch.setattr("app.sentinel.build", lambda hooks, model=None: object())
+    monkeypatch.setattr("app.sentinel.run_sentinel", lambda agent, t: [Event(id="x", kind="news", title="Strike at SINGAPORE", description="d", failed_node_ids=["singapore"], sources=[Source(title="s", url="u")])])
+    twin_cache.put(twin())
+    r = TestClient(app).post("/sentinel", json={"supply_chain_id": "t"})
+    assert r.status_code == 200 and r.json()["events"][0]["failed_labels"] == ["SINGAPORE"]

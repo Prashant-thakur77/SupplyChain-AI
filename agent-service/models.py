@@ -42,8 +42,12 @@ def gemini_keys(role: str) -> list[str]:
 MAX_OUTPUT_TOKENS = 16384
 
 
-def make_model(role: str, api_key: str | None = None, model_id: str | None = None, json_mode: bool = False):
-    """Build a provider model for a role. `json_mode` asks Gemini for a guaranteed-JSON response (used for large nested reports)."""
+def make_model(role: str, api_key: str | None = None, model_id: str | None = None, json_mode: bool = False, google_search: bool = False):
+    """Build a provider model for a role.
+
+    `json_mode` asks Gemini for a guaranteed-JSON response (large nested reports). `google_search` attaches Gemini's
+    built-in Google Search grounding (used as the news source when no Tavily key/credits are available).
+    """
     temperature = ROLE_TEMPERATURE.get(role, 0.3)
     if settings.agent_model_provider == "bedrock":
         from strands.models import BedrockModel
@@ -55,7 +59,12 @@ def make_model(role: str, api_key: str | None = None, model_id: str | None = Non
     params: dict = {"temperature": temperature, "max_output_tokens": MAX_OUTPUT_TOKENS}
     if json_mode:
         params["response_mime_type"] = "application/json"
-    return GeminiModel(client_args={"api_key": api_key or settings.gemini_key(role)}, model_id=model_id or settings.gemini_model_id, params=params)
+    extra: dict = {}
+    if google_search:
+        from google.genai import types as gtypes
+
+        extra["gemini_tools"] = [gtypes.Tool(google_search=gtypes.GoogleSearch())]
+    return GeminiModel(client_args={"api_key": api_key or settings.gemini_key(role)}, model_id=model_id or settings.gemini_model_id, params=params, **extra)
 
 
 def is_transient(err: BaseException) -> bool:
@@ -73,7 +82,7 @@ def model_plans(role: str, max_attempts: int = 5) -> list[tuple[str | None, str 
     return plans[:max_attempts]
 
 
-def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: int = 5, json_mode: bool = False) -> T:
+def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: int = 5, json_mode: bool = False, google_search: bool = False) -> T:
     """Call `attempt(model)` with fresh models until one succeeds.
 
     Attempt order: primary key → other keys → fallback model on the primary key. Backoff 1.5s·2^n with jitter.
@@ -84,7 +93,7 @@ def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: i
     last: BaseException | None = None
     for n, (key, mid) in enumerate(plans):
         try:
-            return attempt(make_model(role, api_key=key, model_id=mid, json_mode=json_mode))
+            return attempt(make_model(role, api_key=key, model_id=mid, json_mode=json_mode, google_search=google_search))
         except BaseException as e:  # noqa: BLE001 — we classify below
             last = e
             if not is_transient(e) or n == len(plans) - 1:

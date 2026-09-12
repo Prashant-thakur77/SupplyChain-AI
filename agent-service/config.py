@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = ""
     tavily_api_key: str = ""
+    news_provider: str = "auto"  # auto (Tavily if key, else Gemini grounding) | gemini
     openweather_api_key: str = ""
     mem0_api_key: str = ""
 

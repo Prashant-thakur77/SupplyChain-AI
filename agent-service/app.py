@@ -187,6 +187,21 @@ def scan(inp: ScanIn):
     return {"scanned": len(events), "processed": processed, "trace_id": sid}
 
 
+class SentinelIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    twin: Optional[Twin] = None
+
+
+@app.post("/sentinel", dependencies=[Depends(auth)])
+def sentinel_ep(inp: SentinelIn):
+    """Sentinel only: candidate events for a twin (news + weather), no incident graph. Used by the demo's 'scan live news'."""
+    twin = _twin(inp)
+    events = sentinel.run_sentinel(sentinel.build(_hooks("sentinel", inp)), twin)
+    labels = {n.id: n.label for n in twin.nodes}
+    return {"events": [e.model_dump() | {"failed_labels": [labels.get(i, i) for i in e.failed_node_ids]} for e in events], "scanned_at": __import__("datetime").datetime.utcnow().isoformat() + "Z"}
+
+
 @app.post("/analysis", dependencies=[Depends(auth)])
 def analysis(inp: AnalysisIn):
     _twin(inp)
@@ -310,6 +325,8 @@ def invocations(payload: dict):
         return report_strategy(SimulationIn(**payload))
     if action == "report_forecast":
         return report_forecast(ForecastReportIn(**payload))
+    if action == "sentinel":
+        return sentinel_ep(SentinelIn(**payload))
     if action == "memory":
         return memory_ep(MemoryIn(**payload))
     if action == "report_live_intel":
