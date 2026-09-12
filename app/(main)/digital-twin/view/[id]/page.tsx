@@ -1,7 +1,7 @@
 'use client'
 
 import DigitalTwinSkeleton from '@/components/digital-twin/display/DigitalTwinViewSkeleton'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useSupplyChainView } from '@/lib/hooks/useSupplyChainView'
 import { AlertTriangle, ArrowLeft, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -54,6 +54,7 @@ export default function DigitalTwinViewPage() {
   // `id` comes from dynamic route /digital-twin/view/[id]
   const params = useParams<{ id: string }>()
   const id = params?.id ?? null
+  const focusDecisionId = useSearchParams().get('decision')
 
   const { loading, error, arch } = useSupplyChainView(id)
 
@@ -170,6 +171,8 @@ export default function DigitalTwinViewPage() {
                 initialNodes={arch.nodes}
                 initialEdges={arch.edges}
                 viewOnly={true}
+                supplyChainId={id ?? undefined}
+                focusDecisionId={focusDecisionId ?? undefined}
               />
             </div>
 

@@ -1,183 +1,92 @@
-import { FC } from 'react';
-import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
-import { AlertCircle, Route, XCircle, Search, Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { useDisruptionSimulation } from '../canvas/hooks/useDisruptionSimulation';
+'use client';
 
-const ControlTowerPanel: FC = () => {
-  const { isControlTowerMode, disruptedNodes, disruptedEdges, nodes, edges, clearDisruptions, disruptionAnalysis, isAnalyzingDisruption, setIsAnalyzingDisruption, setDisruptionAnalysis, updateNode } = useDigitalTwinStore();
+import { FC, useState } from 'react';
+import { AlertCircle, Loader2, Radar, ShieldAlert, Search } from 'lucide-react';
+import { toast } from 'sonner';
+import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
+import type { IncidentEvent } from '@/types/agent';
+
+interface Props {
+  /** Starts the Strands incident graph for a live-detected event. */
+  onIncident?: (event: IncidentEvent) => void;
+}
+
+/** Left-side Control Tower: live-intel scan + current disruption summary. Route options live in the Incident panel. */
+const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
+  const { isControlTowerMode, disruptedNodes, nodes, clearDisruptions, incident, isAnalyzingDisruption, updateNode } = useDigitalTwinStore();
   const [isScanning, setIsScanning] = useState(false);
-  const { simulateDisruption } = useDisruptionSimulation();
+  const [lastScan, setLastScan] = useState<{ description: string; max: number } | null>(null);
 
   if (!isControlTowerMode) return null;
 
-  const activeNodes = nodes.filter(n => disruptedNodes.includes(n.id));
+  const failed = nodes.filter((n) => incident?.assessment.failed_node_ids.includes(n.id) || (!incident && disruptedNodes[0] === n.id));
+  const downstream = incident ? incident.assessment.affected_node_ids.length : Math.max(0, disruptedNodes.length - 1);
+
+  const scan = async () => {
+    setIsScanning(true);
+    try {
+      const response = await fetch('/api/agent/live-intelligence', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nodes: nodes.filter((n) => n.type !== 'group').map((n) => ({ id: n.id, data: n.data, type: n.type })) }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.detail ?? result.error ?? 'scan failed');
+      (result.nodeRisks ?? []).forEach((nr: any) => updateNode(nr.nodeId, { riskScore: nr.riskScore, riskReason: nr.reason }));
+      const worst = [...(result.nodeRisks ?? [])].sort((a: any, b: any) => b.riskScore - a.riskScore)[0];
+      setLastScan({ description: result.description, max: worst?.riskScore ?? 0 });
+      if (result.disruptionsFound && worst && worst.riskScore > 0.8 && onIncident) {
+        const node = nodes.find((n) => n.id === worst.nodeId);
+        toast.warning(`Live threat at ${node?.data?.label ?? worst.nodeId} — running incident graph`);
+        onIncident({
+          id: `live-${worst.nodeId}-${Date.now()}`, kind: 'news', title: `${node?.data?.label ?? worst.nodeId}: ${worst.reason?.slice(0, 80) ?? 'live disruption'}`,
+          description: worst.reason ?? result.description, failed_node_ids: [worst.nodeId], failed_edge_ids: [],
+          sources: (result.sources ?? []).slice(0, 3),
+        });
+      } else {
+        toast.info(`Scan complete — highest node risk ${Math.round((worst?.riskScore ?? 0) * 100)}%. No disruption above the alert threshold.`);
+      }
+    } catch (err) {
+      toast.error(`Live intelligence scan failed: ${(err as Error).message}`);
+    } finally {
+      setIsScanning(false);
+    }
+  };
 
   return (
-    <div className="absolute top-24 left-4 z-40 w-80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-xl shadow-2xl p-4 transition-all animate-in slide-in-from-left-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold flex items-center gap-2">
-          <ShieldAlertIcon /> Control Tower
-        </h3>
-        {disruptedNodes.length > 0 && (
-          <button 
-            onClick={clearDisruptions}
-            className="text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white"
-          >
-            Clear All
-          </button>
-        )}
+    <div className="absolute top-24 left-4 z-40 w-80 rounded-theme-lg border border-theme-border-default bg-theme-bg-surface/90 p-4 shadow-2xl backdrop-blur-md transition-all animate-in slide-in-from-left-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-theme-text-primary"><ShieldAlert className="h-4 w-4 text-theme-red" /> Control Tower</h3>
+        {(disruptedNodes.length > 0 || incident) && <button onClick={clearDisruptions} className="text-xs text-theme-text-muted hover:text-theme-text-primary">Clear</button>}
       </div>
 
-      {disruptedNodes.length === 0 ? (
-        <div className="text-sm text-gray-500 dark:text-gray-400 text-center py-6 space-y-4">
-          <p>Right-click any node to manually simulate a disruption.</p>
-          <div className="relative flex items-center py-2">
-            <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
-            <span className="flex-shrink-0 mx-4 text-xs font-medium text-gray-400 uppercase">OR</span>
-            <div className="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
-          </div>
-          <button 
-            onClick={async () => {
-              setIsScanning(true);
-              try {
-                const response = await fetch('/api/agent/live-intelligence', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ nodes: nodes.map(n => ({ id: n.id, data: n.data })) })
-                });
-                if (response.ok) {
-                  const result = await response.json();
-                  
-                  // Silently update all node risk scores on the canvas based on sentiment
-                  if (result.nodeRisks && Array.isArray(result.nodeRisks)) {
-                    result.nodeRisks.forEach((nr: any) => {
-                      updateNode(nr.nodeId, { riskScore: nr.riskScore });
-                    });
-                  }
-
-                  // Find a critical node (>0.80) to trigger the massive visual disruption alarm
-                  const criticalNode = result.nodeRisks?.find((nr: any) => nr.riskScore > 0.80);
-
-                  if (result.disruptionsFound && criticalNode) {
-                    setIsAnalyzingDisruption(true);
-                    simulateDisruption(criticalNode.nodeId);
-                    
-                    // Call the route-optimization agent with the live problem description
-                    const analysisRes = await fetch('/api/agent/route-optimization', {
-                       method: 'POST',
-                       headers: { 'Content-Type': 'application/json' },
-                       body: JSON.stringify({
-                         nodeId: criticalNode.nodeId,
-                         description: criticalNode.reason || result.description,
-                         nodes: nodes.map(n => ({ id: n.id, data: n.data, type: n.type })),
-                         edges: edges.map(e => ({ id: e.id, source: e.source, target: e.target, data: e.data }))
-                       })
-                    });
-                    if (analysisRes.ok) {
-                       setDisruptionAnalysis(await analysisRes.json());
-                    }
-                    setIsAnalyzingDisruption(false);
-                  } else {
-                    alert("News sentiment applied. No catastrophic disruptions (>0.80 risk) detected. Node risk scores updated silently.");
-                  }
-                }
-              } catch (err) {
-                console.error(err);
-                alert("Failed to scan live intelligence.");
-              } finally {
-                setIsScanning(false);
-              }
-            }}
-            disabled={isScanning || nodes.length === 0}
-            className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors border ${
-              nodes.length === 0 
-                ? 'bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700 cursor-not-allowed'
-                : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 border-blue-200 dark:border-blue-800'
-            }`}
-          >
-            {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            {nodes.length === 0 ? "Add Nodes to Scan" : isScanning ? "Scanning Global Feeds..." : "Scan Live Intelligence"}
+      {disruptedNodes.length === 0 && !incident ? (
+        <div className="space-y-3 text-sm text-theme-text-secondary">
+          <p className="text-center">Right-click any node to simulate a disruption, or scan live feeds.</p>
+          <button onClick={scan} disabled={isScanning || nodes.length === 0}
+            className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-blue/30 bg-theme-blue-soft py-2 text-sm font-medium text-theme-blue transition-colors hover:bg-theme-blue/15 disabled:cursor-not-allowed disabled:opacity-50">
+            {isScanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Radar className="h-4 w-4" />}
+            {nodes.length === 0 ? 'Add nodes to scan' : isScanning ? 'Scanning global feeds…' : 'Scan live intelligence'}
           </button>
-        </div>
-      ) : isAnalyzingDisruption ? (
-        <div className="flex flex-col items-center justify-center py-10 space-y-4 text-sm text-gray-500">
-          <Loader2 className="w-8 h-8 animate-spin text-red-500" />
-          <p>AI is analyzing disruption impact...</p>
+          {lastScan && <p className="text-xs leading-relaxed text-theme-text-muted">{lastScan.description}</p>}
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 rounded-lg">
-            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-medium mb-1">
-              <AlertCircle className="w-4 h-4" />
-              Active Disruption
-            </div>
-            <div className="text-sm text-gray-700 dark:text-gray-300">
-              Root node: <strong>{activeNodes[0]?.data?.label || activeNodes[0]?.id}</strong>
-            </div>
+        <div className="space-y-3">
+          <div className="rounded-theme-md border border-theme-red/30 bg-theme-red-soft p-3">
+            <div className="mb-1 flex items-center gap-2 text-sm font-medium text-theme-red"><AlertCircle className="h-4 w-4" /> Active disruption</div>
+            <div className="text-sm text-theme-text-primary">{failed.map((n) => n.data?.label ?? n.id).join(', ') || nodes.find((n) => n.id === disruptedNodes[0])?.data?.label || '—'}</div>
+            {incident && <div className="mt-1 text-xs text-theme-text-secondary">{incident.assessment.summary}</div>}
           </div>
-
           <div className="grid grid-cols-2 gap-2">
-            <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-900/30">
-              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {disruptedNodes.length - 1}
-              </div>
-              <div className="text-xs text-orange-800 dark:text-orange-300">
-                Nodes Impacted
-              </div>
-            </div>
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-100 dark:border-yellow-900/30">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {disruptedEdges.length}
-              </div>
-              <div className="text-xs text-yellow-800 dark:text-yellow-300">
-                Routes Blocked
-              </div>
-            </div>
+            <div className="rounded-theme-md border border-theme-amber/30 bg-theme-amber-soft p-3"><div className="text-2xl font-bold text-theme-amber">{downstream}</div><div className="text-xs text-theme-text-secondary">Nodes downstream</div></div>
+            <div className="rounded-theme-md border border-theme-green/30 bg-theme-green-soft p-3"><div className="text-2xl font-bold text-theme-green">{incident?.plan?.feasible_count ?? (isAnalyzingDisruption ? '…' : 0)}</div><div className="text-xs text-theme-text-secondary">Lanes reroutable</div></div>
           </div>
-          
-          {disruptionAnalysis && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
-              <div className="text-sm font-semibold flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${disruptionAnalysis.severity === 'High' ? 'bg-red-500' : 'bg-yellow-500'}`}></span>
-                AI Impact Analysis
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
-                {disruptionAnalysis.impactDescription}
-              </p>
-              
-              {disruptionAnalysis.alternateRoutes && disruptionAnalysis.alternateRoutes.length > 0 && (
-                <div className="pt-2">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Recommended Detours</div>
-                  <ul className="space-y-2">
-                    {disruptionAnalysis.alternateRoutes.map((route: string, i: number) => (
-                      <li key={i} className="text-xs flex items-start gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-md border border-gray-100 dark:border-gray-700">
-                        <Route className="w-3 h-3 mt-0.5 text-blue-500" />
-                        <span className="text-gray-700 dark:text-gray-300">{route}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!disruptionAnalysis && (
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-800">
-               <button className="w-full flex items-center justify-center gap-2 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors">
-                 <Route className="w-4 h-4" />
-                 Find Alternate Routes
-               </button>
-            </div>
-          )}
+          {isAnalyzingDisruption && <div className="flex items-center gap-2 text-xs text-theme-text-secondary"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Incident graph running — see the panel on the right.</div>}
+          {incident?.impact && <div className="text-xs text-theme-text-secondary">Revenue at risk ≈ <strong className="text-theme-text-primary">${Math.round(incident.impact.revenue_at_risk_usd).toLocaleString()}</strong> · {Math.round(incident.impact.delay_days)} day delay</div>}
+          <button onClick={scan} disabled={isScanning} className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-border-subtle py-1.5 text-xs text-theme-text-secondary hover:text-theme-text-primary"><Search className="h-3.5 w-3.5" /> {isScanning ? 'Scanning…' : 'Re-scan live feeds'}</button>
         </div>
       )}
     </div>
   );
 };
-
-const ShieldAlertIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m12 8-1.5 6h3z"/><circle cx="12" cy="17" r="1"/></svg>
-)
 
 export default ControlTowerPanel;

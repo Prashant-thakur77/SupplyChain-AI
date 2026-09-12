@@ -1,6 +1,7 @@
 // src/store/digitalTwinStore.ts
 import { create } from 'zustand';
 import { Node, Edge } from 'reactflow';
+import type { IncidentResult } from '@/types/agent';
 
 interface DigitalTwinState {
   // Core graph elements
@@ -17,6 +18,12 @@ interface DigitalTwinState {
   disruptedEdges: string[];
   disruptionAnalysis: any | null;
   isAnalyzingDisruption: boolean;
+
+  // Incident (Strands incident graph result + route overlay)
+  incident: IncidentResult | null;
+  selectedRouteId: string | null;
+  setIncident: (incident: IncidentResult | null) => void;
+  setSelectedRouteId: (id: string | null) => void;
   
   // Actions
   setNodes: (nodes: Node[]) => void;
@@ -58,6 +65,10 @@ export const useDigitalTwinStore = create<DigitalTwinState>((set, get) => ({
   disruptedNodes: [],
   disruptedEdges: [],
   disruptionAnalysis: null,
+  incident: null,
+  selectedRouteId: null,
+  setIncident: (incident) => set({ incident, selectedRouteId: incident?.decision?.recommended_option_id ?? null }),
+  setSelectedRouteId: (id) => set({ selectedRouteId: id }),
   isAnalyzingDisruption: false,
   
   // Node & Edge actions
@@ -107,12 +118,13 @@ export const useDigitalTwinStore = create<DigitalTwinState>((set, get) => ({
   setControlTowerMode: (mode) => set({ 
     isControlTowerMode: mode, 
     // Clear disruptions when exiting control tower mode
-    ...(mode === false ? { disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null } : {})
+    ...(mode === false ? { disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null, incident: null, selectedRouteId: null } : {})
   }),
   setSelectedSupplyChain: (id) => set({ selectedSupplyChain: id }),
   setDisruptedNodes: (nodes) => set({ disruptedNodes: nodes }),
   setDisruptedEdges: (edges) => set({ disruptedEdges: edges }),
-  clearDisruptions: () => set({ disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null }),
+  clearDisruptions: () => set((s) => ({ disruptedNodes: [], disruptedEdges: [], disruptionAnalysis: null, incident: null, selectedRouteId: null,
+    edges: s.edges.filter((e) => e.type !== 'route'), nodes: s.nodes.map((n) => n.data?.incidentState ? { ...n, data: { ...n.data, incidentState: undefined } } : n) })),
   setDisruptionAnalysis: (analysis) => set({ disruptionAnalysis: analysis }),
   setIsAnalyzingDisruption: (isAnalyzing) => set({ isAnalyzingDisruption: isAnalyzing }),
   

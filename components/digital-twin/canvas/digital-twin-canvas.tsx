@@ -23,6 +23,10 @@ import ControlTowerPanel from '../layout/ControlTowerPanel';
 import ManualDisruptionDialog from './ManualDisruptionDialog';
 import { useCopilotAction } from '@copilotkit/react-core';
 import { useDisruptionSimulation } from './hooks/useDisruptionSimulation';
+import { useIncident } from '../incident/useIncident';
+import { IncidentOverlay } from '../incident/IncidentOverlay';
+import { supabaseClient } from '@/lib/supabase/client';
+import { getUserData } from '@/utils/functions/userUtils';
 
 // Add nodes and edges to the props for SimulationToolbar
 interface CustomSimulationToolbarProps extends Omit<React.ComponentProps<typeof SimulationToolbar>, 'nodes' | 'edges'> {
@@ -30,12 +34,23 @@ interface CustomSimulationToolbarProps extends Omit<React.ComponentProps<typeof 
   edges: Edge[];
 }
 
-export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly = false }: DigitalTwinManagerProps) {
+export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly = false, supplyChainId, userId, focusDecisionId }: DigitalTwinManagerProps) {
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [contextMenu, setContextMenu] = React.useState<{ id: string; top: number; left: number } | null>(null);
   const [disruptionModalNodeId, setDisruptionModalNodeId] = React.useState<string | null>(null);
   const { isControlTowerMode, setControlTowerMode, disruptedNodes } = useDigitalTwinStore();
   const { simulateDisruption, clearDisruptions } = useDisruptionSimulation();
+  const [incidentUserId, setIncidentUserId] = React.useState<string | undefined>(userId);
+  React.useEffect(() => { if (!userId) getUserData().then((u) => setIncidentUserId(u?.id ?? undefined)).catch(() => undefined); }, [userId]);
+  const incident = useIncident({ supplyChainId: supplyChainId ?? 'canvas', userId: incidentUserId, persist: !!supplyChainId && !!incidentUserId });
+
+  // Deep link from the Decision Inbox: /digital-twin/view/<id>?decision=<decisionId>
+  React.useEffect(() => {
+    if (!focusDecisionId) return;
+    (supabaseClient as any).from('decisions').select('*, route_plans(*)').eq('id', focusDecisionId).single()
+      .then(({ data }: any) => { if (data) { setControlTowerMode(true); incident.showDecision(data); } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusDecisionId]);
 
   useCopilotAction({
     name: "simulateDisruption",
@@ -221,7 +236,7 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
         {/* Only show LeftPanel in edit mode */}
         {!viewOnly && !isControlTowerMode && <LeftPanel {...leftPanelProps} />}
         
-        <ControlTowerPanel />
+        <ControlTowerPanel onIncident={(event) => incident.start(event)} />
 
         <div 
           className={`flex-1 h-full ${viewOnly ? '' : 'border-l'} transition-all duration-200 relative ${
@@ -328,7 +343,12 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
             isOpen={!!disruptionModalNodeId} 
             onClose={() => setDisruptionModalNodeId(null)} 
             nodeId={disruptionModalNodeId} 
+            onSimulate={(event) => { setControlTowerMode(true); incident.start(event); }}
           />
+
+          <div className="pointer-events-none absolute bottom-4 right-4 z-40 flex w-[calc(100%-2rem)] justify-end sm:w-auto">
+            <IncidentOverlay events={incident.events} status={incident.status} error={incident.error} onClose={incident.clear} local={!supplyChainId} />
+          </div>
 
           <ReactFlow
             nodes={nodes}

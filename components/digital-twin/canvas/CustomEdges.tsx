@@ -7,6 +7,7 @@ import {
   getSmoothStepPath
 } from 'reactflow';
 import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
+import { RouteEdge } from '../incident/RouteEdge';
 
 export const TransportEdge = ({
   id,
@@ -133,6 +134,7 @@ export const TransportEdge = ({
 };
 
 export const edgeTypes = {
+  route: RouteEdge,
   transportEdge: TransportEdge,
   sea: TransportEdge,
   air: TransportEdge,

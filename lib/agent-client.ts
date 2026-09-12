@@ -10,24 +10,8 @@ export class AgentServiceError extends Error {
   }
 }
 
-/** Incremental SSE parser. Keeps a partial frame in `buffer.rest` between chunks. */
-export function parseSse(chunk: string, buffer: { rest: string }): Array<{ event: string; data: string }> {
-  buffer.rest += chunk
-  const frames: Array<{ event: string; data: string }> = []
-  let idx: number
-  while ((idx = buffer.rest.indexOf("\n\n")) >= 0) {
-    const raw = buffer.rest.slice(0, idx)
-    buffer.rest = buffer.rest.slice(idx + 2)
-    let event: string | null = null
-    const data: string[] = []
-    for (const line of raw.split("\n")) {
-      if (line.startsWith("event:")) event = line.slice(6).trim()
-      else if (line.startsWith("data:")) data.push(line.slice(5).trim())
-    }
-    if (event !== null || data.length) frames.push({ event: event ?? "message", data: data.join("\n") })
-  }
-  return frames
-}
+import { parseSse } from "@/lib/sse"
+export { parseSse }
 
 async function doFetch(path: string, body: unknown, accept = "application/json"): Promise<Response> {
   let res: Response

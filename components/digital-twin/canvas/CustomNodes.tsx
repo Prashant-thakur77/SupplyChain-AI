@@ -108,6 +108,13 @@ const BaseNode = memo(({
       ? 'animate-pulse-border-orange border-2' 
       : '';
 
+  const incidentState: 'failed' | 'downstream' | 'onRoute' | undefined = data.incidentState;
+  const incidentClass = incidentState === 'onRoute'
+    ? 'ring-2 ring-[#22c55e] ring-offset-1 dark:ring-offset-zinc-950'
+    : incidentState === 'downstream' && !isDisrupted
+      ? 'animate-pulse-border-orange border-2'
+      : '';
+
   const selectedClass = selected 
     ? 'ring-2 ring-[#2748E8] ring-offset-2 dark:ring-offset-zinc-950 scale-[1.02]' 
     : '';
@@ -120,7 +127,7 @@ const BaseNode = memo(({
         isHighRisk 
           ? 'bg-[#FEF2F2] dark:bg-[#2A1515]' 
           : 'bg-white dark:bg-zinc-900'
-      } ${disruptionBorderClass} ${selectedClass}`}
+      } ${disruptionBorderClass} ${incidentClass} ${selectedClass}`}
     >
       {showLeftHandle && (
         <Handle

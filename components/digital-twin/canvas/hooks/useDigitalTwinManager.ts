@@ -20,6 +20,11 @@ export interface DigitalTwinManagerProps {
    * When true the canvas operates in read-only mode (no mutations, no save UI).
    */
   viewOnly?: boolean;
+  /** Saved supply chain id (enables persisted decisions). Omit for unsaved canvases. */
+  supplyChainId?: string;
+  userId?: string;
+  /** Open this decision (from the inbox) on the twin when mounted. */
+  focusDecisionId?: string;
 }
 
 export function useDigitalTwinManager({

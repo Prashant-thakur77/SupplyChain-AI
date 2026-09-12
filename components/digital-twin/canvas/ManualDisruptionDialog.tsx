@@ -1,110 +1,68 @@
 import React, { useState } from 'react';
 import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
-import { useDisruptionSimulation } from './hooks/useDisruptionSimulation';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { IncidentEvent } from '@/types/agent';
 
 interface ManualDisruptionDialogProps {
   isOpen: boolean;
   onClose: () => void;
   nodeId: string | null;
+  /** Provided by the canvas: starts the Strands incident graph for the event. */
+  onSimulate: (event: IncidentEvent) => void;
 }
 
-export default function ManualDisruptionDialog({ isOpen, onClose, nodeId }: ManualDisruptionDialogProps) {
+const PRESETS = [
+  'Port closed for 3 weeks after a terminal fire',
+  'Labour strike halts all operations for 10 days',
+  'Typhoon: facility flooded, 2 weeks to recover',
+  'Sanctions block all shipments through this hub',
+];
+
+export default function ManualDisruptionDialog({ isOpen, onClose, nodeId, onSimulate }: ManualDisruptionDialogProps) {
   const [description, setDescription] = useState('');
-  const { 
-    nodes, 
-    edges,
-    setIsAnalyzingDisruption, 
-    setDisruptionAnalysis 
-  } = useDigitalTwinStore();
-  const { simulateDisruption } = useDisruptionSimulation();
+  const { nodes } = useDigitalTwinStore();
+  const node = nodes.find((n) => n.id === nodeId);
+  const nodeName = node?.data?.label || nodeId;
 
-  const handleSimulate = async () => {
+  const handleSimulate = () => {
     if (!nodeId || !description) return;
-    
-    // Set UI state to loading
-    setIsAnalyzingDisruption(true);
-    // Trigger BFS to make UI red instantly
-    simulateDisruption(nodeId);
+    onSimulate({
+      id: `manual-${nodeId}-${Date.now()}`, kind: 'manual', title: `${nodeName}: ${description}`, description,
+      location: node?.data?.country ?? node?.data?.location ?? undefined, failed_node_ids: [nodeId], failed_edge_ids: [], sources: [],
+    });
+    setDescription('');
     onClose();
-
-    try {
-      const response = await fetch('/api/agent/route-optimization', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nodeId,
-          description,
-          nodes: nodes.map(n => ({ id: n.id, data: n.data, type: n.type })),
-          edges: edges.map(e => ({ id: e.id, source: e.source, target: e.target, data: e.data }))
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to analyze disruption: ${errorData.error || response.status}`);
-      }
-
-      const data = await response.json();
-      setDisruptionAnalysis(data);
-    } catch (error) {
-      console.error('Error analyzing disruption:', error);
-      // Fallback data if API fails
-      setDisruptionAnalysis({
-        severity: "High",
-        impactDescription: `Simulation of: "${description}". Immediate downstream delays expected.`,
-        alternateRoutes: [
-          "Wait for conditions to clear.",
-          "Check secondary nodes for capacity."
-        ]
-      });
-    } finally {
-      setIsAnalyzingDisruption(false);
-      setDescription('');
-    }
   };
 
-  const nodeName = nodes.find(n => n.id === nodeId)?.data?.label || nodeId;
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
-            Simulate Disruption
+            <AlertTriangle className="h-5 w-5 text-theme-red" />
+            Simulate disruption at {nodeName}
           </DialogTitle>
           <DialogDescription>
-            Describe the problem occurring at <strong>{nodeName}</strong>. The AI will analyze the impact and suggest alternate routes.
+            The Strands incident graph will grade it, compute the blast radius and exact reroutes, and only create a decision if it matters.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="grid gap-4 py-4">
+        <div className="space-y-3 py-2">
           <textarea
+            className="min-h-[90px] w-full rounded-theme-md border border-theme-border-default bg-theme-bg-secondary p-3 text-sm text-theme-text-primary outline-none focus:ring-2 focus:ring-theme-blue"
+            placeholder="What happened? e.g. Port closed for 3 weeks after a terminal fire"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="e.g., A massive storm has flooded the main access roads..."
-            className="min-h-[100px] w-full p-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500"
           />
+          <div className="flex flex-wrap gap-1.5">
+            {PRESETS.map((p) => (
+              <button key={p} type="button" onClick={() => setDescription(p)} className="rounded-full border border-theme-border-subtle bg-theme-bg-surface px-2 py-0.5 text-[11px] text-theme-text-secondary hover:border-theme-blue hover:text-theme-blue">{p}</button>
+            ))}
+          </div>
         </div>
-
         <DialogFooter>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSimulate}
-            disabled={!description}
-            className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            Simulate & Analyze
-          </button>
+          <button type="button" onClick={onClose} className="rounded-theme-md px-4 py-2 text-sm text-theme-text-secondary hover:bg-theme-bg-secondary">Cancel</button>
+          <button type="button" onClick={handleSimulate} disabled={!description} className="rounded-theme-md bg-theme-red px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50">Run incident graph</button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
