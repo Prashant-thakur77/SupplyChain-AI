@@ -711,9 +711,9 @@ export default function Home() {
         <div className="cta-section">
           <h2 className="cta-heading">Stop finding out from the news.</h2>
           <Link href="/demo" className="btn-hero" style={{ padding: '16px 40px', fontSize: '1rem' }}>
-            Request Access →
+            Try the live demo →
           </Link>
-          <p className="cta-sub">No credit card required · Enterprise-ready · Backed by Google ADK</p>
+          <p className="cta-sub">No login required · Open source (MIT) · Built with Strands Agents</p>
         </div>
       </main>
 

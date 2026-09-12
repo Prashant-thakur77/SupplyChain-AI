@@ -66,7 +66,7 @@ export function getAIKeyForModule(module: AIModule): string {
 // ─── SDK Config Helpers ───────────────────────────────────────────────────────
 
 /**
- * Returns the API key for a module (for use with @ai-sdk/google createGoogleGenerativeAI).
+ * Returns the API key for a module (for the CopilotKit canvas assistant).
  */
 export function getAIConfig(module: AIModule = 'default') {
   return {
