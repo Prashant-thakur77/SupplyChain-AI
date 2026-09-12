@@ -310,6 +310,8 @@ def invocations(payload: dict):
         return report_strategy(SimulationIn(**payload))
     if action == "report_forecast":
         return report_forecast(ForecastReportIn(**payload))
+    if action == "memory":
+        return memory_ep(MemoryIn(**payload))
     if action == "report_live_intel":
         return report_live_intel(LiveIntelIn(**payload))
     inp = ChatIn(**{k: v for k, v in payload.items() if k in ChatIn.model_fields} | ({"message": payload["prompt"]} if "prompt" in payload else {}))
@@ -357,6 +359,30 @@ def report_strategy(inp: SimulationIn):
 @app.post("/reports/forecast", dependencies=[Depends(auth)])
 def report_forecast(inp: ForecastReportIn):
     return reports.run_forecast_report(_hooks("forecast_report", inp), _twin(inp), inp.horizon_days, inp.node_label).model_dump()
+
+
+class MemoryIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    title: str
+    status: str
+    option_label: Optional[str] = None
+    added_cost: Optional[float] = None
+    added_days: Optional[float] = None
+    when: Optional[str] = None
+
+
+@app.post("/memory", dependencies=[Depends(auth)])
+def memory_ep(inp: MemoryIn):
+    """Store the outcome of a decision so the next incident can recall it."""
+    from datetime import date
+
+    from tools.memory import format_decision_memory, store_memory
+
+    text = format_decision_memory(inp.title, inp.status, inp.option_label, inp.added_cost, inp.added_days, inp.when or date.today().isoformat())
+    out = store_memory(supply_chain_id=inp.supply_chain_id, text=text)
+    db.insert_audit(inp.user_id, "Memory", f"Stored: {text}", {"supply_chain_id": inp.supply_chain_id})
+    return {"stored": out.get("status") == "success" and (out["content"][0].get("json") or {}).get("stored", False), "text": text}
 
 
 class SuggestionsIn(BaseModel):

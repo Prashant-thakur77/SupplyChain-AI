@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { logAudit } from "@/lib/audit-logger"
 import { supabaseServer } from "@/lib/supabase/server"
+import { agentClient } from "@/lib/agent-client"
 
 const ALLOWED = new Set(["approved", "rejected", "snoozed", "expired"])
 
@@ -33,6 +34,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
       message: `${existing.title}. ${chosen.detail ?? ""}`.trim(), notification_type: "decision", severity: "LOW", read_status: false,
       citations: { category: "Decision", supplyChainId: existing.supply_chain_id, decisionId: id, chosenOptionId: chosenId, sources: existing.sources ?? [] },
     }).then(() => undefined, () => undefined)
+  }
+  // Learning loop: remember what was decided so the next incident can recall it (fire-and-forget).
+  if (status === "approved" || status === "rejected") {
+    agentClient.post("/memory", {
+      supply_chain_id: existing.supply_chain_id, user_id: existing.user_id ?? "system", title: existing.title, status,
+      option_label: chosen?.label ?? null, added_cost: chosen?.added_cost ?? null, added_days: chosen?.added_days ?? null,
+    }).catch((e) => console.warn("[decisions] memory store failed:", (e as Error).message))
   }
   return NextResponse.json({ decision: data })
 }

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { formatDistanceToNow } from "date-fns"
-import { Activity, AlarmClock, Check, ExternalLink, MapPinned, X } from "lucide-react"
+import { Activity, AlarmClock, Check, ExternalLink, History, MapPinned, X } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { GroundingBadge } from "@/components/ui/grounding-badge"
@@ -41,6 +41,8 @@ export function DecisionCard({ decision, onChange, local }: Props) {
     try {
       if (local) {
         onChange?.({ ...decision, status, chosen_option_id: status === "approved" ? selected : null, decided_at: new Date().toISOString() })
+        const opt = decision.options.find((o) => o.id === selected)
+        if (status !== "snoozed") fetch("/api/demo/memory", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: decision.title, status, option_label: opt?.label, added_cost: opt?.added_cost, added_days: opt?.added_days }) }).catch(() => undefined)
       } else {
         const { decision: updated } = await decide(decision.id, status, status === "approved" ? selected : null, 24)
         onChange?.(updated)
@@ -77,6 +79,13 @@ export function DecisionCard({ decision, onChange, local }: Props) {
               chosen={o.id === decision.chosen_option_id} disabled={!pending} onSelect={setSelected} />
           ))}
         </div>
+
+        {decision.memories && decision.memories.length > 0 && (
+          <div className="mt-4 rounded-theme-md border border-theme-blue/20 bg-theme-blue-soft/40 p-3">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-theme-blue"><History className="h-3.5 w-3.5" /> Last time this happened</div>
+            <ul className="mt-1 space-y-1 text-sm text-theme-text-secondary">{decision.memories.slice(0, 3).map((m, i) => <li key={i}>{m}</li>)}</ul>
+          </div>
+        )}
 
         <div className="mt-4 rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary p-3">
           <div className="text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">Why the agent recommends this</div>

@@ -7,7 +7,7 @@ Every LLM step is a Strands Agent with a Pydantic structured output; the route m
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from strands.multiagent import GraphBuilder
@@ -45,6 +45,7 @@ class IncidentResult:
     trace_id: str
     status: str  # decision | notified | partial
     execution_order: list[str]
+    memories: list[str] = field(default_factory=list)
 
 
 def _risk_of(c) -> Severity:
@@ -123,12 +124,12 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
     memories = (mem["content"][0].get("json", {}) or {}).get("memories", []) if mem.get("status") == "success" else []
     a = analyst.run_analyst(analyst.build(hooks), twin, event, memories)
     done("analyst", t, {"severity": a.severity.value, "confidence": a.confidence, "failed": a.failed_node_ids, "affected": a.affected_node_ids,
-                        "needs_review": a.needs_review})
+                        "needs_review": a.needs_review, "memories": len(memories)})
 
     notification_id = db.insert_notification(user_id, supply_chain_id, a) if persist else None
     if not severity_gate(a):
         emit(GraphEvent(type="result", payload={"status": "notified", "notification_id": notification_id}))
-        return IncidentResult(a, None, None, None, None, None, None, notification_id, trace_id, "notified", order)
+        return IncidentResult(a, None, None, None, None, None, None, notification_id, trace_id, "notified", order, memories)
 
     # 2. Deterministic routing — never the LLM
     t = stage("routing_engine")
@@ -218,7 +219,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
         db.insert_audit(user_id, "IncidentGraph", f"Decision created: {decision.title}",
                         {"decision_id": decision_id, "trace_id": trace_id, "elapsed_ms": int((time.time() - t0) * 1000), "order": order})
     emit(GraphEvent(type="result", payload={"status": status, "decision_id": decision_id}))
-    return IncidentResult(a, plan, ranking, imp, mit, decision, decision_id, notification_id, trace_id, status, order)
+    return IncidentResult(a, plan, ranking, imp, mit, decision, decision_id, notification_id, trace_id, status, order, memories)
 
 
 def _sanitise(r: RouteRanking, plan: ReroutePlan) -> RouteRanking:
