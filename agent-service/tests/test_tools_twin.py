@@ -7,7 +7,7 @@ def test_find_reroutes_tool_uses_cache():
     out = find_reroutes(supply_chain_id="t", failed_node_ids=["singapore"], failed_edge_ids=[], k=2)
     assert out["status"] == "success"
     body = out["content"][0]["json"]
-    assert body["candidates"][0]["path"] == ["shenzhen", "colombo", "rotterdam"]
+    assert body["candidates"][0]["path"] == ["shenzhen", "colombo", "rotterdam", "berlin"]
     assert body["candidates"][0]["added_cost"] == 1000
 
 

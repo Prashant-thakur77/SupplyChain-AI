@@ -34,7 +34,7 @@ interface CustomSimulationToolbarProps extends Omit<React.ComponentProps<typeof 
   edges: Edge[];
 }
 
-export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly = false, supplyChainId, userId, focusDecisionId }: DigitalTwinManagerProps) {
+export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly = false, supplyChainId, userId, focusDecisionId, incidentEndpoint }: DigitalTwinManagerProps) {
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [contextMenu, setContextMenu] = React.useState<{ id: string; top: number; left: number } | null>(null);
   const [disruptionModalNodeId, setDisruptionModalNodeId] = React.useState<string | null>(null);
@@ -42,7 +42,7 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
   const { simulateDisruption, clearDisruptions } = useDisruptionSimulation();
   const [incidentUserId, setIncidentUserId] = React.useState<string | undefined>(userId);
   React.useEffect(() => { if (!userId) getUserData().then((u) => setIncidentUserId(u?.id ?? undefined)).catch(() => undefined); }, [userId]);
-  const incident = useIncident({ supplyChainId: supplyChainId ?? 'canvas', userId: incidentUserId, persist: !!supplyChainId && !!incidentUserId });
+  const incident = useIncident({ endpoint: incidentEndpoint, supplyChainId: supplyChainId ?? 'canvas', userId: incidentUserId, persist: !!supplyChainId && !!incidentUserId });
 
   // Deep link from the Decision Inbox: /digital-twin/view/<id>?decision=<decisionId>
   React.useEffect(() => {
@@ -347,7 +347,7 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
           />
 
           <div className="pointer-events-none absolute bottom-4 right-4 z-40 flex w-[calc(100%-2rem)] justify-end sm:w-auto">
-            <IncidentOverlay events={incident.events} status={incident.status} error={incident.error} onClose={incident.clear} local={!supplyChainId} />
+            <IncidentOverlay onClose={incident.clear} local={!supplyChainId} />
           </div>
 
           <ReactFlow

@@ -13,7 +13,7 @@ def test_reroute_endpoint_is_deterministic(monkeypatch):
     monkeypatch.setattr("app.settings.agent_service_secret", "")
     twin_cache.put(twin())
     r = TestClient(app).post("/reroute", json={"supply_chain_id": "t", "failed_node_ids": ["singapore"]})
-    assert r.status_code == 200 and r.json()["candidates"][0]["path"] == ["shenzhen", "colombo", "rotterdam"]
+    assert r.status_code == 200 and r.json()["candidates"][0]["path"] == ["shenzhen", "colombo", "rotterdam", "berlin"]
 
 
 def test_reroute_accepts_inline_twin(monkeypatch):

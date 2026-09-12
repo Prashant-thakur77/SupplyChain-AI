@@ -70,6 +70,10 @@ export function useIncident(opts: Options) {
 
   const clear = useCallback(() => { stream.reset(); clearDisruptions() }, [stream, clearDisruptions])
 
+  // Mirror this hook instance's stream into the store so any IncidentOverlay on the page can render it.
+  const setIncidentStream = useDigitalTwinStore((s) => s.setIncidentStream)
+  useEffect(() => { if (stream.status !== "idle") setIncidentStream({ events: stream.events, status: stream.status, error: stream.error }) }, [stream.events, stream.status, stream.error, setIncidentStream])
+
   /** Show a stored decision (from the inbox) on the twin: overlay its route plans and open the card. */
   const showDecision = useCallback((row: DecisionRow) => {
     const candidates: RouteCandidate[] = (row.route_plans ?? []).map((rp) => ({

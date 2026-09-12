@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react"
 import { ChevronDown, ChevronUp, X } from "lucide-react"
 import { AgentActivityPanel } from "@/components/agent-activity/AgentActivityPanel"
-import type { ActivityEvent, StreamStatus } from "@/components/agent-activity/useGraphStream"
 import { DecisionCard } from "@/components/decisions/decision-card"
 import { useDigitalTwinStore } from "@/lib/digitalTwinStore"
 import { cn } from "@/lib/utils"
@@ -17,17 +16,17 @@ export function toDecisionRow(r: IncidentResult, userId = "demo"): DecisionRow |
 }
 
 interface Props {
-  events: ActivityEvent[]
-  status: StreamStatus
-  error?: string | null
   onClose: () => void
   /** When true the approve button is local-only (demo). */
   local?: boolean
   className?: string
 }
 
-export function IncidentOverlay({ events, status, error, onClose, local, className }: Props) {
+export function IncidentOverlay({ onClose, local, className }: Props) {
   const incident = useDigitalTwinStore((s) => s.incident)
+  const events = useDigitalTwinStore((s) => s.incidentEvents)
+  const status = useDigitalTwinStore((s) => s.incidentStatus)
+  const error = useDigitalTwinStore((s) => s.incidentError)
   const selectedRouteId = useDigitalTwinStore((s) => s.selectedRouteId)
   const setSelectedRouteId = useDigitalTwinStore((s) => s.setSelectedRouteId)
   const [collapsed, setCollapsed] = useState(false)

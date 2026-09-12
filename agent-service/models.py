@@ -25,8 +25,8 @@ ROLE_TEMPERATURE: dict[str, float] = {
     "orchestrator": 0.3,
 }
 
-FALLBACK_GEMINI_MODEL = "gemini-2.5-flash-lite"
-_TRANSIENT = ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException")
+FALLBACK_GEMINI_MODELS = ["gemini-3-flash-preview", "gemini-3.5-flash-lite", "gemini-flash-lite-latest"]
+_TRANSIENT = ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
 
 
 def gemini_keys(role: str) -> list[str]:
@@ -63,7 +63,7 @@ def is_transient(err: BaseException) -> bool:
     return any(tok.lower() in msg.lower() for tok in _TRANSIENT)
 
 
-def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: int = 4, json_mode: bool = False) -> T:
+def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: int = 5, json_mode: bool = False) -> T:
     """Call `attempt(model)` with fresh models until one succeeds.
 
     Attempt order: primary key → other keys → fallback model on the primary key. Backoff 1.5s·2^n with jitter.
@@ -73,9 +73,11 @@ def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: i
     if settings.agent_model_provider == "bedrock":
         plans = [(None, None)] * max_attempts
     else:
-        keys = gemini_keys(role)
-        plans = [(k, None) for k in keys] + [(keys[0] if keys else None, FALLBACK_GEMINI_MODEL)]
-        plans = plans[:max_attempts] if len(plans) >= max_attempts else plans + [plans[-1]] * (max_attempts - len(plans))
+        keys = gemini_keys(role) or [None]
+        # Quota is usually per project+model, so after one key rotation we switch models rather than keys.
+        plans = [(keys[0], None)] + ([(keys[1], None)] if len(keys) > 1 else [])
+        plans += [(keys[0], m) for m in FALLBACK_GEMINI_MODELS if m != settings.gemini_model_id]
+        plans = plans[:max_attempts]
 
     last: BaseException | None = None
     for n, (key, mid) in enumerate(plans):
@@ -86,7 +88,8 @@ def invoke_with_retry(role: str, attempt: Callable[[object], T], max_attempts: i
             if not is_transient(e) or n == len(plans) - 1:
                 raise
             delay = 1.5 * (2**n) + random.uniform(0, 0.75)
-            print(f"[models] {role}: transient error ({str(e)[:80]}…) — retry {n + 1}/{len(plans) - 1} in {delay:.1f}s")
+            nxt = plans[n + 1]
+            print(f"[models] {role}: transient error ({str(e)[:60]}…) — retry {n + 1}/{len(plans) - 1} in {delay:.1f}s (model={nxt[1] or settings.gemini_model_id})")
             time.sleep(delay)
     assert last is not None
     raise last

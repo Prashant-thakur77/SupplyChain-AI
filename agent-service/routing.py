@@ -205,13 +205,41 @@ def k_best_routes(
     return [_to_candidate(g, p, i + 1, origin, destination, base) for i, p in enumerate(A)]
 
 
-def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str], k: int = 3) -> ReroutePlan:
-    br = blast_radius(twin, failed_node_ids, failed_edge_ids)
+def lanes_through(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str]) -> list[tuple[str, str]]:
+    """Origin→destination lanes whose healthy shortest path crosses the failure.
+
+    Lanes are (source, sink) pairs — sources have no inbound edges, sinks no outbound. That is what an operator reroutes
+    ("Shenzhen → Berlin"), not an arbitrary local segment. Falls back to predecessor→successor segments for cyclic twins.
+    """
     g = build_graph(twin)
+    failed_n, failed_e = set(failed_node_ids), set(failed_edge_ids)
+    indeg = {n.id: 0 for n in twin.nodes}
+    outdeg = {n.id: 0 for n in twin.nodes}
+    for e in twin.edges:
+        outdeg[e.source] = outdeg.get(e.source, 0) + 1
+        indeg[e.target] = indeg.get(e.target, 0) + 1
+    sources = [n.id for n in twin.nodes if indeg.get(n.id, 0) == 0 and n.id not in failed_n]
+    sinks = [n.id for n in twin.nodes if outdeg.get(n.id, 0) == 0 and n.id not in failed_n]
+    lanes: list[tuple[str, str]] = []
+    for a in sources:
+        for b in sinks:
+            base = shortest_path(g, a, b)
+            if base and (failed_n & set(base.path) or failed_e & set(base.edge_ids)):
+                lanes.append((a, b))
+    if lanes or not failed_n:
+        return lanes
+    # Fallback: local segments around the failed nodes (cyclic or single-node twins).
+    br = blast_radius(twin, failed_node_ids, failed_edge_ids)
+    return [(p_, s_) for p_, s_ in br.severed_pairs if (bp := shortest_path(g, p_, s_)) and failed_n & set(bp.path)]
+
+
+def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str], k: int = 3) -> ReroutePlan:
+    g = build_graph(twin)
+    lanes = lanes_through(twin, failed_node_ids, failed_edge_ids)
     candidates: list[RouteCandidate] = []
     feasible = infeasible = 0
     idx = 0
-    for p, s in br.severed_pairs:
+    for p, s in lanes:
         routes = k_best_routes(twin, p, s, failed_node_ids, failed_edge_ids, k)
         if routes:
             feasible += 1
@@ -239,7 +267,7 @@ def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[s
     baseline = {}
     if candidates and candidates[0].feasible:
         baseline = {"cost": candidates[0].baseline_cost, "days": candidates[0].baseline_days}
-    return ReroutePlan(candidates=candidates, severed_pairs=br.severed_pairs, feasible_count=feasible,
+    return ReroutePlan(candidates=candidates, severed_pairs=lanes, feasible_count=feasible,
                        infeasible_count=infeasible, severity=sev, baseline=baseline)
 
 

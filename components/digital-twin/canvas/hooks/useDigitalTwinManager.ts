@@ -25,6 +25,8 @@ export interface DigitalTwinManagerProps {
   userId?: string;
   /** Open this decision (from the inbox) on the twin when mounted. */
   focusDecisionId?: string;
+  /** Override the incident stream endpoint (the public demo uses /api/demo/incident). */
+  incidentEndpoint?: string;
 }
 
 export function useDigitalTwinManager({

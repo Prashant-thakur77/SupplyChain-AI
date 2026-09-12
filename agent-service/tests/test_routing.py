@@ -56,5 +56,11 @@ def test_reroute_plan_infeasible():
 
 def test_reroute_plan_feasible_severity():
     plan = reroute_plan(twin(), ["singapore"], [])
+    assert plan.severed_pairs == [("shenzhen", "berlin")]
     assert plan.feasible_count == 1 and plan.infeasible_count == 0 and plan.severity == "MEDIUM"
-    assert plan.candidates[0].added_cost == 1000
+    assert plan.candidates[0].path == ["shenzhen", "colombo", "rotterdam", "berlin"] and plan.candidates[0].added_cost == 1000
+
+
+def test_lane_not_using_failed_node_is_not_rerouted():
+    plan = reroute_plan(twin(), ["colombo"], [])
+    assert plan.severed_pairs == [] and plan.candidates == [] and plan.severity == "LOW"

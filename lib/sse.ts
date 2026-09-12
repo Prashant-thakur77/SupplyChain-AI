@@ -1,6 +1,6 @@
 // Client-safe incremental SSE parser (no env access). Shared by the server agent client and browser hooks.
 export function parseSse(chunk: string, buffer: { rest: string }): Array<{ event: string; data: string }> {
-  buffer.rest += chunk
+  buffer.rest += chunk.replace(/\r\n/g, "\n")
   const frames: Array<{ event: string; data: string }> = []
   let idx: number
   while ((idx = buffer.rest.indexOf("\n\n")) >= 0) {
