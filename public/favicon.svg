@@ -1,0 +1,20 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="innerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Shield background -->
+  <path d="M16 3C16 3 12 4.5 7 5.5C7 5.5 7 12 7 16C7 22 16 29 16 29C16 29 25 22 25 16C25 12 25 5.5 25 5.5C20 4.5 16 3 16 3Z" fill="url(#shieldGradient)" stroke="white" stroke-width="0.5"/>
+  <!-- Inner shield detail -->
+  <path d="M16 6C16 6 13 7 10 7.5C10 7.5 10 12.5 10 15.5C10 20 16 25 16 25C16 25 22 20 22 15.5C22 12.5 22 7.5 22 7.5C19 7 16 6 16 6Z" fill="url(#innerGradient)" opacity="0.8"/>
+  <!-- Center emblem -->
+  <circle cx="16" cy="15" r="3" fill="white" opacity="0.9"/>
+  <path d="M16 13L17.5 15.5L16 18L14.5 15.5L16 13Z" fill="url(#shieldGradient)"/>
+</svg>

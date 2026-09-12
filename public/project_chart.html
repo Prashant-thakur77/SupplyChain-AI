@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRISM.AI – Project Display Chart</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @page { size: 305mm 305mm; margin: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #0b1120;
+    color: #e2e8f0;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; padding: 20px;
+  }
+
+  .poster {
+    width: 1100px; height: 1100px;
+    background: linear-gradient(135deg, #0b1120 0%, #111827 50%, #0f172a 100%);
+    border-radius: 16px; overflow: hidden;
+    display: grid; grid-template-rows: 80px 1fr 32px;
+    position: relative;
+    box-shadow: 0 0 60px rgba(56, 189, 248, 0.15);
+  }
+  .poster::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(56,189,248,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(139,92,246,0.04) 0%, transparent 50%),
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 100%, 100%, 40px 40px, 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+  .poster > * { position: relative; z-index: 1; }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: linear-gradient(90deg, rgba(56,189,248,0.12), rgba(139,92,246,0.12), rgba(56,189,248,0.12));
+    border-bottom: 1px solid rgba(56,189,248,0.2);
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 3px;
+    padding: 8px 20px;
+  }
+  .header h1 {
+    font-size: 30px; font-weight: 900;
+    background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc, #38bdf8);
+    background-size: 300% 300%;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 3px;
+  }
+  .header .subtitle { font-size: 11px; font-weight: 500; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; }
+  .header .tagline { font-size: 9px; color: #64748b; letter-spacing: 1.5px; }
+
+  /* ===== MAIN GRID — 2 columns ===== */
+  .main {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 10px; padding: 10px; overflow: hidden;
+  }
+
+  .section {
+    background: rgba(15,23,42,0.6);
+    border: 1px solid rgba(56,189,248,0.1);
+    border-radius: 10px; padding: 10px; overflow: hidden;
+  }
+  .section-title {
+    font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+    color: #38bdf8; margin-bottom: 7px; padding-bottom: 4px;
+    border-bottom: 1px solid rgba(56,189,248,0.15);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-title .dot { width: 5px; height: 5px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 6px #38bdf8; }
+
+  /* ===== LEFT COLUMN ===== */
+  .left-col { display: flex; flex-direction: column; gap: 8px; }
+
+  .what-box {
+    padding: 8px;
+    background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(139,92,246,0.08));
+    border: 1px solid rgba(56,189,248,0.15); border-radius: 8px;
+  }
+  .what-box p { font-size: 8px; line-height: 1.5; color: #cbd5e1; }
+  .what-box .hl { color: #38bdf8; font-weight: 600; }
+
+  /* Features */
+  .feature-list { display: flex; flex-direction: column; gap: 4px; }
+  .feature-item {
+    display: flex; gap: 7px; align-items: flex-start;
+    padding: 5px 7px; border-radius: 6px;
+    background: rgba(30,41,59,0.5); border: 1px solid rgba(56,189,248,0.06);
+  }
+  .feature-icon { font-size: 14px; min-width: 20px; text-align: center; line-height: 1.2; }
+  .feature-info h4 { font-size: 9px; font-weight: 700; color: #e2e8f0; margin-bottom: 1px; }
+  .feature-info p { font-size: 7px; color: #94a3b8; line-height: 1.3; }
+
+  /* Tech Stack */
+  .tech-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; }
+  .tech-item {
+    background: rgba(30,41,59,0.6); border: 1px solid rgba(56,189,248,0.08);
+    border-radius: 5px; padding: 4px 3px; text-align: center;
+    font-size: 7px; font-weight: 500; color: #cbd5e1; line-height: 1.2;
+  }
+  .tech-item .tech-cat { font-size: 5.5px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
+  .tech-item.hl { border-color: rgba(56,189,248,0.25); background: rgba(56,189,248,0.06); }
+  .tech-item.ml { border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.08); }
+
+  /* Key Numbers */
+  .key-numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .key-num {
+    background: rgba(30,41,59,0.6); border: 1px solid rgba(56,189,248,0.08);
+    border-radius: 6px; padding: 5px 3px; text-align: center;
+  }
+  .key-num .num {
+    font-size: 15px; font-weight: 800;
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .key-num .num.orange {
+    background: linear-gradient(135deg, #f97316, #fbbf24);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .key-num .num-label { font-size: 6px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 1px; }
+
+  /* ML Performance Card */
+  .ml-card {
+    background: linear-gradient(135deg, rgba(251,146,60,0.1), rgba(245,158,11,0.05));
+    border: 1px solid rgba(251,146,60,0.25); border-radius: 8px; padding: 8px;
+  }
+  .ml-card .ml-title {
+    font-size: 9px; font-weight: 700; color: #fb923c; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .ml-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .ml-metric { text-align: center; }
+  .ml-metric .mv { font-size: 16px; font-weight: 800; color: #fdba74; }
+  .ml-metric .ml-label { font-size: 6px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ===== RIGHT COLUMN — FLOWCHART ===== */
+  .right-col { display: flex; flex-direction: column; gap: 8px; }
+
+  /* Flowchart */
+  .flow-chart {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 8px 16px; gap: 0;
+  }
+
+  .flow-node {
+    width: 100%; max-width: 600px;
+    border-radius: 8px; padding: 8px 14px; text-align: center;
+    position: relative;
+  }
+  .flow-node h3 { font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+  .flow-tags { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
+  .flow-tag {
+    font-size: 6.5px; padding: 2px 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.06); color: #94a3b8; white-space: nowrap;
+  }
+
+  .flow-node.user {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border: 1px solid rgba(148,163,184,0.3);
+  }
+  .flow-node.frontend {
+    background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.05));
+    border: 1px solid rgba(56,189,248,0.3);
+  }
+  .flow-node.api {
+    background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05));
+    border: 1px solid rgba(34,197,94,0.3);
+  }
+
+  /* Arrows */
+  .flow-arrow {
+    width: 2px; height: 18px;
+    background: linear-gradient(to bottom, #38bdf8, #818cf8);
+    position: relative;
+  }
+  .flow-arrow::after {
+    content: ''; position: absolute; bottom: -4px; left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 5px solid #818cf8;
+  }
+
+  /* Branch connector */
+  .branch-connector {
+    width: 100%; max-width: 620px;
+    height: 24px; position: relative;
+  }
+  .branch-connector .v-line {
+    position: absolute; top: 0; left: 50%; width: 2px; height: 10px;
+    background: #22c55e; transform: translateX(-50%);
+  }
+  .branch-connector .h-line {
+    position: absolute; top: 10px; left: 10%; right: 10%; height: 2px;
+    background: linear-gradient(90deg, #8b5cf6, #fbbf24, #22c55e, #f97316);
+  }
+  .branch-connector .drop {
+    position: absolute; top: 10px; width: 2px; height: 14px;
+  }
+  .branch-connector .drop:nth-child(3) { left: 10%; background: #8b5cf6; }
+  .branch-connector .drop:nth-child(4) { left: 36.66%; background: #fbbf24; }
+  .branch-connector .drop:nth-child(5) { left: 63.33%; background: #22c55e; }
+  .branch-connector .drop:nth-child(6) { right: 10%; background: #f97316; }
+
+  /* Branches */
+  .branches {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 6px; width: 100%; max-width: 620px;
+  }
+  .branch {
+    border-radius: 8px; padding: 7px 6px; text-align: center;
+  }
+  .branch h4 { font-size: 8px; font-weight: 700; margin-bottom: 4px; }
+  .branch-items { display: flex; flex-direction: column; gap: 2px; }
+  .branch-item { font-size: 6.5px; color: #94a3b8; padding: 1px 0; }
+  .branch-item.bold { font-weight: 600; color: #c4b5fd; }
+
+  .branch.ai {
+    background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(139,92,246,0.05));
+    border: 1px solid rgba(139,92,246,0.3);
+  }
+  .branch.db {
+    background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.05));
+    border: 1px solid rgba(251,191,36,0.3);
+  }
+  .branch.ext {
+    background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05));
+    border: 1px solid rgba(34,197,94,0.3);
+  }
+  .branch.ml {
+    background: linear-gradient(135deg, rgba(249,115,22,0.18), rgba(245,158,11,0.06));
+    border: 1px solid rgba(249,115,22,0.35);
+  }
+
+  /* ===== Pipeline Flow (bottom half) ===== */
+  .pipeline-section {
+    display: flex; gap: 8px;
+    width: 100%; max-width: 620px;
+  }
+
+  /* Agent hub-spoke (compact) */
+  .hub-spoke {
+    flex: 1; position: relative; height: 190px;
+  }
+  .hub-spoke svg {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  }
+  .hub-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 60px; height: 60px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(56,189,248,0.3));
+    border: 2px solid rgba(139,92,246,0.5);
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    text-align: center; z-index: 2;
+  }
+  .hub-center .hub-icon { font-size: 16px; margin-bottom: 1px; }
+  .hub-center h4 { font-size: 7px; font-weight: 700; color: #c4b5fd; }
+
+  .spoke {
+    position: absolute; width: 75px; text-align: center; z-index: 2;
+  }
+  .spoke-dot {
+    width: 30px; height: 30px; border-radius: 50%;
+    margin: 0 auto 2px; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; border: 1.5px solid;
+  }
+  .spoke-label { font-size: 6.5px; font-weight: 600; color: #e2e8f0; }
+  .spoke-desc { font-size: 5.5px; color: #64748b; line-height: 1.2; }
+
+  .spoke-1 { top: 2px; left: 50%; transform: translateX(-50%); }
+  .spoke-2 { top: 22px; right: 2px; }
+  .spoke-3 { bottom: 22px; right: 2px; }
+  .spoke-4 { bottom: 2px; left: 50%; transform: translateX(-50%); }
+  .spoke-5 { bottom: 22px; left: 2px; }
+
+  .spoke-1 .spoke-dot { background: rgba(56,189,248,0.2); border-color: #38bdf8; }
+  .spoke-2 .spoke-dot { background: rgba(34,197,94,0.2); border-color: #22c55e; }
+  .spoke-3 .spoke-dot { background: rgba(251,191,36,0.2); border-color: #fbbf24; }
+  .spoke-4 .spoke-dot { background: rgba(244,63,94,0.2); border-color: #f43f5e; }
+  .spoke-5 .spoke-dot { background: rgba(168,85,247,0.2); border-color: #a855f7; }
+
+  /* ML Pipeline flow */
+  .ml-pipeline {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0;
+    padding: 4px 0;
+  }
+  .ml-step {
+    width: 100%; border-radius: 6px; padding: 6px 8px; text-align: center;
+  }
+  .ml-step h4 { font-size: 8px; font-weight: 700; margin-bottom: 2px; }
+  .ml-step p { font-size: 6px; color: #94a3b8; line-height: 1.3; }
+
+  .ml-step.ingest {
+    background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.25);
+  }
+  .ml-step.feat {
+    background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25);
+  }
+  .ml-step.model {
+    background: rgba(234,88,12,0.15); border: 1px solid rgba(234,88,12,0.3);
+  }
+  .ml-step.serve {
+    background: rgba(251,146,60,0.12); border: 1px solid rgba(251,146,60,0.25);
+  }
+  .ml-step.output {
+    background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2);
+  }
+
+  .ml-arrow {
+    width: 2px; height: 10px;
+    background: linear-gradient(to bottom, #f97316, #fbbf24);
+    position: relative;
+  }
+  .ml-arrow::after {
+    content: ''; position: absolute; bottom: -3px; left: 50%;
+    transform: translateX(-50%);
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 4px solid #fbbf24;
+  }
+
+  /* Security badges */
+  .security-badges { display: flex; flex-wrap: wrap; gap: 3px; }
+  .security-badge {
+    font-size: 6.5px; padding: 2px 7px; border-radius: 12px;
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+    color: #4ade80; font-weight: 500;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    background: linear-gradient(90deg, rgba(56,189,248,0.06), rgba(139,92,246,0.06));
+    border-top: 1px solid rgba(56,189,248,0.15);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 0 20px; font-size: 7px; color: #475569; letter-spacing: 0.5px;
+  }
+  .footer span { color: #64748b; }
+  .footer .sep { color: #334155; }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .poster { width: 288mm; height: 288mm; border-radius: 0; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <h1>◆ PRISM.AI</h1>
+    <div class="subtitle">Product Route Intelligence & Supply Mapping</div>
+    <div class="tagline">AI-Powered Supply Chain Digital Twin Platform • XGBoost ML Risk Engine • Prism Hackathon</div>
+  </div>
+
+  <!-- ===== MAIN 2-COLUMN GRID ===== -->
+  <div class="main">
+    <!-- ===== LEFT COLUMN (Info) ===== -->
+    <div class="left-col">
+
+      <!-- What Is It -->
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>What is PRISM.AI?</div>
+        <div class="what-box">
+          <p>
+            PRISM.AI is a <span class="hl">next-generation supply chain intelligence platform</span> that combines
+            <span class="hl">AI agents</span>, <span class="hl">digital twin visualization</span>,
+            <span class="hl">ML-powered risk prediction</span>, and <span class="hl">multi-agent orchestration</span>
+            to proactively identify, assess, and mitigate supply chain risks in <span class="hl">real time</span>.
+          </p>
+        </div>
+      </div>
+
+      <!-- Core Features -->
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Core Features</div>
+        <div class="feature-list">
+          <div class="feature-item">
+            <span class="feature-icon">🗺️</span>
+            <div class="feature-info"><h4>Digital Twin</h4><p>Interactive supply chain visualization with drag-and-drop nodes & geographic mapping</p></div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🤖</span>
+            <div class="feature-info"><h4>Multi-Agent AI System</h4><p>6 Gemini-powered agents via IQ AI ADK for end-to-end orchestrated analysis</p></div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🧠</span>
+            <div class="feature-info"><h4>ML Risk Prediction</h4><p>XGBoost model (AUC 0.885) predicts delivery risk from 59 engineered features</p></div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🔬</span>
+            <div class="feature-info"><h4>Chaos Simulation</h4><p>Monte Carlo simulations with Requestly fault injection for resilience testing</p></div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📊</span>
+            <div class="feature-info"><h4>Dashboard & Analytics</h4><p>Real-time KPIs, risk trends, cascading failure maps, and strategy tracking</p></div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">💬</span>
+            <div class="feature-info"><h4>AI Chat Interface</h4><p>CopilotKit conversational assistant for natural-language supply chain queries</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ML Model Performance -->
+      <div class="section">
+        <div class="section-title"><span class="dot" style="background:#f97316; box-shadow:0 0 6px #f97316;"></span>ML Model Performance</div>
+        <div class="ml-card">
+          <div class="ml-title">🧠 XGBoost Risk Classifier — DataCo Supply Chain (180K orders)</div>
+          <div class="ml-metrics">
+            <div class="ml-metric"><div class="mv">0.885</div><div class="ml-label">ROC-AUC</div></div>
+            <div class="ml-metric"><div class="mv">79.4%</div><div class="ml-label">Accuracy</div></div>
+            <div class="ml-metric"><div class="mv">59</div><div class="ml-label">Features</div></div>
+          </div>
+          <div style="margin-top:6px; display:flex; gap:3px; flex-wrap:wrap;">
+            <span class="flow-tag" style="border:1px solid rgba(251,146,60,0.2); color:#fdba74;">Shipping Mode ██████</span>
+            <span class="flow-tag" style="border:1px solid rgba(251,146,60,0.2); color:#fdba74;">Mode Risk ████</span>
+            <span class="flow-tag" style="border:1px solid rgba(251,146,60,0.2); color:#fdba74;">Mode×Region ███</span>
+            <span class="flow-tag" style="border:1px solid rgba(251,146,60,0.2); color:#fdba74;">Status Risk ███</span>
+            <span class="flow-tag" style="border:1px solid rgba(251,146,60,0.2); color:#fdba74;">Tight Schedule ██</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Tech Stack</div>
+        <div class="tech-grid">
+          <div class="tech-item hl"><div class="tech-cat">Framework</div>Next.js 15</div>
+          <div class="tech-item hl"><div class="tech-cat">Language</div>TypeScript</div>
+          <div class="tech-item hl"><div class="tech-cat">AI Model</div>Gemini 2.0</div>
+          <div class="tech-item hl"><div class="tech-cat">Agent SDK</div>IQ AI ADK</div>
+          <div class="tech-item ml"><div class="tech-cat">ML Model</div>XGBoost</div>
+          <div class="tech-item ml"><div class="tech-cat">ML API</div>FastAPI</div>
+          <div class="tech-item ml"><div class="tech-cat">ML Lib</div>scikit-learn</div>
+          <div class="tech-item"><div class="tech-cat">Database</div>Supabase</div>
+          <div class="tech-item"><div class="tech-cat">Chat</div>CopilotKit</div>
+          <div class="tech-item"><div class="tech-cat">Cache</div>Upstash Redis</div>
+          <div class="tech-item"><div class="tech-cat">Search</div>Tavily API</div>
+          <div class="tech-item"><div class="tech-cat">Memory</div>Mem0 AI</div>
+          <div class="tech-item"><div class="tech-cat">Graphs</div>React Flow</div>
+          <div class="tech-item"><div class="tech-cat">Charts</div>Recharts</div>
+          <div class="tech-item"><div class="tech-cat">Animation</div>Framer Motion</div>
+          <div class="tech-item"><div class="tech-cat">Monitor</div>Sentry</div>
+        </div>
+      </div>
+
+      <!-- Key Numbers -->
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>At a Glance</div>
+        <div class="key-numbers">
+          <div class="key-num"><div class="num">6</div><div class="num-label">AI Agents</div></div>
+          <div class="key-num"><div class="num">21</div><div class="num-label">DB Tables</div></div>
+          <div class="key-num"><div class="num">16+</div><div class="num-label">API Routes</div></div>
+          <div class="key-num"><div class="num orange">0.885</div><div class="num-label">Model AUC</div></div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Security & Observability</div>
+        <div class="security-badges">
+          <span class="security-badge">🔒 Row Level Security</span>
+          <span class="security-badge">🔑 Supabase Auth</span>
+          <span class="security-badge">📊 Sentry</span>
+          <span class="security-badge">⚡ Vercel Analytics</span>
+          <span class="security-badge">🧠 Mem0 Memory</span>
+          <span class="security-badge">💾 Redis Cache</span>
+          <span class="security-badge">✅ Zod Validation</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT COLUMN (Flowchart) ===== -->
+    <div class="right-col">
+      <div class="section" style="flex:1; display:flex; flex-direction:column;">
+        <div class="section-title"><span class="dot"></span>System Architecture & Data Flow</div>
+
+        <div class="flow-chart">
+          <!-- User -->
+          <div class="flow-node user">
+            <h3 style="color:#94a3b8;">👤 User / Browser</h3>
+            <div class="flow-tags">
+              <span class="flow-tag">Supabase Auth</span>
+              <span class="flow-tag">Responsive Web App</span>
+            </div>
+          </div>
+          <div class="flow-arrow"></div>
+
+          <!-- Frontend -->
+          <div class="flow-node frontend">
+            <h3 style="color:#38bdf8;">⚡ Next.js 15 Frontend (React 19 / Turbopack)</h3>
+            <div class="flow-tags">
+              <span class="flow-tag">Dashboard</span>
+              <span class="flow-tag">Digital Twin</span>
+              <span class="flow-tag">Risk Prediction</span>
+              <span class="flow-tag">Simulation</span>
+              <span class="flow-tag">News Room</span>
+              <span class="flow-tag">Profile</span>
+            </div>
+          </div>
+          <div class="flow-arrow"></div>
+
+          <!-- API Layer -->
+          <div class="flow-node api">
+            <h3 style="color:#22c55e;">🔌 API Layer (Next.js Route Handlers)</h3>
+            <div class="flow-tags">
+              <span class="flow-tag">Agent Endpoints</span>
+              <span class="flow-tag">Coordination</span>
+              <span class="flow-tag">Risk Prediction Proxy</span>
+              <span class="flow-tag">CopilotKit</span>
+              <span class="flow-tag">Suggestions</span>
+              <span class="flow-tag">News / Search</span>
+            </div>
+          </div>
+
+          <!-- Branch Connector (4-way) -->
+          <div class="branch-connector">
+            <div class="v-line"></div>
+            <div class="h-line"></div>
+            <div class="drop"></div>
+            <div class="drop"></div>
+            <div class="drop"></div>
+            <div class="drop"></div>
+          </div>
+
+          <!-- 4 Branches -->
+          <div class="branches">
+            <div class="branch ai">
+              <h4 style="color:#a78bfa;">🤖 AI Agents</h4>
+              <div class="branch-items">
+                <span class="branch-item">Intelligence</span>
+                <span class="branch-item">Forecast</span>
+                <span class="branch-item">Scenario</span>
+                <span class="branch-item">Impact</span>
+                <span class="branch-item">Strategy</span>
+                <span class="branch-item bold">Orchestrator</span>
+              </div>
+            </div>
+            <div class="branch db">
+              <h4 style="color:#fbbf24;">🗄️ Database</h4>
+              <div class="branch-items">
+                <span class="branch-item">Supabase PostgreSQL</span>
+                <span class="branch-item">21 Tables + RLS</span>
+                <span class="branch-item">Realtime Subs</span>
+                <span class="branch-item">UUID-ossp</span>
+              </div>
+            </div>
+            <div class="branch ext">
+              <h4 style="color:#4ade80;">🌐 External APIs</h4>
+              <div class="branch-items">
+                <span class="branch-item">Tavily Web Search</span>
+                <span class="branch-item">OpenWeather</span>
+                <span class="branch-item">Mem0 AI Memory</span>
+                <span class="branch-item">Upstash Redis</span>
+              </div>
+            </div>
+            <div class="branch ml">
+              <h4 style="color:#fb923c;">🧠 ML Risk Engine</h4>
+              <div class="branch-items">
+                <span class="branch-item" style="color:#fdba74; font-weight:600;">XGBoost Classifier</span>
+                <span class="branch-item">FastAPI (port 8001)</span>
+                <span class="branch-item">59 Engineered Features</span>
+                <span class="branch-item">AUC 0.885</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Agent Hub + ML Pipeline side by side -->
+      <div class="section">
+        <div class="section-title"><span class="dot"></span>Agent Orchestration & ML Pipeline</div>
+        <div class="pipeline-section">
+
+          <!-- Agent Hub-Spoke (compact) -->
+          <div class="hub-spoke">
+            <svg viewBox="0 0 300 190" preserveAspectRatio="xMidYMid meet">
+              <ellipse cx="150" cy="95" rx="90" ry="65" fill="none" stroke="rgba(139,92,246,0.08)" stroke-width="1" stroke-dasharray="6 4"/>
+              <line x1="150" y1="95" x2="150" y2="25" stroke="rgba(56,189,248,0.2)" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <line x1="150" y1="95" x2="260" y2="45" stroke="rgba(34,197,94,0.2)" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <line x1="150" y1="95" x2="260" y2="145" stroke="rgba(251,191,36,0.2)" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <line x1="150" y1="95" x2="150" y2="168" stroke="rgba(244,63,94,0.2)" stroke-width="1.5" stroke-dasharray="4 3"/>
+              <line x1="150" y1="95" x2="40" y2="145" stroke="rgba(168,85,247,0.2)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            </svg>
+
+            <div class="hub-center">
+              <span class="hub-icon">🎯</span>
+              <h4>Orchestrator</h4>
+            </div>
+
+            <div class="spoke spoke-1">
+              <div class="spoke-dot">🔍</div>
+              <div class="spoke-label">Intelligence</div>
+            </div>
+            <div class="spoke spoke-2">
+              <div class="spoke-dot">📈</div>
+              <div class="spoke-label">Forecast</div>
+            </div>
+            <div class="spoke spoke-3">
+              <div class="spoke-dot">⚡</div>
+              <div class="spoke-label">Scenario</div>
+            </div>
+            <div class="spoke spoke-4">
+              <div class="spoke-dot">💥</div>
+              <div class="spoke-label">Impact</div>
+            </div>
+            <div class="spoke spoke-5">
+              <div class="spoke-dot">🛡️</div>
+              <div class="spoke-label">Strategy</div>
+            </div>
+          </div>
+
+          <!-- ML Pipeline Flow -->
+          <div class="ml-pipeline">
+            <div class="ml-step ingest">
+              <h4 style="color:#fb923c;">📥 Raw Data</h4>
+              <p>180K orders · 53 raw columns · DataCo Dataset</p>
+            </div>
+            <div class="ml-arrow"></div>
+            <div class="ml-step feat">
+              <h4 style="color:#fbbf24;">⚙️ Feature Engineering</h4>
+              <p>30 → 59 features: target encoding, temporal, interactions, financial</p>
+            </div>
+            <div class="ml-arrow"></div>
+            <div class="ml-step model">
+              <h4 style="color:#ea580c;">🌳 XGBoost Training</h4>
+              <p>1500 estimators · GPU (CUDA) · Early stopping · 7s train</p>
+            </div>
+            <div class="ml-arrow"></div>
+            <div class="ml-step serve">
+              <h4 style="color:#fb923c;">🚀 FastAPI Serving</h4>
+              <p>REST API · Single & batch predict · &lt;1ms inference</p>
+            </div>
+            <div class="ml-arrow"></div>
+            <div class="ml-step output">
+              <h4 style="color:#f97316;">📊 Risk Output</h4>
+              <p>risk_score (0–1) · risk_label · top_factors · confidence</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer">
+    <span>Next.js 15</span><span class="sep">•</span>
+    <span>Google Gemini AI</span><span class="sep">•</span>
+    <span>XGBoost</span><span class="sep">•</span>
+    <span>FastAPI</span><span class="sep">•</span>
+    <span>Supabase</span><span class="sep">•</span>
+    <span>IQ AI ADK</span><span class="sep">•</span>
+    <span>CopilotKit</span><span class="sep">•</span>
+    <span>React Flow</span><span class="sep">|</span>
+    <span style="color:#38bdf8;">Prism Hackathon Project</span>
+  </div>
+</div>
+
+</body>
+</html>

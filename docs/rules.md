@@ -1,0 +1,84 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### 🧠 **Expert Planning Assistant Prompt**
+
+When I request complex(not simple changes) **refactors** or **new features**, you will act as an expert **planning assistant**. Your role is to produce a **precise, executable plan**—not implementation code—focused entirely on **how** to accomplish the request.
+
+### 🔍 Responsibilities
+
+* Ask **specific, clarifying questions** to deeply understand the request before planning.
+* **Analyze relevant code files** to understand the current structure. Explicitly list which files to read and **why**.
+* Conduct **targeted web research** when necessary—especially for third-party libraries like **React Flow**, which is used in the **Digital Twin** section.
+* Create a **step-by-step execution plan** that a developer can directly follow.
+* Provide a structured [TODO.md](mdc:docs/TODO.md) with actionable tasks grouped by concern (file, domain, etc.).
+* If needed for context, read the [README.md](mdc:README.md) file and the current project structure.
+* When creating new files or refactoring, **update [README.md](mdc:README.md)** to reflect the revised project structure.
+
+### 🎨 UI Style Guide
+
+1. Use **clean, modern** UI patterns.
+2. Prefer **skeleton loaders** over circular spinners for better UX.
+3. Use **`framer-motion`** (already installed) to add **subtle, smooth animations**. Avoid over-animating.
+4. Use **`nuqs`** for **URL persistence** to retain state and user context (e.g., filters, forms, views), already is installed and setup is done.
+5. **Shadow Guidelines**: Apply **`shadow-md`** to all UI elements (cards, modals, dropdowns, panels) when creating new components. Use **`shadow-sm`** for subtle elevation where lighter shadows are required (buttons, inputs, minor interactive elements).
+6. Lucide React: Already installed. Use Lucide React icons (import { IconName } from "lucide-react") for all new iconography.
+7.Always import toast like this `import { toast } from 'sonner'`
+
+### 👤 User Store Management
+
+1. **Import Pattern**: Always use `import { useUser } from "@/lib/stores/user"` for consistency.
+2. **State Access**: 
+   - Use `const { userData, userLoading } = useUser()` to access state
+   - Use `const setUser = useUser((state) => state.setUserData)` for specific actions
+3. **Actions Available**:
+   - `setUserData()`: Populate user details from database (async)
+   - `updateUserData(data)`: Update and re-populate user data (async)
+   - `clearUserData()`: Clear user data on logout
+4. **Loading States**: Always handle `userLoading` when displaying user-dependent content.
+5. **Authentication Flow**: 
+   - Call `setUser()` in `useEffect` on component mount for authentication checks
+   - Use `userData` presence to determine authentication state
+6. **Data Updates**: Use `updateUserData()` for profile updates to ensure database sync and state refresh.
+
+### 🗄️ Supabase Client/Server Configuration
+
+1. **Client-Side Usage** (`@/lib/supabase/client`):
+   - **When**: Use in browser components, hooks, utils, and client-side contexts
+   - **Import**: `import { supabaseClient } from "@/lib/supabase/client"`
+   - **Auth Operations**: `supabaseClient.auth.signIn()`, `supabaseClient.auth.getSession()`
+   - **Database Operations**: CRUD operations in `/lib/api/*` files
+   - **Real-time**: Auth state changes, subscriptions in client components
+   - **Environment**: Uses `NEXT_PUBLIC_*` variables (browser-safe)
+
+2. **Server-Side Usage** (`@/lib/supabase/server`):
+   - **When**: Use in API routes (`app/api/*`), server components, and server actions
+   - **Import**: `import { supabaseServer } from "@/lib/supabase/server"`
+   - **Enhanced Permissions**: Service role key for admin operations
+   - **API Routes**: All `/app/api/*` routes should use `supabaseServer`
+   - **Environment**: Uses server-only `SUPABASE_*` variables (secure)
+
+3. **Key Rules**:
+   - **Never mix**: Don't use `supabaseServer` in client-side code
+   - **Security**: `supabaseServer` has elevated permissions - use carefully
+   - **Consistency**: All API utility functions (`/lib/api/*`) use `supabaseClient`
+   - **Authentication**: Client-side auth operations only with `supabaseClient`
+
+4. **Common Patterns**:
+   - API routes: `const supabase = supabaseServer;`
+   - Client utils: Direct `supabaseClient` usage
+   - Auth contexts: `supabaseClient.auth.onAuthStateChange()`
+---
+
+### 🧼 Clean Code Practices
+
+1. If a file exceeds **350 lines**, split it into logical subcomponents.
+2. Move **pure functions** into `functions.ts` within the same folder—**never inline** them in UI files.
+3. Document all pure functions using **docstrings**.
+4. Define shared types in `type.ts` in the relevant folder.
+5. For forms, use **React Hook Form** with **Zod** schema validation.
+6. Store form schemas in `schema.ts`.[](mdc:tsconfig.json)
+7. When importing components use '@' view @tsconfig.json for path information.
+8. If a function returns JSX (including icons), the file must use a .tsx extension.

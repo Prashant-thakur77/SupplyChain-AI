@@ -1,0 +1,264 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 20% 95%; /* #F6F3EE warm cream background */
+    --foreground: 40 10% 9%; /* #18160F warm dark charcoal text */
+    --card: 60 23% 97%; /* #FAFAF7 */
+    --card-foreground: 40 10% 9%;
+    --popover: 60 23% 97%; /* #FAFAF7 */
+    --popover-foreground: 40 10% 9%;
+    --primary: 229 80% 53%; /* #2748E8 */
+    --primary-foreground: 60 23% 97%;
+    --secondary: 42 16% 91%; /* #EFEBE3 */
+    --secondary-foreground: 40 10% 9%;
+    --muted: 40 7% 58%; /* matches #9C9489 */
+    --muted-foreground: 40 7% 34%; /* matches #5C5850 */
+    --accent: 229 80% 47%; /* #1A36D4 */
+    --accent-foreground: 60 23% 97%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 37 17% 83%; /* #D6CFC4 */
+    --input: 37 17% 83%;
+    --ring: 229 80% 53%;
+    --radius: 0.5rem;
+
+    /* Sidebar variables */
+    --sidebar: 38 21% 93%;
+    --sidebar-foreground: 40 10% 15%;
+    --sidebar-primary: 229 80% 53%;
+    --sidebar-primary-foreground: 60 23% 97%;
+    --sidebar-accent: 42 16% 91%;
+    --sidebar-accent-foreground: 40 10% 9%;
+    --sidebar-border: 37 17% 83%;
+    --sidebar-ring: 229 80% 53%;
+
+    /* Premium Theme Tokens */
+    --bg-primary: #F6F3EE;
+    --bg-secondary: #EFEBE3;
+    --bg-surface: #FAFAF7;
+    --bg-glass: rgba(250, 250, 247, 0.7);
+    --border-subtle: #E5DFD6;
+    --border-default: #D6CFC4;
+    --text-primary: #18160F;
+    --text-secondary: #5C5850;
+    --text-muted: #9C9489;
+    --accent-blue: #2748E8;
+    --accent-blue-soft: #EEF0FD;
+    --accent-blue-hover: #1A36D4;
+    --accent-green: #1A7F4B;
+    --accent-green-soft: #EDFAF3;
+    --accent-amber: #B45309;
+    --accent-amber-soft: #FEF3C7;
+    --accent-red: #B91C1C;
+    --accent-red-soft: #FEF2F2;
+    --shadow-sm: 0 1px 3px rgba(24, 22, 15, 0.06), 0 1px 2px rgba(24, 22, 15, 0.04);
+    --shadow-md: 0 4px 16px rgba(24, 22, 15, 0.08), 0 2px 6px rgba(24, 22, 15, 0.05);
+    --shadow-lg: 0 12px 40px rgba(24, 22, 15, 0.10), 0 4px 12px rgba(24, 22, 15, 0.06);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-pill: 100px;
+
+    /* Custom colors for the app */
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+    --info: 229 80% 54%;
+    --info-foreground: 60 23% 97%;
+  }
+
+  .dark, [data-theme="dark"] {
+    --background: 0 0% 7%; /* #111010 charcoal warm dark background */
+    --foreground: 36 17% 92%; /* #ECEAE6 */
+    --card: 36 8% 11%; /* #1E1D1B */
+    --card-foreground: 36 17% 92%;
+    --popover: 36 8% 11%; /* #1E1D1B */
+    --popover-foreground: 36 17% 92%;
+    --primary: 228 100% 65%; /* #4B6EFF */
+    --primary-foreground: 0 0% 7%;
+    --secondary: 36 6% 10%; /* #191817 */
+    --secondary-foreground: 36 17% 92%;
+    --muted: 36 6% 39%; /* #6B6560 */
+    --muted-foreground: 36 8% 59%; /* #A09890 */
+    --accent: 210 5% 18%; /* #2C2E30 */
+    --accent-foreground: 36 17% 92%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 36 4% 20%; /* #353330 */
+    --input: 36 4% 20%;
+    --ring: 228 100% 65%;
+
+    /* Sidebar variables */
+    --sidebar: 0 0% 5%;
+    --sidebar-foreground: 36 8% 82%;
+    --sidebar-primary: 228 100% 65%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 36 8% 15%;
+    --sidebar-accent-foreground: 36 17% 92%;
+    --sidebar-border: 36 4% 18%;
+    --sidebar-ring: 228 100% 65%;
+
+    /* Premium Theme Dark Mode Tokens */
+    --bg-primary: #111010;
+    --bg-secondary: #191817;
+    --bg-surface: #1E1D1B;
+    --bg-glass: rgba(30, 29, 27, 0.75);
+    --border-subtle: #2A2825;
+    --border-default: #353330;
+    --text-primary: #F0EDE7;
+    --text-secondary: #A09890;
+    --text-muted: #6B6560;
+    --accent-blue: #4B6EFF;
+    --accent-blue-soft: #1A2140;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.45);
+
+    /* Custom colors for the app */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 48 96% 89%;
+    --warning-foreground: 38 92% 50%;
+    --info: 228 100% 65%;
+    --info-foreground: 0 0% 7%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-secondary) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    line-height: 1.68 !important;
+    font-weight: 400 !important;
+  }
+  
+  h1 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.08;
+    color: var(--text-primary);
+  }
+  
+  h2 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    color: var(--text-primary);
+  }
+  
+  h3 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--text-primary);
+  }
+
+  .eyebrow-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+}
+
+/* Custom styles for the digital twin editor */
+.node {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.node:hover {
+  filter: brightness(1.1);
+}
+
+.node.selected {
+  stroke: hsl(var(--primary));
+  stroke-width: 2px;
+}
+
+.edge {
+  stroke: hsl(var(--muted-foreground));
+  stroke-width: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edge:hover {
+  stroke: hsl(var(--primary));
+  stroke-width: 3px;
+}
+
+.edge.selected {
+  stroke: hsl(var(--primary));
+  stroke-width: 3px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D4CFC9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B4AFA9;
+}
+
+*:focus-visible {
+  outline: 2px solid #2B4FE8 !important;
+  outline-offset: 2px !important;
+}
+
+
+
+
+
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__handle {
+  width: 6px;
+  height: 6px;
+  background-color: hsl(var(--primary)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.react-flow__handle:hover {
+  width: 10px;
+  height: 10px;
+  background-color: hsl(var(--primary)) !important;
+}
+
+.react-flow__handle-left {
+  left: -3px;
+}
+
+.react-flow__handle-right {
+  right: -3px;
+}

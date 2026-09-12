@@ -1,0 +1,10 @@
+export { default as AIChatPanel } from './AIChatPanel';
+export { ImmersiveHeader } from './ImmersiveHeader';
+export { MessagesArea } from './MessagesArea';
+export { AutocompleteInput } from './AutocompleteInput';
+export { ErrorComponent } from './ErrorComponent';
+export { default as InternetSearchIcon } from './InternetSearchIcon';
+export { useCopilotActions } from './useCopilotActions';
+export { useAISuggestions } from './useAISuggestions';
+export { parseError } from './error-parser';
+export type * from './types'; 

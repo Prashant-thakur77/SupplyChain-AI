@@ -1,0 +1,103 @@
+1. update the cursor rulles for mentioning the use of supabase client and server 
+2. how to use the user store 
+3. ask it add shodows , use cards 
+4. ask it add shadow md 
+5. use less colour veriations 
+6. back button issue in creation form 
+7. change view work flow to see how it works
+8. some time copilot is generatting same nodes  multiple times need to fix it 
+9. add custom instructuctions for the copilot kit
+10.problem in connecting nodes nodes not being connceted when it is in the end 
+11. add more error handling in the actions so that there is no chance of regeiertering the hook two times 
+12. add more analysis related actions 
+13. find and select not working 
+14 . fix input box  not clearing but
+15. add small url functionalitu 
+16 . implement view of digital twin 
+17. hide the advanced configuration 
+20.Add a current scenrio  option  
+21. make the templates such that user does not have to fix any thing 
+22 . add power of saving to asistant 
+23. unable to update the temperature  and if not found temperateure just consider it as false there is some issue  with temperature  
+24.add the thinking , doing animation 
+25. add in rule if a function returns the icon or any type of jsx  it should be tsx extension 
+
+
+//suman improvment list :
+1. scenario :
+  #1add ai scenario suggestion panwl : totaly removed. (list 3 sugggestion, a box to write and llm will generate the scenario.)
+  templates to choose.
+  #2Risk Tagging System
+  #Add field: “Disruption Tags” (multi-select)
+   Examples:
+     #geo-political, #logistics, #supplier-risk, #weather, #labor
+  #3“Export Scenario to PDF/CSV”   
+2. Scenario Impact : 
+   #1 box to list all impact in human simple language in bullets.
+   #2node level impact :
+     📌 For each node (Primary Supplier, Warehouse, etc.):
+        Show:
+        % output drop
+        Suggested mitigation
+        Risk type (e.g. geopolitical, labor, weather)
+   #3. Export to Report + Action Plan : 📌 Button: 📄 “Generate Executive Report” : 
+       PDF with:
+            Scenario summary
+            Risk levels
+            Production curve
+            Strategy suggestions
+    #4. improve dissruption Strategy button bigger and noticeable.
+3. Strategy page of any dissruption scenario :
+    #1.🚀 Double down: allow side-by-side simulation comparison with 1-click toggle
+    #2. AI Strategy Synthesizer
+       Instead of picking strategies manually…
+        📌 Button: “Recommend Best Strategy Bundle”
+        Auto-selects best combo using:
+        Highest ROI
+        Shortest recovery
+        Least cost per TEU
+        🤖 Source: Your AI Strategy Agent + historical strategy effectiveness
+    #3. Strategy Dependency Warnings
+        📌 If two selected strategies:
+        Conflict (e.g., rerouting & air triage for same cargo)
+        Are mutually exclusive
+        🚫 Show red badge: "Conflicts with selected strategy"
+    #5. Cost Breakdown
+    📌 Expandable details:
+            Freight cost
+            Warehousing fees
+            Contract negotiation buffer
+    #6. Strategy Selection process: 
+         Strategy consist of diff strategies and mixing them to make perfect planing and final it.
+    #6. Post-Strategy Simulation Preview (complex will do it later)
+        📌 After selecting a strategy set:
+                Update “Impact Output” simulation graph
+                Recalculate risk score and node recovery
+    #7. Finalize Strategy and things to do:
+        . add to on going implementation plan ui .
+        . Notify people of diff node what to do .
+        📍flowchart TD
+            A[Finalize Strategy] --> B[Generate Action Plan]
+            B --> C[Trigger Notifications]
+            //(advance later implementation feature.)
+            C --> D[Start Execution Monitoring]
+            D --> E[Collect Real-World Data]
+            E --> F[Compare Simulation vs Reality]
+            F --> G[Rate Strategy Effectiveness]
+            G --> H[Archive Case File]
+            F --> I[Trigger Secondary Mitigation if Needed]
+4. Strategy page:
+   (have to redesign it, eii page will focus on implementation of any finalized strategy, and history of previously implemented strategies)
+   #1. Contains, finalized strategy detailed implementation steps.
+   #2. Asssign task  to people (kind of zira board for supplychain strategy implementation)
+   #3. History for previously implementation strategies.
+   #4. List Diff strategies for diff supplychain (only one strategies can be onboarded for one supplychain)
+   #5.  Thing your self.
+
+
+Contraints : 1. A forecase scenario -> Impact analize -> Strategy Selection --> Finalizing Strategy -> onboarded implementation Started.
+             2. A Synthetic Scenario -> Impact analize -> Strategy Selection --> Finalizing Strategy (cannot onboard this Strategy as it is Synthetic scenario not a real one )
+             3. Book Mark Page, can book mark (scenario,impact,Strategy) 
+             thing overall picture .. and make the product.
+
+ 5. News Room : News panel to see whats going on around the supplychain, latest news, suggestions , can bookmark news, can comment , tag like nodes , suplychain tag from where is it happening.

@@ -1,0 +1,39 @@
+---
+description: Best practices and rules for Antigravity AI Agent in PRISM.ai, specifically focusing on the Simulation page fixes and the Digital Twin Control Tower overlay integration.
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+---
+
+# 🚀 Antigravity AI — Simulation Fixes & Digital Twin Control Tower Rules
+
+When building the Simulation page fixes and the Digital Twin Control Tower features in PRISM.ai, you must strictly follow these rules:
+
+## 1. 🗺️ Digital Twin State Management & Control Tower Overlay
+- **Centralized Source of Truth**: All alternate route, disruption, and overlay states MUST live in `lib/digitalTwinStore.ts`.
+- **Required State Fields**:
+  - `isControlTowerMode: boolean` (to toggle the overlay non-destructively).
+  - `disruptedEdges: Set<string>` (store blocked edge IDs).
+  - `disruptedNodes: Set<string>` (store blocked node IDs).
+- **Actions**:
+  - `toggleControlTowerMode(enabled: boolean)`: Toggles overlay.
+  - `reportDisruption(type: 'node' | 'edge', id: string)`: Adds to the disrupted sets.
+  - `clearDisruption(type: 'node' | 'edge', id: string)`: Removes from the disrupted sets.
+
+## 2. ⚡ Custom Edge & Node Visualization & Context Menus
+- **Edges (`CustomEdges.tsx`)**:
+  - Read `isControlTowerMode` and `disruptedEdges` from Zustand.
+  - If disrupted, style with dashed red lines (`stroke: '#ef4444'`) and add a pulsing visual effect.
+  - Attach a custom right-click (`onContextMenu`) event listener to open a context menu panel (`EdgeContextMenu.tsx`) to let users report or resolve disruptions manually.
+- **Nodes (`CustomNodes.tsx`)**:
+  - Render a red warning pulse indicator on nodes that are disrupted or adjacent to active disruptions.
+- **Control Panel (`ControlTowerPanel.tsx`)**:
+  - Display a floating panel on the canvas containing active disruptions, impacted nodes/edges, and alternate route summaries.
+
+## 3. 🔬 Simulation Execution Flow & Local Data Passing
+- **Node/Edge Retrieval**: Since supply chains are saved in client-side `localStorage`, the Simulation configuration page (`components/simulation/simulation-page.tsx`) must load `nodes` and `edges` for the active chain from `localStorage` and send them inside the `POST /api/agent/impact` request body.
+- **Serverless API Handling**: `app/api/agent/impact/route.ts` must fall back to the nodes/edges passed in the request body if they do not exist in the Supabase database.
+- **Result Parsing Compatibility**: Ensure `transformSimulationData` in `simulation/result/page.tsx` checks both `camelCase` and `snake_case` properties (e.g. `keyFindings` vs `key_findings`) to avoid displaying empty dashboards.
+- **Progress Animation**: Progress indicators must be synced to the API call lifecycle, completing and navigating only after the API response successfully resolves.
+
+## 4. 🧮 Graph Pathfinding Computation
+- **Breadth-First Search (BFS)**: Implement client-side pathfinding in `lib/utils/route-computation.ts`. BFS must compute the shortest alternate route from source to destination by completely avoiding all edges in `disruptedEdges` and nodes in `disruptedNodes`.
+- **Comparison Delta**: Display cost/time deltas when presenting alternative routes to the user.
