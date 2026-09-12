@@ -58,8 +58,8 @@ function DemoInner() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-52px)] flex-col lg:flex-row">
-      <aside className="w-full shrink-0 space-y-4 overflow-y-auto border-b border-theme-border-subtle bg-theme-bg-surface p-4 lg:w-[340px] lg:border-b-0 lg:border-r">
+    <div className="flex flex-col lg:h-[calc(100vh-52px)] lg:flex-row">
+      <aside className="w-full shrink-0 space-y-4 border-b border-theme-border-subtle bg-theme-bg-surface p-4 lg:w-[340px] lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-theme-blue">Live demo · no login</p>
           <h1 className="mt-1 font-display text-2xl font-semibold leading-tight text-theme-text-primary">Break the supply chain. Watch the agent decide.</h1>
@@ -123,7 +123,7 @@ function DemoInner() {
           <p className="text-xs text-theme-text-muted">Tip: after a run, click a coloured route on the canvas to select it, then approve. Right-click any node to invent your own disruption. <ArrowRight className="inline h-3 w-3" /></p>
         )}
       </aside>
-      <div className="relative min-h-[480px] flex-1">
+      <div className="relative h-[70vh] min-h-[480px] flex-1 lg:h-auto">
         <DigitalTwinCanvas initialNodes={demoArch.nodes} initialEdges={demoArch.edges} viewOnly userId="demo" incidentEndpoint="/api/demo/incident" hideControlTower />
       </div>
     </div>

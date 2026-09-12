@@ -20,7 +20,13 @@
 3. Watch the Strands incident graph run live — *Analyst → routing engine → Router ∥ Impact → Strategist* — the failed port pulse red, three exact reroutes get drawn on the map, and one **decision card** appears: `Shenzhen → Colombo → Suez → Rotterdam → Berlin (+$1,000, +5 days, low risk)` vs *wait* vs *mitigate*, with the agent's rationale and sources.
 4. Click **Approve**. In the full app that writes the decision, the audit log and a notification; the agent remembers it for next time.
 
-Then ask the copilot in the sidebar: *"What if Suez is blocked?"* — it calls the deterministic routing tools and answers with exact numbers.
+Then ask the copilot in the sidebar: *"What if Suez is blocked?"* — it calls the deterministic routing tools and answers with exact numbers. Or press **Scan live news** and let Sentinel find real events for these eight nodes right now.
+
+<p align="center">
+  <img src="docs/img/demo-decision.png" alt="Incident run: agent activity, routes drawn on the twin, decision card" width="49%">
+  <img src="docs/img/demo-approved.png" alt="Approved decision with rationale and sources" width="49%">
+</p>
+<p align="center"><sub>Left: the incident graph has run — Analyst 9.6 s · routing engine 0.0 s · Strands graph 13.4 s — three candidate routes are drawn, one decision card. Right: approved, with the Router's rationale and sources.</sub></p>
 
 ## The problem
 
@@ -40,6 +46,8 @@ Who it is for: the person who owns "keep the goods moving" at a company with 5�
 ## Architecture
 
 ![Architecture](docs/architecture.png)
+
+<p align="center"><img src="docs/img/demo-twin.png" alt="The demo twin" width="80%"></p>
 
 ```mermaid
 flowchart LR
@@ -76,7 +84,9 @@ Full details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · deployment: [`do
 - **Multi-agent orchestration with `strands.multiagent.GraphBuilder`** — [`graphs/incident.py`](agent-service/graphs/incident.py) (`router ∥ impact → strategist`, two entry points, execution order captured for the UI) and [`graphs/analysis.py`](agent-service/graphs/analysis.py) (`intel → forecast ∥ scenario → strategy → report`).
 - **Structured output everywhere** — `structured_output_model` on every call and on Graph nodes; large nested reports fall back to Gemini JSON mode and are validated with Pydantic (`agents/base.py`).
 - **Hooks for observability** — [`tracing.py`](agent-service/tracing.py) registers `BeforeInvocationEvent`/`AfterInvocationEvent` and writes one `agent_traces` row per agent run (session, duration, tokens). The Decision Inbox's *Trace* drawer reads them.
-- **Resilience** — `models.invoke_with_retry` rotates API keys, then falls back across models on 429/503; graph failures degrade to a deterministic, `needs_review` decision instead of an error.
+- **Resilience** — `models.invoke_with_retry` rotates API keys, then falls back across models on 429/503; graph failures degrade to a deterministic, `needs_review` decision instead of an error. News comes from Tavily when a key has credits and otherwise from **Gemini's built-in Google Search grounding** (`GeminiModel(gemini_tools=[GoogleSearch])`), so Sentinel never goes blind.
+- **Learning loop** — every approved/rejected decision is written to Mem0 (`POST /memory`); the Analyst recalls it and the next decision card shows *"Last time this happened"*.
+- **Conversation state** — the copilot keeps multi-turn history with `SlidingWindowConversationManager`.
 - **Provider switch** — `AGENT_MODEL_PROVIDER=gemini|bedrock`. Bedrock uses `BedrockModel` (`us.anthropic.claude-sonnet-4-6` by default); nothing else changes.
 - **AgentCore-ready** — `/invocations` dispatches on `payload.action` (`incident`, `scan`, `reroute`, `analysis`, `chat`, …).
 
