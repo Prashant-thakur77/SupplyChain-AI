@@ -39,3 +39,8 @@ HACKATHON_BLOG_POST.md
 *.ps1
 .env.yaml
 .pnpm-store/
+agent-service/.venv
+agent-service/__pycache__
+agent-service/**/__pycache__
+agent-service/.pytest_cache
+*.env.yaml
