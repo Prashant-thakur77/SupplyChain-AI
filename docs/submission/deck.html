@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>SupplyChain AI — deck</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#F6F3EE;--ink:#18160F;--muted:#5C5850;--blue:#2748E8;--green:#1A7F4B;--amber:#B45309;--red:#B91C1C;--card:#fff;--line:#E5DFD6}
+*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}
+.deck{height:100%;overflow-y:auto;scroll-snap-type:y mandatory}
+section{scroll-snap-align:start;min-height:100vh;padding:64px 8vw;display:flex;flex-direction:column;justify-content:center;gap:24px;border-bottom:1px solid var(--line);position:relative}
+.n{position:absolute;top:24px;right:32px;font-size:12px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+h1{font-family:Georgia,serif;font-size:clamp(2.4rem,6vw,5rem);line-height:1.05;letter-spacing:-.02em}h1 span{color:var(--blue)}
+h2{font-family:Georgia,serif;font-size:clamp(1.8rem,4vw,3rem);line-height:1.1;letter-spacing:-.02em}
+p.lead{font-size:clamp(1.05rem,1.6vw,1.35rem);color:var(--muted);max-width:56ch}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}.card h3{font-size:1rem;margin-bottom:6px}.card p{color:var(--muted);font-size:.95rem}
+.kpi{font-family:Georgia,serif;font-size:2.6rem;color:var(--blue)}
+ul.clean{list-style:none;display:grid;gap:10px}ul.clean li{padding-left:26px;position:relative;font-size:1.05rem}ul.clean li:before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:700}
+.flow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.flow .s{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-weight:600}.flow .a{color:var(--muted)}
+.dec{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:14px;padding:20px;max-width:640px}.dec .opt{display:flex;justify-content:space-between;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-top:8px}.dec .opt.rec{border-color:var(--blue);background:#EEF1FF}
+code,pre{font-family:ui-monospace,Menlo,monospace;font-size:.85rem}pre{background:#18160F;color:#F6F3EE;padding:16px;border-radius:12px;overflow:auto}
+img{max-width:100%;border-radius:12px;border:1px solid var(--line);background:#fff}
+.foot{font-size:12px;color:var(--muted)}
+@media print{section{min-height:auto;page-break-after:always}.n{display:none}}
+</style></head><body><div class="deck">
+
+<section><div class="n">1 / 10</div><div class="eyebrow">Agents for Humans · Professional Agents · AI Builders Hackathon</div>
+<h1>SupplyChain AI<br><span>The supply-chain agent that only interrupts you with a decision.</span></h1>
+<p class="lead">It watches your ports, suppliers and lanes 24/7. When something breaks it computes the blast radius, finds the cheapest viable reroute, drafts the mitigation — and pings you once, with the options ranked.</p>
+<p class="foot">Built with the Strands Agents SDK · MIT · github.com/Prashant-thakur77/SupplyChain-AI</p></section>
+
+<section><div class="n">2 / 10</div><div class="eyebrow">Problem</div><h2>Operators find out from the news. Then they lose a day.</h2>
+<div class="grid"><div class="card"><div class="kpi">2 a.m.</div><p>Port closures, strikes and typhoons don't wait for office hours.</p></div>
+<div class="card"><div class="kpi">1 day</div><p>Per incident, in spreadsheets: what does it hit, what do alternatives cost, who to call.</p></div>
+<div class="card"><div class="kpi">0</div><p>Control towers at companies with 5–50 suppliers. This is the gap.</p></div></div>
+<p class="lead">Repetitive and judgement-heavy at the same time — exactly the pile a Professional Agent should clear.</p></section>
+
+<section><div class="n">3 / 10</div><div class="eyebrow">Solution</div><h2>Background by default. One card when it matters.</h2>
+<div class="flow"><span class="s">Sentinel watches</span><span class="a">→</span><span class="s">Analyst grades</span><span class="a">→</span><span class="s">Routing engine computes</span><span class="a">→</span><span class="s">Router ∥ Impact → Strategist</span><span class="a">→</span><span class="s">You approve</span><span class="a">→</span><span class="s">It remembers</span></div>
+<ul class="clean"><li>Below HIGH severity: logged as an alert, nobody is interrupted.</li><li>Above: a decision with exact cost / days / risk deltas, rationale, sources, confidence.</li><li>Every number comes from a deterministic routing engine — the model only ranks and explains.</li></ul></section>
+
+<section><div class="n">4 / 10</div><div class="eyebrow">Target users</div><h2>The person who owns "keep the goods moving".</h2>
+<div class="grid"><div class="card"><h3>Ops / logistics manager</h3><p>SMB manufacturer or importer, 5–50 suppliers, multi-modal lanes, no control tower budget.</p></div>
+<div class="card"><h3>What they have today</h3><p>News alerts, a spreadsheet of lanes and costs, a phone. Reactive, slow, un-audited.</p></div>
+<div class="card"><h3>What they get</h3><p>A Decision Inbox: approve / reject / snooze. A twin that shows the reroute. An audit trail.</p></div></div></section>
+
+<section><div class="n">5 / 10</div><div class="eyebrow">Product</div><h2>Features</h2>
+<div class="grid"><div class="card"><h3>Digital twin</h3><p>Canvas builder or CSV/Excel import; nodes carry capacity, risk, coordinates; lanes carry mode, cost, days.</p></div>
+<div class="card"><h3>Sentinel scans</h3><p>News + weather for every node and lane every 15 min, server-side (Cloud Scheduler).</p></div>
+<div class="card"><h3>Decision Inbox</h3><p>Ranked options, recommendation, rationale, sources, confidence, trace drawer.</p></div>
+<div class="card"><h3>Incident view</h3><p>Failed node pulses, downstream tinted, candidate routes drawn in colour — click to pick.</p></div>
+<div class="card"><h3>Copilot</h3><p>"What if Suez is blocked?" — streaming answers with tool calls and exact numbers.</p></div>
+<div class="card"><h3>Reports</h3><p>Simulation impact, strategy portfolio, 30-day forecast, live per-node risk — all typed agent outputs.</p></div></div></section>
+
+<section><div class="n">6 / 10</div><div class="eyebrow">Live demo · /demo · no login</div><h2>Close the Port of Singapore. 25 seconds later:</h2>
+<div class="dec"><div class="eyebrow" style="color:var(--amber)">HIGH · confidence 95%</div><h3 style="font-family:Georgia,serif;font-size:1.3rem;margin:6px 0">Port of Singapore closed for 3 weeks: choose a route</h3>
+<div class="opt rec"><span>Shenzhen → Colombo → Suez → Rotterdam → Berlin <b>· recommended</b></span><span>+$1,000 · +5 d · low</span></div>
+<div class="opt"><span>Shenzhen → Colombo → Suez → Hamburg → Berlin</span><span>+$1,000 · +6 d · low</span></div>
+<div class="opt"><span>Wait and monitor</span><span>+21 d · high</span></div>
+<p style="margin-top:10px;color:var(--muted);font-size:.95rem">"Waiting 21 days is not viable when a 5-day reroute exists…" — Router</p></div>
+<p class="foot">Approve → decision + audit log + notification + memory. Trace drawer shows Analyst 9.6 s · routing 0.0 s · Strands graph 13.4 s.</p></section>
+
+<section><div class="n">7 / 10</div><div class="eyebrow">Technical architecture</div><h2>Two services, one contract.</h2>
+<img src="../architecture.png" alt="Architecture diagram">
+<p class="foot">Next.js 16 (SSE proxies, Decision Inbox, cron) ↔ agent-service (Python · FastAPI · Strands) ↔ Supabase (RLS). Cloud Run today; the service already implements the Bedrock AgentCore runtime contract.</p></section>
+
+<section><div class="n">8 / 10</div><div class="eyebrow">AI technologies</div><h2>Strands Agents, used properly.</h2>
+<div class="grid"><div class="card"><h3>8 agents · typed outputs</h3><p>Every call uses <code>structured_output_model</code> (Pydantic). Large reports fall back to JSON mode + validation.</p></div>
+<div class="card"><h3>2 GraphBuilder graphs</h3><p>Incident: <code>router ∥ impact → strategist</code>. Analysis: <code>intel → forecast ∥ scenario → strategy → report</code>.</p></div>
+<div class="card"><h3>Tools</h3><p>Blast radius, k-best reroutes, impact baseline, Tavily news, OpenWeather, Mem0 memory, persistence.</p></div>
+<div class="card"><h3>Hooks + streaming</h3><p>One <code>agent_traces</code> row per run; <code>stream_async</code> copilot; graph events streamed to the UI.</p></div>
+<div class="card"><h3>Provider switch</h3><p><code>AGENT_MODEL_PROVIDER=gemini|bedrock</code>. Key rotation → model fallback on 429/503.</p></div>
+<div class="card"><h3>Deterministic core</h3><p>Dijkstra, Yen k-shortest, lane detection, Monte Carlo cascade — unit-tested Python.</p></div></div></section>
+
+<section><div class="n">9 / 10</div><div class="eyebrow">Impact &amp; value</div><h2>Minutes instead of a day. Exact instead of guessed.</h2>
+<div class="grid"><div class="card"><div class="kpi">~30 s</div><p>From event to a ranked, sourced decision.</p></div><div class="card"><div class="kpi">0</div><p>Hallucinated routes or costs — the engine computes, the agent explains.</p></div><div class="card"><div class="kpi">100%</div><p>Of agent runs traced and auditable.</p></div></div>
+<p class="lead">One avoided week of stock-out at a mid-size importer is worth more than years of the product. And the operator gets their evenings back.</p></section>
+
+<section><div class="n">10 / 10</div><div class="eyebrow">Roadmap</div><h2>What's next</h2>
+<ul class="clean"><li>Production on Amazon Bedrock + AgentCore Runtime (same container).</li><li>Carrier-rate feeds so lane costs are live, not modelled.</li><li>ERP connectors (SAP / NetSuite) for demand-weighted impact.</li><li>Slack / Teams approval buttons; A2A endpoint: "is this lane safe?".</li><li>Learning loop: outcomes of approved decisions tune the Router.</li></ul>
+<p class="foot">github.com/Prashant-thakur77/SupplyChain-AI · MIT · Built with Strands Agents</p></section>
+</div>
+<script>document.addEventListener('keydown',e=>{const d=document.querySelector('.deck');if(e.key==='ArrowRight'||e.key==='PageDown')d.scrollBy({top:innerHeight,behavior:'smooth'});if(e.key==='ArrowLeft'||e.key==='PageUp')d.scrollBy({top:-innerHeight,behavior:'smooth'})})</script>
+</body></html>
