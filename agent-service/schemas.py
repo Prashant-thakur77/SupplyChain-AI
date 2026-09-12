@@ -330,3 +330,16 @@ class LiveIntelReport(BaseModel):
     nodeRisks: list[NodeRisk]
     description: str
     sources: list[Source] = Field(default_factory=list)
+
+
+class Suggestion(BaseModel):
+    id: str
+    title: str = Field(max_length=60)
+    description: str
+    action: str
+    confidence: float = Field(ge=0, le=100)
+    category: Literal["optimization", "risk", "efficiency", "cost", "planning"]
+
+
+class SuggestionList(BaseModel):
+    suggestions: list[Suggestion]

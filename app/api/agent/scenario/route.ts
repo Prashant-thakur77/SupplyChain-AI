@@ -1,137 +1,61 @@
-import '@/lib/zod-patch';
-/**
- * Production Scenario Generator Agent (ADK Version)
- * Generates realistic "What-if" supply chain disruption scenarios
- */
+import { NextRequest, NextResponse } from "next/server"
+import { agentClient, agentErrorResponse } from "@/lib/agent-client"
+import { agentAudit } from "@/lib/audit-logger"
+import { loadTwinForAgent } from "@/lib/server/twin"
+import { supabaseServer } from "@/lib/supabase/server"
 
-import { NextRequest, NextResponse } from 'next/server';
-import { LlmAgent, Gemini, InMemoryRunner, stringifyContent } from "@google/adk";
-import { withTrace } from '../../../../lib/adk/core/trace';
-import { supabaseServer } from '@/lib/supabase/server';
-import { getAIKeyForModule, AI_MODELS } from '@/lib/ai-config';
-import { agentAudit } from '@/lib/audit-logger';
+export const maxDuration = 90
 
-/**
- * Production Scenario Agent
- */
-class ProductionScenarioAgent {
-  async generateScenarios(supplyChainId: string, scenarioCount: number = 3) {
-    console.log(`[SCENARIO-AGENT] 🎭 Generating ${scenarioCount} scenarios via ADK for ${supplyChainId}`);
-
-    try {
-      // 1. Fetch supply chain structure
-      const { data: chain, error: chainError } = await supabaseServer
-        .from('supply_chains')
-        .select(`*, nodes(*)`)
-        .eq('supply_chain_id', supplyChainId)
-        .single();
-
-      if (chainError || !chain) throw new Error("Supply chain not found");
-
-      // 2. Prepare Prompt
-      const prompt = `
-        Supply Chain Context: ${chain.name} - ${chain.description}
-        Nodes: ${JSON.stringify(chain.nodes || [])}
-        
-        Generate exactly ${scenarioCount} realistic disruption scenarios.
-        Each scenario should include:
-        - scenarioName: Short title
-        - scenarioType: e.g., NATURAL_DISASTER, CYBER_ATTACK, GEOPOLITICAL
-        - disruptionSeverity: 0-100 score
-        - affectedNode: ID of the primary node affected
-        - description: Detailed description of the event
-        - probability: 0-1 score
-        
-        Return the response as a valid JSON array of scenario objects.
-      `;
-
-      const result = await withTrace(`trace-${Date.now()}`, 'ScenarioAgent', async () => {
-        const agent = new LlmAgent({
-          name: "scenario_agent",
-          description: "Simulates supply chain disruptions",
-          instruction: "You are a risk modeling expert. Create diverse, high-impact, and realistic scenarios based on the provided supply chain structure.",
-          model: new Gemini({ model: AI_MODELS.agents, apiKey: getAIKeyForModule("agents") }),
-        });
-
-        const runner = new InMemoryRunner({ appName: 'scenario', agent });
-        
-        let finalContent = "";
-        for await (const event of runner.runEphemeral({
-          userId: 'system',
-          newMessage: { role: 'user', parts: [{ text: prompt }] }
-        })) {
-          const text = stringifyContent(event);
-          if (text) {
-            finalContent += text;
-          }
-        }
-
-        return { success: true, data: finalContent };
-      });
-
-      if (!result.success) throw new Error(result.error);
-      const response = result.data as string;
-
-      // 4. Parse JSON
-      const jsonMatch = response.match(/\[[\s\S]*\]/);
-      const scenarios = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
-
-      // 5. Store scenarios in Supabase
-      const dbRecords = scenarios.map((s: any) => ({
-        supply_chain_id: supplyChainId,
-        name: s.scenarioName,
-        scenario_type: s.scenarioType,
-        parameters: s,
-        status: 'generated'
-      }));
-
-      await supabaseServer
-        .from('simulations')
-        .insert(dbRecords);
-
-      return {
-        success: true,
-        scenarios,
-        generatedAt: new Date().toISOString()
-      };
-    } catch (error) {
-      console.error('[SCENARIO-AGENT] ❌ Error:', error);
-      throw error;
-    }
+/** What-if scenarios (Strands `scenario` agent). Stored as `simulations` rows with status 'generated' (unchanged). */
+async function generate(supplyChainId: string, count: number) {
+  const twin = await loadTwinForAgent(supplyChainId)
+  const out = await agentClient.post("/scenario", { supply_chain_id: supplyChainId, user_id: "system", disruption_type: "all", twin })
+  const labels = new Map(twin.nodes.map((n) => [n.id, n.label]))
+  const scenarios = (out.scenarios as any[]).slice(0, count).map((s) => ({
+    scenarioName: s.title,
+    scenarioType: s.disruption_type.toUpperCase(),
+    disruptionSeverity: Math.round(60 + s.probability * 35),
+    disruptionDuration: s.duration_days,
+    affectedNode: s.failed_node_ids[0] ?? null,
+    affectedNodeLabel: labels.get(s.failed_node_ids[0]) ?? s.failed_node_ids[0] ?? null,
+    affected_nodes: s.failed_node_ids,
+    description: s.description,
+    probability: s.probability,
+  }))
+  if (scenarios.length) {
+    await supabaseServer.from("simulations").insert(scenarios.map((s) => ({ supply_chain_id: supplyChainId, name: s.scenarioName, scenario_type: s.scenarioType, parameters: s, status: "generated" })))
   }
+  return { success: true, scenarios, generatedAt: new Date().toISOString() }
 }
 
-// API Routes
 export async function POST(request: NextRequest) {
+  const { supplyChainId, scenarioCount = 3 } = await request.json().catch(() => ({}))
+  if (!supplyChainId) return NextResponse.json({ error: "Missing supplyChainId" }, { status: 400 })
+  const audit = agentAudit("ScenarioAgent", "system")
   try {
-    const body = await request.json();
-    const { supplyChainId, scenarioCount = 3 } = body;
-
-    if (!supplyChainId) return NextResponse.json({ error: "Missing supplyChainId" }, { status: 400 });
-
-    const audit = agentAudit('ScenarioAgent', 'system');
-    audit.start(`Generating ${scenarioCount} scenarios for supply chain ${supplyChainId}`);
-
-    const agent = new ProductionScenarioAgent();
-    const result = await agent.generateScenarios(supplyChainId, scenarioCount);
-    
-    audit.success(`Generated scenarios for supply chain ${supplyChainId}`);
-    return NextResponse.json(result);
-  } catch (error) {
-    agentAudit('ScenarioAgent', 'system').error(error instanceof Error ? error.message : "Internal Error");
-    return NextResponse.json({ 
-      success: false, 
-      error: error instanceof Error ? error.message : "Internal Error" 
-    }, { status: 500 });
+    audit.start(`Generating ${scenarioCount} scenarios for ${supplyChainId}`)
+    const result = await generate(supplyChainId, scenarioCount)
+    audit.success(`Generated ${result.scenarios.length} scenarios`)
+    return NextResponse.json(result)
+  } catch (e) {
+    audit.error(String((e as Error).message))
+    const { body, status } = agentErrorResponse(e)
+    return NextResponse.json({ success: false, ...body }, { status })
   }
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const supplyChainId = searchParams.get('supplyChainId');
-  if (!supplyChainId) return NextResponse.json({ error: "Missing supplyChainId" }, { status: 400 });
-
-  const agent = new ProductionScenarioAgent();
-  const result = await agent.generateScenarios(supplyChainId);
-  return NextResponse.json(result);
+  const sp = new URL(request.url).searchParams
+  const supplyChainId = sp.get("supplyChainId") ?? sp.get("supply_chain_id")
+  if (!supplyChainId) return NextResponse.json({ error: "Missing supplyChainId" }, { status: 400 })
+  if (sp.get("from_cache") === "true") {
+    const { data } = await supabaseServer.from("simulations").select("parameters, created_at").eq("supply_chain_id", supplyChainId).eq("status", "generated").order("created_at", { ascending: false }).limit(6)
+    return NextResponse.json({ success: true, scenarios: (data ?? []).map((r) => r.parameters), cached: true })
+  }
+  try {
+    return NextResponse.json(await generate(supplyChainId, 3))
+  } catch (e) {
+    const { body, status } = agentErrorResponse(e)
+    return NextResponse.json({ success: false, ...body }, { status })
+  }
 }

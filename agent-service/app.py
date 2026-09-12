@@ -342,6 +342,19 @@ def report_forecast(inp: ForecastReportIn):
     return reports.run_forecast_report(_hooks("forecast_report", inp), _twin(inp), inp.horizon_days, inp.node_label).model_dump()
 
 
+class SuggestionsIn(BaseModel):
+    supply_chain_id: str = "canvas"
+    user_id: str = "system"
+    prompt: str
+
+
+@app.post("/suggestions", dependencies=[Depends(auth)])
+def suggestions_ep(inp: SuggestionsIn):
+    from agents import suggestions
+
+    return suggestions.run_suggestions(suggestions.build(_hooks("suggestions", inp)), inp.prompt).model_dump()
+
+
 @app.post("/reports/live-intel", dependencies=[Depends(auth)])
 def report_live_intel(inp: LiveIntelIn):
     return reports.run_live_intel(_hooks("live_intel", inp), inp.nodes).model_dump()

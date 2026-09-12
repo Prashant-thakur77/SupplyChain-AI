@@ -11,7 +11,7 @@ export const formSchema = z.object({
     currency: z.string().min(1, "Currency is required."),
     shippingMethods: z.array(z.string()).min(1, "At least one shipping method must be selected."),
     annualVolumeType: z.enum(["units", "currency"]),
-    annualVolumeValue: z.number({ error: "Annual volume must be a number." }).gt(0, "Annual volume must be greater than 0."),
+    annualVolumeValue: z.number({ message: "Annual volume must be a number." }).gt(0, "Annual volume must be greater than 0."),
     risks: z.array(z.string()).min(1, "At least one risk must be selected."),
 }).refine(data => {
     if (data.industry === 'Other') {
@@ -65,7 +65,7 @@ export const step1Schema = z.object({
     currency: z.string().min(1, "Currency is required."),
     shippingMethods: z.array(z.string()).min(1, "At least one shipping method must be selected."),
     annualVolumeType: z.enum(["units", "currency"]),
-    annualVolumeValue: z.number({ error: "Annual volume must be a number." }).gt(0, "Annual volume must be greater than 0."),
+    annualVolumeValue: z.number({ message: "Annual volume must be a number." }).gt(0, "Annual volume must be greater than 0."),
 });
 
 export const step2Schema = z.object({
