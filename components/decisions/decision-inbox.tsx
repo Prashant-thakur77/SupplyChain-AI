@@ -21,6 +21,8 @@ export function DecisionInbox() {
   const [lastScan, setLastScan] = useState<string | null>(null)
   const [chains, setChains] = useState<number>(0)
   const [refreshing, setRefreshing] = useState(false)
+  const [serviceDown, setServiceDown] = useState(false)
+  useEffect(() => { fetch("/api/agent/status", { cache: "no-store" }).then((r) => r.json()).then((j) => setServiceDown(!j.service?.ok)).catch(() => setServiceDown(true)) }, [])
 
   const load = useCallback(async (uid: string) => {
     const [decisions, scan, sc] = await Promise.all([
@@ -72,6 +74,12 @@ export function DecisionInbox() {
           </Button>
         }
       />
+
+      {serviceDown && (
+        <div className="mt-4 rounded-theme-md border border-theme-amber/30 bg-theme-amber-soft px-3 py-2 text-sm text-theme-amber">
+          The agent service is unreachable right now. Existing decisions still show; new scans and incident runs are paused until it is back.
+        </div>
+      )}
 
       <div className="mt-6 flex items-center gap-1 rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary p-1 text-sm">
         {(["pending", "decided"] as Tab[]).map((t) => (
