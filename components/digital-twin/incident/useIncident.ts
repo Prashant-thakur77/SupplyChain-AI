@@ -55,12 +55,12 @@ export function useIncident(opts: Options) {
     setIncident(result)
   }, [setOverlay, setDisruptedNodes, setDisruptedEdges, setIncident])
 
-  const start = useCallback(async (event: IncidentEvent) => {
+  const start = useCallback(async (event: IncidentEvent, extra: Record<string, unknown> = {}) => {
     const st = useDigitalTwinStore.getState()
     setDisruptedNodes(event.failed_node_ids)
     setIsAnalyzingDisruption(true)
     setIncident(null)
-    const body = { supplyChainId: opts.supplyChainId, userId: opts.userId, event, persist: opts.persist ?? true, nodes: st.nodes.filter((n) => n.type !== "group"), edges: st.edges }
+    const body = { supplyChainId: opts.supplyChainId, userId: opts.userId, event, persist: opts.persist ?? true, nodes: st.nodes.filter((n) => n.type !== "group"), edges: st.edges, ...extra }
     const result = await stream.start<IncidentResult>(opts.endpoint ?? "/api/agent/incident", body)
     setIsAnalyzingDisruption(false)
     if (result?.assessment) {
@@ -77,7 +77,7 @@ export function useIncident(opts: Options) {
 
   // Mirror this hook instance's stream into the store so any IncidentOverlay on the page can render it.
   const setIncidentStream = useDigitalTwinStore((s) => s.setIncidentStream)
-  useEffect(() => { if (stream.status !== "idle") setIncidentStream({ events: stream.events, status: stream.status, error: stream.error }) }, [stream.events, stream.status, stream.error, setIncidentStream])
+  useEffect(() => { if (stream.status !== "idle") setIncidentStream({ events: stream.events, status: stream.status, error: stream.error, replayed: stream.replayed }) }, [stream.events, stream.status, stream.error, stream.replayed, setIncidentStream])
 
   /** Show a stored decision (from the inbox) on the twin: overlay its route plans and open the card. */
   const showDecision = useCallback((row: DecisionRow) => {

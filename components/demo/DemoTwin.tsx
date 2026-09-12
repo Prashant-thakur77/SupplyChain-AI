@@ -53,7 +53,9 @@ function DemoInner() {
     const sc = DEMO_SCENARIOS.find((s) => s.key === key)!
     setActive(key)
     refit()
-    await incident.start(sc.event)
+    const r = await incident.start(sc.event)
+    // Free-tier models get rate-limited; if the live run failed, replay the recorded run of this preset (badge says "replay").
+    if (!r?.assessment) await incident.start(sc.event, { forceReplay: true })
     setTimeout(refit, 300)
   }
 

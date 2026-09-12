@@ -37,6 +37,7 @@ export function IncidentOverlay({ onClose, local, className }: Props) {
   const events = useDigitalTwinStore((s) => s.incidentEvents)
   const status = useDigitalTwinStore((s) => s.incidentStatus)
   const error = useDigitalTwinStore((s) => s.incidentError)
+  const replayed = useDigitalTwinStore((s) => s.incidentReplayed)
   const selectedRouteId = useDigitalTwinStore((s) => s.selectedRouteId)
   const setSelectedRouteId = useDigitalTwinStore((s) => s.setSelectedRouteId)
   const [collapsed, setCollapsed] = useState(false)
@@ -52,6 +53,7 @@ export function IncidentOverlay({ onClose, local, className }: Props) {
       <header className="flex items-center gap-2 border-b border-theme-border-subtle px-3 py-2">
         <span className="text-sm font-semibold text-theme-text-primary">Incident response</span>
         {incident && <span className="rounded-full border border-theme-border-subtle px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-theme-text-secondary">{incident.assessment.severity}</span>}
+        {replayed && <span title={`Model rate-limited — replaying a run recorded ${new Date(replayed).toLocaleString()}`} className="rounded-full border border-theme-amber/30 bg-theme-amber-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-theme-amber">replay</span>}
         <button type="button" className="ml-auto rounded p-1 text-theme-text-muted hover:text-theme-text-primary" onClick={() => setCollapsed((c) => !c)} aria-label={collapsed ? "Expand" : "Collapse"}>{collapsed ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button>
         <button type="button" className="rounded p-1 text-theme-text-muted hover:text-theme-text-primary" onClick={onClose} aria-label="Close"><X className="h-4 w-4" /></button>
       </header>

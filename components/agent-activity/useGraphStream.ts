@@ -12,6 +12,7 @@ export function useGraphStream() {
   const [events, setEvents] = useState<ActivityEvent[]>([])
   const [status, setStatus] = useState<StreamStatus>("idle")
   const [error, setError] = useState<string | null>(null)
+  const [replayed, setReplayed] = useState<string | null>(null)
   const abort = useRef<AbortController | null>(null)
 
   const start = useCallback(async <T = any>(path: string, body: unknown): Promise<T | null> => {
@@ -20,6 +21,7 @@ export function useGraphStream() {
     abort.current = ctrl
     setEvents([])
     setError(null)
+    setReplayed(null)
     setStatus("running")
     try {
       const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json", accept: "text/event-stream" }, body: JSON.stringify(body), signal: ctrl.signal })
@@ -28,6 +30,7 @@ export function useGraphStream() {
         throw new Error(j.detail ?? j.error ?? `Request failed (${res.status})`)
       }
       const result = await consumeSse<T>(res, (event, data) => {
+        if (event === "replay") { setReplayed(data?.recorded_at ?? "earlier"); return }
         if (event === "error") setError(data?.payload?.error ?? data?.error ?? "Agent error")
         setEvents((prev) => [...prev, { ...(data ?? {}), type: (data?.type ?? event) as GraphEvent["type"], at: Date.now() }])
       }, ctrl.signal)
@@ -41,6 +44,6 @@ export function useGraphStream() {
     }
   }, [])
 
-  const reset = useCallback(() => { abort.current?.abort(); setEvents([]); setStatus("idle"); setError(null) }, [])
-  return { events, status, error, start, reset }
+  const reset = useCallback(() => { abort.current?.abort(); setEvents([]); setStatus("idle"); setError(null); setReplayed(null) }, [])
+  return { events, status, error, replayed, start, reset }
 }
