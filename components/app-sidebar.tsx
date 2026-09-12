@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   User,
   Brain,
+  Inbox,
 } from "lucide-react"
 
 import { ThemeToggle } from "@/components/theme"
@@ -22,6 +23,7 @@ export function AppSidebar() {
 
   const navigationItems = [
     { href: "/dashboard", icon: Home, label: "Dashboard", isActive: pathname === "/dashboard" },
+    { href: "/decisions", icon: Inbox, label: "Decisions", isActive: pathname === "/decisions" },
     { href: "/digital-twin", icon: Network, label: "Digital Twin", isActive: pathname === "/digital-twin" },
     { href: "/simulation", icon: LineChart, label: "Simulation", isActive: pathname === "/simulation" },
     { href: "/risk-prediction", icon: Brain, label: "Risk ML", isActive: pathname === "/risk-prediction" },

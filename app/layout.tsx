@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme"
 import SessionProvider from "@/lib/context/SessionProvider";
 import { Toaster } from "@/components/ui/sonner"
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
-import { Inter } from 'next/font/google'
+import { Inter, Fraunces } from 'next/font/google'
 import { CopilotProvider } from "@/components/copilot/copilot-provider";
 import "@copilotkit/react-textarea/styles.css";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -28,9 +28,17 @@ const inter = Inter({
   variable: '--font-inter',
 })
 
+// Editorial display serif for headlines (variable font; italic kept for accents).
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  style: ['normal', 'italic'],
+  variable: '--font-fraunces',
+})
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`dark ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`dark ${inter.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="shortcut icon" href="/favicon.svg" />
