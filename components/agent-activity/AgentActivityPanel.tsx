@@ -12,6 +12,7 @@ const LABELS: Record<string, { title: string; hint: string }> = {
   router: { title: "Router", hint: "Ranks candidate routes" },
   impact: { title: "Impact", hint: "Quantifies revenue at risk and delay" },
   strategist: { title: "Strategist", hint: "Writes the mitigation plan" },
+  inventory: { title: "Inventory model", hint: "Days of cover vs expected outage — deterministic, no LLM" },
   analysis_graph: { title: "Analysis graph", hint: "intel → forecast ∥ scenario → strategy → report" },
 }
 
@@ -55,7 +56,7 @@ export function AgentActivityPanel({ events, status, error, compact = false, cla
         {steps.map((s, i) => {
           const running = s.elapsed === undefined
           const meta = LABELS[s.node] ?? { title: s.node, hint: "" }
-          const Icon = s.node === "routing_engine" ? Route : s.node.startsWith("graph") ? Cpu : Bot
+          const Icon = s.node === "routing_engine" || s.node === "inventory" ? Route : s.node.startsWith("graph") ? Cpu : Bot
           const isOpen = !!open[i]
           return (
             <li key={i} className={cn("rounded-theme-md border px-2.5 py-2", s.failed ? "border-theme-red/30 bg-theme-red-soft/40" : running ? "border-theme-blue/30 bg-theme-blue-soft/40" : "border-theme-border-subtle")}>

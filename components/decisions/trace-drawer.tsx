@@ -8,7 +8,7 @@ import type { DecisionRow } from "@/types/agent"
 
 interface TraceRow { id: string; agent_name: string; duration_ms: number | null; success: boolean | null; started_at: string; workflow_stage: string | null; input_tokens: number | null; output_tokens: number | null }
 
-const PIPELINE = ["analyst", "routing_engine", "router", "impact", "strategist"]
+const PIPELINE = ["analyst", "routing_engine", "router", "impact", "strategist", "inventory"]
 
 export function TraceDrawer({ traceId, open, onOpenChange, decision }: { traceId: string | null; open: boolean; onOpenChange: (o: boolean) => void; decision?: DecisionRow }) {
   const [rows, setRows] = useState<TraceRow[]>([])

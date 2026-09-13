@@ -15,6 +15,7 @@ from strands.multiagent import GraphBuilder
 from models import invoke_with_retry
 
 import db
+import inventory
 from agents import analyst, impact, router, strategist
 from routing import ReroutePlan, reroute_plan
 from schemas import (
@@ -214,6 +215,15 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
             emit(GraphEvent(type="error", node="strategist", payload={"error": str(e)}))
             status = "partial"
         done("strategist", t, {"steps": len(mit.steps) if mit else 0})
+
+    # Inventory model (deterministic): the LLM judges waiting on transit slack; stock on hand has the final say.
+    inv = inventory.assess(twin, plan, float(imp.delay_days) if imp and imp.delay_days else 7.0)
+    if any(l.days_of_cover is not None for l in inv.lanes):
+        t = stage("inventory")
+        ranking.wait_is_viable = ranking.wait_is_viable and inv.wait_is_viable
+        ranking.wait_rationale = f"{ranking.wait_rationale} Inventory: {inv.rationale}".strip()
+        done("inventory", t, {"wait_is_viable": inv.wait_is_viable, "expected_outage_days": inv.expected_outage_days, "stockout_lanes": inv.stockout_lanes,
+                              "lanes": [{"label": l.label, "days_of_cover": l.days_of_cover, "stockout_in_days": l.stockout_in_days, "reroute_days": l.reroute_days} for l in inv.lanes]})
 
     decision = build_decision(twin, a, plan, ranking, imp, mit, trace_id)
     if status == "partial":
