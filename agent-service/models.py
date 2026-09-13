@@ -64,6 +64,13 @@ def make_model(role: str, api_key: str | None = None, model_id: str | None = Non
         if json_mode:
             params["response_format"] = {"type": "json_object"}
         return OpenAIModel(client_args=client_args, model_id=model_id or settings.openai_model_id, params=params)
+    if settings.agent_model_provider == "ollama":
+        from strands.models.ollama import OllamaModel
+
+        # JSON mode: Ollama honours format="json" via additional_args.
+        extra_o: dict = {"additional_args": {"format": "json"}} if json_mode else {}
+        return OllamaModel(settings.ollama_host, model_id=model_id or settings.ollama_model_id, temperature=temperature,
+                           max_tokens=min(MAX_OUTPUT_TOKENS, 4096), keep_alive="10m", **extra_o)
     from strands.models.gemini import GeminiModel
 
     params: dict = {"temperature": temperature, "max_output_tokens": MAX_OUTPUT_TOKENS}
@@ -84,7 +91,7 @@ def is_transient(err: BaseException) -> bool:
 
 def model_plans(role: str, max_attempts: int = 5) -> list[tuple[str | None, str | None]]:
     """(api_key, model_id) attempts in order: primary key → second key → fallback models on the primary key."""
-    if settings.agent_model_provider in ("bedrock", "openai"):
+    if settings.agent_model_provider in ("bedrock", "openai", "ollama"):
         return [(None, None)] * min(max_attempts, 3)
     keys = gemini_keys(role) or [None]
     plans: list[tuple[str | None, str | None]] = [(keys[0], None)] + ([(keys[1], None)] if len(keys) > 1 else [])

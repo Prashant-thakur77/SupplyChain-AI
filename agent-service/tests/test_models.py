@@ -27,3 +27,13 @@ def test_make_model_openai_compatible(monkeypatch):
     assert type(m).__name__ == "OpenAIModel" and m.config["model_id"] == "llama-3.3-70b-versatile"
     assert models.model_plans("router") == [(None, None)] * 3
     monkeypatch.setenv("AGENT_MODEL_PROVIDER", "gemini"); reload(config); reload(models)
+
+
+def test_make_model_ollama(monkeypatch):
+    monkeypatch.setenv("AGENT_MODEL_PROVIDER", "ollama")
+    monkeypatch.setenv("OLLAMA_MODEL_ID", "qwen2.5:7b")
+    import config, models
+    reload(config); reload(models)
+    m = models.make_model("router")
+    assert type(m).__name__ == "OllamaModel" and m.config["model_id"] == "qwen2.5:7b"
+    monkeypatch.setenv("AGENT_MODEL_PROVIDER", "gemini"); reload(config); reload(models)

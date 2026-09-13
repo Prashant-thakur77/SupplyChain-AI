@@ -4,7 +4,8 @@
 
 - Supabase project: run `supabase/setup.sql` once in the SQL editor (idempotent; creates every table, RLS policy and the auth→users trigger).
 - Model access: a Gemini API key with billing enabled (free tiers are ~20–250 requests/day and will not survive a demo),
-  **or** an AWS account with Bedrock model access (`AGENT_MODEL_PROVIDER=bedrock`).
+  **or** an AWS account with Bedrock model access (`AGENT_MODEL_PROVIDER=bedrock`), **or** a free Groq key (`AGENT_MODEL_PROVIDER=openai`, `OPENAI_BASE_URL=https://api.groq.com/openai/v1`, `OPENAI_MODEL_ID=llama-3.3-70b-versatile`), **or** local Ollama (`AGENT_MODEL_PROVIDER=ollama`, `ollama pull qwen2.5:7b`).
+- Tavily key (news). Without it, the Gemini provider falls back to Google Search grounding; other providers need it.
 - Optional: Tavily, OpenWeather, Mem0 keys.
 
 ## Option A — Google Cloud Run (current)

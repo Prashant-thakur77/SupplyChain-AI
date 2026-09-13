@@ -87,7 +87,7 @@ Full details: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · deployment: [`do
 - **Resilience** — `models.invoke_with_retry` rotates API keys, then falls back across models on 429/503; graph failures degrade to a deterministic, `needs_review` decision instead of an error. News comes from Tavily when a key has credits and otherwise from **Gemini's built-in Google Search grounding** (`GeminiModel(gemini_tools=[GoogleSearch])`), so Sentinel never goes blind.
 - **Learning loop** — every approved/rejected decision is written to Mem0 (`POST /memory`); the Analyst recalls it and the next decision card shows *"Last time this happened"*.
 - **Conversation state** — the copilot keeps multi-turn history with `SlidingWindowConversationManager`.
-- **Provider switch** — `AGENT_MODEL_PROVIDER=gemini|bedrock|openai`. Bedrock uses `BedrockModel` (`us.anthropic.claude-sonnet-4-6` by default); `openai` uses `OpenAIModel` against any OpenAI-compatible endpoint (OpenAI, Groq, xAI Grok). Nothing else changes.
+- **Provider switch** — `AGENT_MODEL_PROVIDER=gemini|bedrock|openai`. Bedrock uses `BedrockModel` (`us.anthropic.claude-sonnet-4-6` by default); `openai` uses `OpenAIModel` against any OpenAI-compatible endpoint (OpenAI, Groq, xAI Grok); `ollama` uses `OllamaModel` for fully local inference (tested with `qwen2.5:7b`). Nothing else changes.
 - **AgentCore-ready** — `/invocations` dispatches on `payload.action` (`incident`, `scan`, `reroute`, `analysis`, `chat`, …).
 
 ### Why the routing is deterministic
@@ -118,7 +118,8 @@ Database: run **`supabase/setup.sql`** once in the Supabase SQL editor (all tabl
 
 | Variable | Where | Purpose |
 |---|---|---|
-| `AGENT_MODEL_PROVIDER` | agent-service | `gemini` (default), `bedrock`, or `openai` (any OpenAI-compatible API: OpenAI, Groq, xAI Grok) |
+| `AGENT_MODEL_PROVIDER` | agent-service | `gemini` (default), `bedrock`, `openai` (any OpenAI-compatible API: OpenAI, Groq, xAI Grok), or `ollama` (local models) |
+| `OLLAMA_HOST`, `OLLAMA_MODEL_ID` | agent-service | for `ollama`, e.g. `qwen2.5:7b` (runs the whole pipeline on a 6 GB laptop GPU) |
 | `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL_ID` | agent-service | for `openai` provider, e.g. Groq: `https://api.groq.com/openai/v1` + `llama-3.3-70b-versatile` |
 | `GEMINI_MODEL_ID`, `GOOGLE_API_KEY[_AGENTS|_ORCHESTRATOR]` | agent-service | Gemini model + keys (rotated on quota) |
 | `BEDROCK_MODEL_ID`, `AWS_REGION` (+ AWS credentials) | agent-service | Bedrock model |

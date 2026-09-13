@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    agent_model_provider: str = "gemini"  # gemini | bedrock | openai
+    agent_model_provider: str = "gemini"  # gemini | bedrock | openai | ollama
     gemini_model_id: str = "gemini-flash-latest"  # resolves to the newest Gemini Flash (3.8 at time of writing)
     google_api_key: str = ""
     google_api_key_agents: str = ""
@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_base_url: str = ""  # e.g. https://api.groq.com/openai/v1 or https://api.x.ai/v1
     openai_model_id: str = "gpt-4o-mini"  # e.g. llama-3.3-70b-versatile (Groq), grok-4-fast (xAI)
+    # Local models via Ollama: AGENT_MODEL_PROVIDER=ollama
+    ollama_host: str = "http://localhost:11434"
+    ollama_model_id: str = "qwen2.5:7b"
 
     supabase_url: str = ""
     supabase_service_role_key: str = ""
