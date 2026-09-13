@@ -12,6 +12,7 @@ import {
   Brain,
   Inbox,
   Activity,
+  Users,
 } from "lucide-react"
 
 import { ThemeToggle } from "@/components/theme"
@@ -34,6 +35,7 @@ export function AppSidebar() {
   ]
 
   const footerItems = [
+    { href: "/team", icon: Users, label: "Team", isActive: pathname === "/team" },
     { href: "/profile", icon: User, label: "Profile", isActive: pathname === "/profile" },
   ]
 

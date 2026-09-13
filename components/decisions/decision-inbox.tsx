@@ -23,6 +23,8 @@ export function DecisionInbox() {
   const [chains, setChains] = useState<number>(0)
   const [refreshing, setRefreshing] = useState(false)
   const [serviceDown, setServiceDown] = useState(false)
+  const [role, setRole] = useState<string | null>(null)
+  useEffect(() => { fetch("/api/me").then((r) => r.json()).then((j) => setRole(j.orgs?.[0]?.role ?? null)).catch(() => undefined) }, [])
   useEffect(() => { fetch("/api/agent/status", { cache: "no-store" }).then((r) => r.json()).then((j) => setServiceDown(!j.service?.ok)).catch(() => setServiceDown(true)) }, [])
 
   const load = useCallback(async (uid: string) => {
@@ -105,7 +107,8 @@ export function DecisionInbox() {
             </p>
           </div>
         )}
-        {visible.map((d) => <DecisionCard key={d.id} decision={d} onChange={onChange} />)}
+        {role && role !== "owner" && role !== "approver" && tab === "pending" && visible.length > 0 && <div className="rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-3 py-2 text-xs text-theme-text-secondary">Your role is <strong>{role}</strong> — you can review but not approve. Ask an owner to change your role in <a href="/team" className="text-theme-blue underline">Team</a>.</div>}
+        {visible.map((d) => <DecisionCard key={d.id} decision={d} onChange={onChange} readOnly={!!role && role !== "owner" && role !== "approver"} />)}
       </div>
     </div>
   )

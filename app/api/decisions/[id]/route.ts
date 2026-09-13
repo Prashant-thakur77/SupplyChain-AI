@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { logAudit } from "@/lib/audit-logger"
 import { supabaseServer } from "@/lib/supabase/server"
 import { agentClient } from "@/lib/agent-client"
+import { canApprove, getSessionUser, roleForChain } from "@/lib/auth-server"
 
 const ALLOWED = new Set(["approved", "rejected", "snoozed", "expired"])
 
@@ -15,6 +16,13 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   const { data: existing, error: readErr } = await supabaseServer.from("decisions").select("*").eq("id", id).single()
   if (readErr || !existing) return NextResponse.json({ error: "decision not found" }, { status: 404 })
 
+  // Authorisation: the signed-in user must own the twin or hold an approver/owner role in its org.
+  const session = await getSessionUser()
+  const actor = session?.id ?? (body.actorUserId as string | undefined)
+  if (!actor) return NextResponse.json({ error: "sign in to act on decisions" }, { status: 401 })
+  const role = await roleForChain(actor, existing.supply_chain_id)
+  if (!canApprove(role)) return NextResponse.json({ error: `your role (${role ?? "none"}) cannot approve decisions on this supply chain` }, { status: 403 })
+
   const options: any[] = existing.options ?? []
   const chosenId: string | null = status === "approved" ? body.chosenOptionId ?? existing.recommended_option_id : body.chosenOptionId ?? null
   if (status === "approved" && !options.some((o) => o.id === chosenId)) return NextResponse.json({ error: "chosenOptionId not in options" }, { status: 400 })
@@ -26,7 +34,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const verb = status === "approved" ? "approved" : status === "rejected" ? "rejected" : "snoozed"
-  await logAudit({ userId: existing.user_id, action: `decision_${verb}`, details: { status: "success", summary: `Decision ${verb}: ${existing.title}${chosen ? ` → ${chosen.label}` : ""}`, metadata: { decisionId: id, chosenOptionId: chosenId, traceId: existing.trace_id } } }).catch(() => undefined)
+  await logAudit({ userId: actor, action: `decision_${verb}`, details: { status: "success", summary: `Decision ${verb}: ${existing.title}${chosen ? ` → ${chosen.label}` : ""}`, metadata: { decisionId: id, chosenOptionId: chosenId, traceId: existing.trace_id } } }).catch(() => undefined)
 
   if (status === "approved" && chosen) {
     await supabaseServer.from("notifications").insert({

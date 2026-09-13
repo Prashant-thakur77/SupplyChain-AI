@@ -27,13 +27,15 @@ interface Props {
   onChange?: (d: DecisionRow) => void
   /** Demo mode: no server round-trip. */
   local?: boolean
+  /** Viewer/planner: can look, cannot act. */
+  readOnly?: boolean
 }
 
-export function DecisionCard({ decision, onChange, local }: Props) {
+export function DecisionCard({ decision, onChange, local, readOnly }: Props) {
   const [selected, setSelected] = useState<string>(decision.chosen_option_id ?? decision.recommended_option_id)
   const [busy, setBusy] = useState<null | "approved" | "rejected" | "snoozed">(null)
   const [traceOpen, setTraceOpen] = useState(false)
-  const pending = decision.status === "pending" || decision.status === "snoozed"
+  const pending = (decision.status === "pending" || decision.status === "snoozed") && !readOnly
   const sev = SEVERITY_STYLES[severityOf(decision)]
   const chosen = decision.options.find((o) => o.id === decision.chosen_option_id)
 
