@@ -21,7 +21,7 @@ from routing import ReroutePlan, reroute_plan
 from schemas import (
     Assessment, Decision, DecisionOption, Event, GraphEvent, ImpactEstimate, MitigationPlan, RouteRanking, Severity, Twin,
 )
-from notify import decision_message, post_webhook
+from notify import decision_message, post_webhook, push_decision
 from policy import Policy, evaluate
 from tools.memory import recall_memory, store_memory
 from tools.twin import twin_cache
@@ -244,6 +244,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
             store_memory(supply_chain_id=supply_chain_id, text=f"{__import__('datetime').date.today().isoformat()}: {decision.title} → auto-approved by policy: {rec.label} (+${rec.added_cost:,.0f}, +{rec.added_days:.0f} days).")
         text, blocks = decision_message("auto" if auto else "pending", decision.title, rec.label if rec else None, rec.added_cost if rec else None, rec.added_days if rec else None, reason if auto else None, decision_id, user_id)
         post_webhook(policy.webhook_url, text, blocks)
+        push_decision(user_id, ('Auto-approved: ' if auto else 'Decision needed: ') + decision.title, (f"{rec.label} · +${rec.added_cost:,.0f} · +{rec.added_days:.0f}d" if rec else decision.summary)[:180], decision_id, auto)
     emit(GraphEvent(type="result", payload={"status": status, "decision_id": decision_id, "auto_approved": auto, "policy_reason": reason}))
     return IncidentResult(a, plan, ranking, imp, mit, decision, decision_id, notification_id, trace_id, status, order, memories, auto, reason)
 

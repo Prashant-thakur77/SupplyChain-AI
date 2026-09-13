@@ -9,6 +9,7 @@ import { Inter, Fraunces } from 'next/font/google'
 import { CopilotProvider } from "@/components/copilot/copilot-provider";
 import "@copilotkit/react-textarea/styles.css";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { PwaRegister } from "@/components/pwa/PwaRegister";
 
 export const metadata: Metadata = {
   title: 'SupplyChain AI - AI-Powered Supply Chain Intelligence',
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link rel="apple-touch-icon" href="/favicon.svg" />
       </head>
       <body className="min-h-screen flex flex-col">
+        <PwaRegister />
         <ErrorBoundary>
           <NuqsAdapter
             // Force all nuqs URL updates to use shallow routing (history.pushState) instead of

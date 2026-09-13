@@ -12,6 +12,7 @@ import type { DecisionRow } from "@/types/agent"
 import { cn } from "@/lib/utils"
 import { DecisionCard } from "./decision-card"
 import { AutonomyPolicyCard } from "./autonomy-policy-card"
+import { PushToggle } from "@/components/pwa/PushToggle"
 
 type Tab = "pending" | "decided"
 
@@ -72,9 +73,12 @@ export function DecisionInbox() {
         subtitle="The agent watches your supply chains around the clock and only asks you when there is a real decision to make. Each card is a ranked set of options with exact cost, time and risk."
         icon={<Inbox className="h-5 w-5" />}
         actions={
-          <Button variant="outline" size="sm" className="gap-1.5" disabled={refreshing || !user?.id} onClick={async () => { setRefreshing(true); await load(user.id).catch(() => undefined); setRefreshing(false) }}>
-            <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} /> Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <PushToggle />
+            <Button variant="outline" size="sm" className="gap-1.5" disabled={refreshing || !user?.id} onClick={async () => { setRefreshing(true); await load(user.id).catch(() => undefined); setRefreshing(false) }}>
+              <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} /> Refresh
+            </Button>
+          </div>
         }
       />
 

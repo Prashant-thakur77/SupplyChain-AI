@@ -63,3 +63,16 @@ def decision_message(kind: str, title: str, option_label: str | None, added_cost
     if elements:
         blocks.append({"type": "actions", "elements": elements})
     return text, blocks
+
+
+def push_decision(user_id: str, title: str, body: str, decision_id: str | None, auto: bool) -> bool:
+    """Web-push to the user's devices through the web app (which holds the VAPID keys). Best effort."""
+    if not settings.app_url:
+        return False
+    try:
+        url = f"{settings.app_url.rstrip('/')}/decisions"
+        r = httpx.post(f"{settings.app_url.rstrip('/')}/api/push/send", json={"userId": user_id, "title": title, "body": body, "url": url, "tag": decision_id or "decision"},
+                       headers={"x-agent-secret": settings.agent_service_secret}, timeout=8)
+        return r.status_code == 200
+    except Exception:
+        return False
