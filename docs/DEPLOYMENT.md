@@ -58,3 +58,19 @@ AGENT_SERVICE_URL=http://localhost:8080 pnpm dev
 - `GET <agents>/ping` → `{"status":"healthy","provider":"gemini"|"bedrock","model":…}`
 - `GET <web>/api/agent/orchestrator` → `{status:"ok", engine:"strands-graph"}`
 - `GET <web>/api/cron/scan` with the bearer secret → JSON summary of scanned twins
+
+## Multi-region (data residency)
+
+Run one agent-service per region and point the web app at each:
+
+```
+AGENT_SERVICE_URL=https://agents-global.example.com      # default
+AGENT_SERVICE_URL_EU=https://agents-eu.example.com       # eu orgs
+AGENT_SERVICE_URL_US=https://agents-us.example.com
+AGENT_SERVICE_URL_APAC=https://agents-apac.example.com
+```
+
+Each org has a `region` (Team page, owner only). Route handlers resolve `supply_chain_id → org.region → AGENT_SERVICE_URL_<REGION>`
+(`lib/agent-client.ts`), so an EU org's twin is only ever processed by the EU service. Every regional service sets `REGION=eu` (reported
+by `/ping`) and can differ in provider: Bedrock/AgentCore in `us-east-1` for US customers, Cloud Run `europe-west4` with Gemini for EU.
+Supabase remains one project; for strict residency create one project per region and set the `SUPABASE_*` variables per agent-service.

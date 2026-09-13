@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import { RateCardCard } from "./RateCardCard"
 import { ApiKeysCard } from "./ApiKeysCard"
 
-interface Org { id: string; name: string; role: string }
+interface Org { id: string; name: string; role: string; region?: string }
 interface Member { user_id: string; role: string; email: string | null; since: string }
 const ROLES = [["owner", "Owner", "everything, incl. team & policies"], ["approver", "Approver", "approve / reject decisions"], ["planner", "Planner", "build twins, run what-ifs"], ["viewer", "Viewer", "read-only"]] as const
 
@@ -34,6 +34,9 @@ export function TeamPage() {
             <Building2 className="h-5 w-5 text-theme-blue" />
             <input value={name} onChange={(e) => setName(e.target.value)} disabled={!isOwner} className="min-w-0 flex-1 rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-3 py-2 font-display text-lg font-semibold text-theme-text-primary disabled:opacity-70" />
             {isOwner && <Button size="sm" variant="outline" onClick={rename}>Rename</Button>}
+            <select value={org.region ?? "global"} disabled={!isOwner} title="Data residency — which regional agent-service runs this organisation's twins" onChange={async (e) => { const r = await fetch("/api/orgs", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ orgId: org.id, region: e.target.value }) }); if (r.ok) { toast.success(`Region set to ${e.target.value.toUpperCase()}`); load(org) } }} className="rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-2 py-1.5 text-xs text-theme-text-secondary disabled:opacity-70">
+              {["global", "eu", "us", "apac", "in"].map((r) => <option key={r} value={r}>{r === "global" ? "Region: global" : `Region: ${r.toUpperCase()}`}</option>)}
+            </select>
             <span className="rounded-full border border-theme-border-subtle px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-theme-text-secondary">you: {org.role}</span>
           </div>
           <div className="mt-4 rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface">

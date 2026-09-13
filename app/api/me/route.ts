@@ -8,6 +8,6 @@ export const dynamic = "force-dynamic"
 export async function GET() {
   const user = await getSessionUser()
   if (!user) return NextResponse.json({ user: null, orgs: [] })
-  const { data } = await supabaseServer.from("org_members").select("role, orgs(id, name)").eq("user_id", user.id)
-  return NextResponse.json({ user, orgs: (data ?? []).map((m: any) => ({ id: m.orgs?.id, name: m.orgs?.name, role: m.role })) })
+  const { data } = await supabaseServer.from("org_members").select("role, orgs(id, name, region)").eq("user_id", user.id)
+  return NextResponse.json({ user, orgs: (data ?? []).map((m: any) => ({ id: m.orgs?.id, name: m.orgs?.name, region: m.orgs?.region ?? "global", role: m.role })) })
 }

@@ -190,7 +190,7 @@ def _manual_assessment(inp: SimpleIn, title: str) -> Assessment:
 @app.get("/ping")
 def ping():
     model = {"bedrock": settings.bedrock_model_id, "openai": settings.openai_model_id, "ollama": settings.ollama_model_id}.get(settings.agent_model_provider, settings.gemini_model_id)
-    return {"status": "healthy", "provider": settings.agent_model_provider, "model": model}
+    return {"status": "healthy", "provider": settings.agent_model_provider, "model": model, "region": settings.region}
 
 
 @app.post("/reroute", dependencies=[Depends(auth)])

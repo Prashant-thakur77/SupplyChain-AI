@@ -3,6 +3,27 @@
 const BASE = (process.env.AGENT_SERVICE_URL ?? "http://localhost:8080").replace(/\/$/, "")
 const SECRET = process.env.AGENT_SERVICE_SECRET ?? ""
 
+// Multi-region: AGENT_SERVICE_URL_EU / _US / _APAC … override the base for supply chains whose org lives in that region
+// (data residency + latency). Body.supply_chain_id → org.region → URL; unknown regions fall back to BASE.
+const REGION_URLS: Record<string, string> = Object.fromEntries(
+  Object.entries(process.env).filter(([k, v]) => k.startsWith("AGENT_SERVICE_URL_") && v).map(([k, v]) => [k.slice("AGENT_SERVICE_URL_".length).toLowerCase(), (v as string).replace(/\/$/, "")]),
+)
+const regionCache = new Map<string, string>()
+async function baseFor(body: unknown): Promise<string> {
+  if (!Object.keys(REGION_URLS).length) return BASE
+  const sc = (body as any)?.supply_chain_id as string | undefined
+  if (!sc) return BASE
+  if (regionCache.has(sc)) return regionCache.get(sc)!
+  try {
+    const { supabaseServer } = await import("@/lib/supabase/server")
+    const { data } = await supabaseServer.from("supply_chains").select("org_id, orgs(region)").eq("supply_chain_id", sc).maybeSingle()
+    const region = String((data as any)?.orgs?.region ?? "").toLowerCase()
+    const url = REGION_URLS[region] ?? BASE
+    regionCache.set(sc, url)
+    return url
+  } catch { return BASE }
+}
+
 export class AgentServiceError extends Error {
   constructor(public status: number, message: string) {
     super(message)
@@ -15,14 +36,15 @@ export { parseSse }
 
 async function doFetch(path: string, body: unknown, accept = "application/json"): Promise<Response> {
   let res: Response
+  const base = await baseFor(body)
   try {
-    res = await fetch(`${BASE}${path}`, {
+    res = await fetch(`${base}${path}`, {
       method: "POST",
       headers: { "content-type": "application/json", accept, "x-agent-secret": SECRET },
       body: JSON.stringify(body),
     })
   } catch (e) {
-    throw new AgentServiceError(503, `agent-service unreachable at ${BASE}: ${(e as Error).message}`)
+    throw new AgentServiceError(503, `agent-service unreachable at ${base}: ${(e as Error).message}`)
   }
   if (!res.ok) throw new AgentServiceError(res.status, `agent-service ${path} → ${res.status}: ${await res.text().catch(() => "")}`)
   return res

@@ -543,3 +543,5 @@ create index if not exists decision_outcomes_chain_idx on public.decision_outcom
 alter table public.decision_outcomes enable row level security;
 drop policy if exists decision_outcomes_read on public.decision_outcomes;
 create policy decision_outcomes_read on public.decision_outcomes for select using (recorded_by = auth.uid() or (public.chain_org(supply_chain_id) is not null and public.is_org_member(public.chain_org(supply_chain_id))));
+-- Data residency: which regional agent-service handles this org's twins (global | eu | us | apac …).
+alter table public.orgs add column if not exists region text not null default 'global';
