@@ -26,6 +26,7 @@ gcloud scheduler jobs create http supplychain-scan \
 ```
 
 Weekly digest: `gcloud scheduler jobs create http supplychain-digest --schedule="0 7 * * 1" --uri="https://<web-url>/api/cron/digest" --http-method=GET --headers="Authorization=Bearer $CRON_SECRET" --location=us-central1`
+Connector sync (ERP/TMS feeds): `gcloud scheduler jobs create http supplychain-sync --schedule="*/30 * * * *" --uri="https://<web-url>/api/cron/sync" --http-method=GET --headers="Authorization=Bearer $CRON_SECRET" --location=us-central1`
 
 `.env.yaml` format: one `KEY: "value"` per line. Never commit it (`*.env.yaml` is gitignored).
 

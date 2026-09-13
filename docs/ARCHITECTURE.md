@@ -115,3 +115,14 @@ under RLS.
   by `agent_traces`), so it is safe across instances and restarts.
 - Model spend is bounded: the LLM only ranks/explains; large reports use JSON mode; per-role temperature and token caps
   live in `models.py`.
+
+## A2A — other agents talk to SupplyChain AI
+
+The agent-service mounts a Strands `A2AServer` at `/a2a` (agent card at `/a2a/.well-known/agent-card.json`). The **Lane Assessor** agent
+answers `assess_lane` ("is Shenzhen → Rotterdam safe?"), `what_if` (blast radius + exact reroutes) and `resilience` using the same
+deterministic engine the incident graph uses. Calls need an org API key (`x-api-key`, issued on the Team page, stored hashed).
+
+```bash
+curl -X POST https://<agent-service>/a2a/ -H "x-api-key: sca_…" -H "content-type: application/json" \
+  -d '{"jsonrpc":"2.0","id":"1","method":"message/send","params":{"message":{"role":"user","messageId":"m1","parts":[{"kind":"text","text":"On supply chain <id>, is Port of Singapore -> Port of Rotterdam safe?"}]}}}'
+```

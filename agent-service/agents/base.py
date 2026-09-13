@@ -15,6 +15,7 @@ def make_agent(
     name: str | None = None,
     structured_output_model=None,
     model=None,
+    description: str | None = None,
 ) -> Agent:
     """Every agent in the service is built here so provider, temperature, tracing and typed output are uniform.
 
@@ -23,6 +24,7 @@ def make_agent(
     """
     return Agent(
         name=name or role,
+        description=description,
         model=model or make_model(role),
         system_prompt=system_prompt,
         tools=tools or [],

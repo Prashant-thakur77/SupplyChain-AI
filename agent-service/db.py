@@ -247,3 +247,17 @@ def insert_audit(user_id: Optional[str], actor: str, action: str, details: Optio
         ).execute()
     except Exception as e:
         print(f"[audit] insert failed: {e}")
+
+
+def api_key_valid(key: str) -> bool:
+    """Org API keys are stored hashed (sha256). Touches last_used_at on success."""
+    import hashlib
+
+    h = hashlib.sha256(key.encode()).hexdigest()
+    try:
+        rows = client().table("api_keys").select("id").eq("key_hash", h).eq("revoked", False).limit(1).execute().data or []
+        if rows:
+            client().table("api_keys").update({"last_used_at": datetime.now(timezone.utc).isoformat()}).eq("id", rows[0]["id"]).execute()
+        return bool(rows)
+    except Exception:
+        return False

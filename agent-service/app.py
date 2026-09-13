@@ -31,6 +31,48 @@ app = FastAPI(title="SupplyChain AI agent-service", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
+# ---- A2A: other agents ask us about lanes ---------------------------------------------------------------------------------
+# Agent card at /a2a/.well-known/agent-card.json (also agent.json). Auth: x-api-key issued per org (api_keys table) or the service secret.
+try:
+    from a2a.types import AgentSkill
+    from starlette.middleware.base import BaseHTTPMiddleware
+    from strands.multiagent.a2a import A2AServer
+
+    from agents import a2a_agent
+
+    _a2a = A2AServer(
+        a2a_agent.build(), http_url=(settings.agent_public_url or f"http://localhost:{settings.port}").rstrip("/") + "/a2a", serve_at_root=True, version="1.0.0",
+        skills=[
+            AgentSkill(id="assess_lane", name="Assess lane", description="Is origin→destination safe? Best path, cost, days, risk, alternative.", tags=["supply-chain", "routing", "risk"],
+                       examples=["Is Shenzhen Plant → Port of Rotterdam safe on supply chain abc?"]),
+            AgentSkill(id="what_if", name="What if a site fails", description="Blast radius, reroutes with exact added cost/days, revenue at risk.", tags=["simulation"],
+                       examples=["What happens on supply chain abc if Port of Singapore closes for 10 days?"]),
+            AgentSkill(id="resilience", name="Network resilience", description="Score, grade, single points of failure.", tags=["audit"]),
+        ],
+    )
+
+    class _A2AAuth(BaseHTTPMiddleware):
+        async def dispatch(self, request, call_next):
+            if "/.well-known/" in request.url.path:
+                return await call_next(request)
+            key = request.headers.get("x-api-key") or request.headers.get("x-agent-secret") or ""
+            if settings.agent_service_secret and key == settings.agent_service_secret:
+                return await call_next(request)
+            if key and db.api_key_valid(key):
+                return await call_next(request)
+            from starlette.responses import JSONResponse
+
+            return JSONResponse({"error": "x-api-key required (issue one on the Team page)"}, status_code=401)
+
+    _a2a_app = _a2a.to_fastapi_app()
+    _a2a_app.add_middleware(_A2AAuth)
+    app.mount("/a2a", _a2a_app)
+except Exception as _e:  # a2a extra not installed — the REST API still works
+    import logging
+
+    logging.getLogger("a2a").warning("A2A endpoint disabled: %s", _e)
+
+
 def auth(x_agent_secret: Optional[str] = Header(default=None)):
     if settings.agent_service_secret and x_agent_secret != settings.agent_service_secret:
         raise HTTPException(401, "bad secret")

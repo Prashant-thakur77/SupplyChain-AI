@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/ui/page-header"
 import { cn } from "@/lib/utils"
 import { RateCardCard } from "./RateCardCard"
+import { ApiKeysCard } from "./ApiKeysCard"
 
 interface Org { id: string; name: string; role: string }
 interface Member { user_id: string; role: string; email: string | null; since: string }
@@ -45,6 +46,7 @@ export function TeamPage() {
               </li>))}</ul>
           </div>
           <RateCardCard orgId={org.id} canEdit={org.role === "owner" || org.role === "approver"} />
+          <ApiKeysCard orgId={org.id} canEdit={org.role === "owner" || org.role === "approver"} />
           {isOwner && (
             <div className="mt-4 rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-theme-text-primary"><UserPlus className="h-4 w-4 text-theme-blue" /> Invite a teammate</div>
