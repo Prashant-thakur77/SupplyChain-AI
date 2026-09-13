@@ -26,7 +26,7 @@ ROLE_TEMPERATURE: dict[str, float] = {
 }
 
 FALLBACK_GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-2.5-flash"]
-_TRANSIENT = ("unsupported operand type(s) for +: 'NoneType'", "503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
+_TRANSIENT = ("unsupported operand type(s)", "503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
 
 
 def gemini_keys(role: str) -> list[str]:
@@ -87,7 +87,7 @@ def make_model(role: str, api_key: str | None = None, model_id: str | None = Non
 
 def _harden_ollama(cls) -> None:
     """Ollama sometimes omits eval_count/prompt_eval_count on the final chunk (model still loading, cache hit); the
-    upstream formatter then dies on None + None and takes the whole graph node with it. Coalesce to 0."""
+    upstream formatter then dies on None arithmetic (also total_duration) and takes the whole graph node with it. Coalesce to 0."""
     if getattr(cls, "_sc_hardened", False):
         return
     orig = cls.format_chunk
@@ -95,7 +95,7 @@ def _harden_ollama(cls) -> None:
     def format_chunk(self, event):
         data = event.get("data") if isinstance(event, dict) else None
         if event.get("chunk_type") == "metadata" and data is not None:
-            for attr in ("eval_count", "prompt_eval_count"):
+            for attr in ("eval_count", "prompt_eval_count", "total_duration"):
                 if getattr(data, attr, None) is None:
                     try:
                         setattr(data, attr, 0)

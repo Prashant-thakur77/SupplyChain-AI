@@ -47,8 +47,8 @@ def test_ollama_metadata_none_counts_are_coalesced():
     class Fake:
         def format_chunk(self, event):
             d = event["data"]
-            return d.eval_count + d.prompt_eval_count
+            return d.eval_count + d.prompt_eval_count + int(d.total_duration / 1e6)
 
     _harden_ollama(Fake)
-    assert Fake().format_chunk({"chunk_type": "metadata", "data": SimpleNamespace(eval_count=None, prompt_eval_count=None)}) == 0
-    assert Fake().format_chunk({"chunk_type": "metadata", "data": SimpleNamespace(eval_count=3, prompt_eval_count=4)}) == 7
+    assert Fake().format_chunk({"chunk_type": "metadata", "data": SimpleNamespace(eval_count=None, prompt_eval_count=None, total_duration=None)}) == 0
+    assert Fake().format_chunk({"chunk_type": "metadata", "data": SimpleNamespace(eval_count=3, prompt_eval_count=4, total_duration=2e6)}) == 9
