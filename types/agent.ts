@@ -5,7 +5,8 @@ export interface Source { title: string; url: string; published_at?: string | nu
 
 export interface TwinNode { id: string; label: string; type: string; lat?: number | null; lng?: number | null; country?: string | null; capacity: number; risk_level: number; data?: Record<string, any> }
 export interface TwinEdge { id: string; source: string; target: string; mode: string; cost: number; transit_days: number; risk_multiplier: number; capacity?: number | null }
-export interface Twin { supply_chain_id: string; name: string; nodes: TwinNode[]; edges: TwinEdge[] }
+export interface TwinFlow { id?: string; origin: string; destination: string; product?: string; units_per_week: number; value_per_unit: number; lead_time_days?: number; penalty_per_day?: number; inventory_days?: number }
+export interface Twin { supply_chain_id: string; name: string; nodes: TwinNode[]; edges: TwinEdge[]; flows?: TwinFlow[]; rate_card?: Record<string, Record<string, number>> }
 
 export interface IncidentEvent {
   id: string

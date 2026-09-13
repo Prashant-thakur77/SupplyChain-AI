@@ -40,6 +40,8 @@ export const demoTwin: Twin = {
   name: "EU Electronics Importer (demo)",
   nodes: NODES.map(({ x, y, rfType, ...n }) => ({ ...n, data: {} })),
   edges: EDGES,
+  // One commercial flow so impact, value at risk and the inventory model have something real to work with.
+  flows: [{ id: "demo-flow", origin: "shenzhen", destination: "berlin", product: "Consumer electronics", units_per_week: 1200, value_per_unit: 85, penalty_per_day: 1500, inventory_days: 12 }],
 }
 
 export const demoArch: { nodes: Node[]; edges: Edge[] } = {
