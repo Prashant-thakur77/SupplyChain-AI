@@ -114,12 +114,12 @@ export function DecisionCard({ decision, onChange, local }: Props) {
             <span className="text-sm text-theme-text-secondary">{decision.status === "approved" ? `Approved → ${chosen?.label ?? "option"}` : decision.status === "rejected" ? "Rejected" : decision.status}{decision.decided_at ? ` · ${formatDistanceToNow(new Date(decision.decided_at), { addSuffix: true })}` : ""}</span>
           )}
           <span className="ml-auto flex items-center gap-1">
-            {decision.trace_id && <Button size="sm" variant="ghost" className="gap-1.5 text-theme-text-secondary" onClick={() => setTraceOpen(true)}><Activity className="h-4 w-4" /> Trace</Button>}
+            {decision.trace_id && <Button size="sm" variant="ghost" className="gap-1.5 text-theme-text-secondary" onClick={() => setTraceOpen(true)}><Activity className="h-4 w-4" /> Evidence & trace</Button>}
             {!local && <Button asChild size="sm" variant="ghost" className="gap-1.5 text-theme-text-secondary"><Link href={`/digital-twin/view/${decision.supply_chain_id}?decision=${decision.id}`}><MapPinned className="h-4 w-4" /> View on twin</Link></Button>}
           </span>
         </footer>
       </div>
-      {decision.trace_id && <TraceDrawer traceId={decision.trace_id} open={traceOpen} onOpenChange={setTraceOpen} />}
+      {decision.trace_id && <TraceDrawer traceId={decision.trace_id} open={traceOpen} onOpenChange={setTraceOpen} decision={decision} />}
     </article>
   )
 }

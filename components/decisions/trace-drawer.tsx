@@ -4,12 +4,13 @@ import { useEffect, useState } from "react"
 import { Activity, CheckCircle2, XCircle } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { supabaseClient } from "@/lib/supabase/client"
+import type { DecisionRow } from "@/types/agent"
 
 interface TraceRow { id: string; agent_name: string; duration_ms: number | null; success: boolean | null; started_at: string; workflow_stage: string | null; input_tokens: number | null; output_tokens: number | null }
 
 const PIPELINE = ["analyst", "routing_engine", "router", "impact", "strategist"]
 
-export function TraceDrawer({ traceId, open, onOpenChange }: { traceId: string | null; open: boolean; onOpenChange: (o: boolean) => void }) {
+export function TraceDrawer({ traceId, open, onOpenChange, decision }: { traceId: string | null; open: boolean; onOpenChange: (o: boolean) => void; decision?: DecisionRow }) {
   const [rows, setRows] = useState<TraceRow[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -37,7 +38,23 @@ export function TraceDrawer({ traceId, open, onOpenChange }: { traceId: string |
             <span key={p}>{i > 0 && <span className="text-theme-text-muted"> → </span>}<span className={rows.some((r) => r.agent_name === p) ? "text-theme-text-primary" : ""}>{p}</span></span>
           ))}
         </div>
-        <ul className="mt-4 space-y-2">
+        {decision?.route_plans && decision.route_plans.length > 0 && (
+          <div className="mt-4">
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">Evidence · routing engine candidates</div>
+            <p className="mt-0.5 text-xs text-theme-text-muted">Computed by Dijkstra / Yen k-shortest before any agent ran. The Router could only rank these ids.</p>
+            <ul className="mt-2 space-y-1">
+              {decision.route_plans.map((rp) => (
+                <li key={rp.id} className={`rounded-theme-md border px-2.5 py-1.5 text-xs ${rp.candidate_id === decision.recommended_option_id ? "border-theme-blue/40 bg-theme-blue-soft/40" : "border-theme-border-subtle"}`}>
+                  <div className="truncate font-medium text-theme-text-primary">{rp.candidate_id}: {(rp.labels ?? []).join(" → ") || "no bypass"}</div>
+                  <div className="font-mono text-[11px] text-theme-text-secondary">{rp.feasible ? `$${Math.round(rp.cost).toLocaleString()} · ${rp.transit_days}d · +$${Math.round(rp.added_cost).toLocaleString()} · +${rp.added_days}d · risk×${rp.max_risk}` : "infeasible"}</div>
+                </li>
+              ))}
+            </ul>
+            {decision.policy_reason && <div className="mt-2 rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-2.5 py-1.5 text-xs text-theme-text-secondary"><span className="font-semibold text-theme-text-primary">Policy step:</span> {decision.policy_reason}</div>}
+          </div>
+        )}
+        <div className="mt-4 text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">Agent runs</div>
+        <ul className="mt-2 space-y-2">
           {loading && <li className="text-sm text-theme-text-muted">Loading trace…</li>}
           {!loading && rows.length === 0 && <li className="text-sm text-theme-text-muted">No trace rows found for <code>{traceId}</code>. Traces are written by the agent service when Supabase is reachable.</li>}
           {rows.map((r) => (

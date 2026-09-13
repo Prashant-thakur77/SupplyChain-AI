@@ -25,6 +25,7 @@ import { useCopilotAction } from '@copilotkit/react-core';
 import { useDisruptionSimulation } from './hooks/useDisruptionSimulation';
 import { useIncident } from '../incident/useIncident';
 import { IncidentOverlay } from '../incident/IncidentOverlay';
+import { TwinHealthChip } from '../TwinHealthChip';
 import { supabaseClient } from '@/lib/supabase/client';
 import { getUserData } from '@/utils/functions/userUtils';
 
@@ -288,6 +289,7 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
                 </div>
               );
             })()}
+            <TwinHealthChip />
           </div>
 
           <style dangerouslySetInnerHTML={{ __html: `
