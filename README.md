@@ -9,7 +9,7 @@
   </p>
 </p>
 
-> **Live demo (no login):** `<LIVE_URL>/demo` · **Video (5 min):** `<VIDEO_URL>` · **Track:** Agents for Humans → *Professional Agents*
+> **Live demo (no login):** `https://supplychain-ai-nine.vercel.app/demo` · **Video (5 min):** `<VIDEO_URL>` · **Track:** Agents for Humans → *Professional Agents*
 
 ---
 

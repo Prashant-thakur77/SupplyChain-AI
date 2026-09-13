@@ -3,36 +3,6 @@
   "regions": [
     "iad1"
   ],
-  "services": {
-    "web": {
-      "framework": "nextjs",
-      "root": ".",
-      "installCommand": "pnpm install --no-frozen-lockfile",
-      "functions": {
-        "app/api/agent/incident/route.ts": {
-          "maxDuration": 300
-        },
-        "app/api/agent/analysis/route.ts": {
-          "maxDuration": 300
-        },
-        "app/api/agent/chat/route.ts": {
-          "maxDuration": 120
-        },
-        "app/api/demo/incident/route.ts": {
-          "maxDuration": 300
-        },
-        "app/api/cron/scan/route.ts": {
-          "maxDuration": 300
-        },
-        "app/api/cron/sync/route.ts": {
-          "maxDuration": 120
-        },
-        "app/api/cron/digest/route.ts": {
-          "maxDuration": 60
-        }
-      }
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/scan",
@@ -42,5 +12,30 @@
       "path": "/api/cron/digest",
       "schedule": "0 7 * * 1"
     }
-  ]
+  ],
+  "framework": "nextjs",
+  "installCommand": "pnpm install --no-frozen-lockfile",
+  "functions": {
+    "app/api/agent/incident/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/agent/analysis/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/agent/chat/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/demo/incident/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/cron/scan/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/cron/sync/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/cron/digest/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }
