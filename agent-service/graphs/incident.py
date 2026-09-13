@@ -232,7 +232,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
                         {"decision_id": decision_id, "trace_id": trace_id, "elapsed_ms": int((time.time() - t0) * 1000), "order": order, "policy": reason})
         if auto and rec:
             store_memory(supply_chain_id=supply_chain_id, text=f"{__import__('datetime').date.today().isoformat()}: {decision.title} → auto-approved by policy: {rec.label} (+${rec.added_cost:,.0f}, +{rec.added_days:.0f} days).")
-        text, blocks = decision_message("auto" if auto else "pending", decision.title, rec.label if rec else None, rec.added_cost if rec else None, rec.added_days if rec else None, reason if auto else None, decision_id)
+        text, blocks = decision_message("auto" if auto else "pending", decision.title, rec.label if rec else None, rec.added_cost if rec else None, rec.added_days if rec else None, reason if auto else None, decision_id, user_id)
         post_webhook(policy.webhook_url, text, blocks)
     emit(GraphEvent(type="result", payload={"status": status, "decision_id": decision_id, "auto_approved": auto, "policy_reason": reason}))
     return IncidentResult(a, plan, ranking, imp, mit, decision, decision_id, notification_id, trace_id, status, order, memories, auto, reason)

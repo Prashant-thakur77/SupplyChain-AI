@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     agent_service_secret: str = ""  # shared secret with the Next.js proxies
     app_url: str = ""  # public web URL for deep links in notifications
     decision_webhook_url: str = ""  # default Slack-compatible webhook (per-twin policy can override)
+    action_secret: str = ""  # shared with the web app (ACTION_SECRET) to sign one-click approve links
     port: int = 8080
 
     def gemini_key(self, role: str) -> str:
