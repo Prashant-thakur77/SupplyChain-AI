@@ -64,19 +64,19 @@ img{max-width:100%;border-radius:12px;border:1px solid var(--line);background:#f
 <p class="foot">Next.js 16 (SSE proxies, Decision Inbox, cron) ↔ agent-service (Python · FastAPI · Strands) ↔ Supabase (RLS). Cloud Run today; the service already implements the Bedrock AgentCore runtime contract.</p></section>
 
 <section><div class="n">8 / 10</div><div class="eyebrow">AI technologies</div><h2>Strands Agents, used properly.</h2>
-<div class="grid"><div class="card"><h3>8 agents · typed outputs</h3><p>Every call uses <code>structured_output_model</code> (Pydantic). Large reports fall back to JSON mode + validation.</p></div>
+<div class="grid"><div class="card"><h3>10 agents · typed outputs</h3><p>Every call uses <code>structured_output_model</code> (Pydantic). Large reports fall back to JSON mode + validation.</p></div>
 <div class="card"><h3>2 GraphBuilder graphs</h3><p>Incident: <code>router ∥ impact → strategist</code>. Analysis: <code>intel → forecast ∥ scenario → strategy → report</code>.</p></div>
-<div class="card"><h3>Tools</h3><p>Blast radius, k-best reroutes, impact baseline, Tavily news, OpenWeather, Mem0 memory, persistence.</p></div>
+<div class="card"><h3>Tools</h3><p>Blast radius, k-best reroutes, impact baseline, contract exposure, delayed shipments, Tavily news, OpenWeather, GDACS / USGS / NWS hazards, Mem0 memory.</p></div>
 <div class="card"><h3>Hooks + streaming</h3><p>One <code>agent_traces</code> row per run; <code>stream_async</code> copilot; graph events streamed to the UI.</p></div>
-<div class="card"><h3>Provider switch</h3><p><code>AGENT_MODEL_PROVIDER=gemini|bedrock</code>. Key rotation → model fallback on 429/503.</p></div>
-<div class="card"><h3>Deterministic core</h3><p>Dijkstra, Yen k-shortest, lane detection, Monte Carlo cascade — unit-tested Python.</p></div></div></section>
+<div class="card"><h3>Provider switch</h3><p><code>gemini | bedrock | openai (Groq/xAI) | ollama</code>. Key rotation → model fallback on 429/503. <code>A2AServer</code> for agent-to-agent calls.</p></div>
+<div class="card"><h3>Deterministic core</h3><p>Dijkstra, Yen k-shortest, flow weighting, carbon objective, inventory cover, SLA penalties, resilience audit, demand shocks — unit-tested Python; the model only ranks and explains.</p></div></div></section>
 
 <section><div class="n">9 / 10</div><div class="eyebrow">Impact &amp; value</div><h2>Minutes instead of a day. Exact instead of guessed.</h2>
 <div class="grid"><div class="card"><div class="kpi">~30 s</div><p>From event to a ranked, sourced decision.</p></div><div class="card"><div class="kpi">0</div><p>Hallucinated routes or costs — the engine computes, the agent explains.</p></div><div class="card"><div class="kpi">100%</div><p>Of agent runs traced and auditable.</p></div></div>
 <p class="lead">One avoided week of stock-out at a mid-size importer is worth more than years of the product. And the operator gets their evenings back.</p></section>
 
 <section><div class="n">10 / 10</div><div class="eyebrow">Roadmap</div><h2>What's next</h2>
-<ul class="clean"><li>Production on Amazon Bedrock + AgentCore Runtime (same container).</li><li>Carrier-rate feeds so lane costs are live, not modelled.</li><li>ERP connectors (SAP / NetSuite) for demand-weighted impact.</li><li>Slack / Teams approval buttons; A2A endpoint: "is this lane safe?".</li><li>Learning loop: outcomes of approved decisions tune the Router.</li></ul>
+<ul class="clean"><li><strong>Shipped:</strong> flows, rate cards &amp; quotes, ERP/TMS connectors, shipments, contracts &amp; SLAs, playbooks, carbon co-optimisation, orgs &amp; roles, Slack + push approvals, A2A, outcome learning, benchmarking, demand shocks.</li><li>Production on Amazon Bedrock + AgentCore Runtime (same container).</li><li>Live AIS / vessel tracking behind the existing provider interface.</li><li>Tenants → the anonymised benchmark and outcome calibration become statistically real.</li><li>Marketplace for third-party Sentinel tools and industry playbooks.</li></ul>
 <p class="foot">github.com/Prashant-thakur77/SupplyChain-AI · MIT · Built with Strands Agents</p></section>
 </div>
 <script>document.addEventListener('keydown',e=>{const d=document.querySelector('.deck');if(e.key==='ArrowRight'||e.key==='PageDown')d.scrollBy({top:innerHeight,behavior:'smooth'});if(e.key==='ArrowLeft'||e.key==='PageUp')d.scrollBy({top:-innerHeight,behavior:'smooth'})})</script>

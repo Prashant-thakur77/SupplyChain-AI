@@ -7,6 +7,6 @@
 5. **Product** — Digital twin (canvas / CSV), Sentinel scans, Decision Inbox, incident view with exact reroutes, copilot, audit + traces.
 6. **Live demo** — /demo: close Singapore → 25 s → "via Colombo, +$1,000, +5 d" · approve.
 7. **Architecture** — Next.js ↔ agent-service (Strands) ↔ Supabase; Cloud Run today, AgentCore-ready.
-8. **AI technologies** — Strands Agents (8 agents, GraphBuilder ×2, tools, structured outputs, hooks, streaming); Gemini | Bedrock; Mem0; Tavily.
+8. **AI technologies** — Strands Agents (10 agents, GraphBuilder ×2, tools, structured outputs, hooks, streaming); Gemini | Bedrock; Mem0; Tavily.
 9. **Impact** — Minutes instead of a day per incident; exact numbers, auditable; one avoided stock-out week pays for years.
 10. **Roadmap** — Bedrock/AgentCore prod, carrier rates, ERP connectors, Slack approvals, A2A.

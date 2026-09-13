@@ -26,11 +26,11 @@ SupplyChain AI models a company's network as a digital twin (build it on a canva
 There is also a streaming copilot ("what if Suez is blocked?") that calls the same tools, and a public no-login demo at `/demo` where you can fail a port and watch the graph run.
 
 ## How we built it
-- **Strands Agents SDK (Python)** for every model call: eight agents with `@tool`s and Pydantic `structured_output_model`s; two multi-agent graphs with `GraphBuilder` (incident: `router ∥ impact → strategist`; analysis: `intel → forecast ∥ scenario → strategy → report`); hooks (`BeforeInvocationEvent`/`AfterInvocationEvent`) writing one `agent_traces` row per run; `Agent.stream_async` for the copilot.
-- **Provider switch**: `AGENT_MODEL_PROVIDER=gemini|bedrock` — `GeminiModel` today, `BedrockModel` with one env var. Retry rotates keys then falls back across models on 429/503.
+- **Strands Agents SDK (Python)** for every model call: ten agents with `@tool`s and Pydantic `structured_output_model`s; two multi-agent graphs with `GraphBuilder` (incident: `router ∥ impact → strategist`; analysis: `intel → forecast ∥ scenario → strategy → report`); hooks (`BeforeInvocationEvent`/`AfterInvocationEvent`) writing one `agent_traces` row per run; `Agent.stream_async` for the copilot; `A2AServer` exposes a Lane Assessor agent to other agents over the Agent-to-Agent protocol.
+- **Provider switch**: `AGENT_MODEL_PROVIDER=gemini|bedrock|openai|ollama` — `GeminiModel`, `BedrockModel`, Groq/xAI via `OpenAIModel`, or a local `OllamaModel` with one env var. Retry rotates keys then falls back across models on 429/503.
 - **AgentCore-ready**: the service implements `POST /invocations` + `GET /ping`, with a `BedrockAgentCoreApp` entrypoint.
-- **Deterministic core**: `routing.py` — blast radius, end-to-end lane detection, k-best reroutes, Monte Carlo cascade — unit-tested.
-- **Web**: Next.js 16, React Flow twin, Supabase (RLS), SSE streaming from the agents to the browser, Decision Inbox, incident overlay, alert actions, CSV/Excel import.
+- **Deterministic core**: `routing.py` — blast radius, end-to-end lane detection, k-best reroutes, flow-weighting, carbon objective, Monte Carlo cascade; `inventory.py` (can we wait?), `contracts.py` (SLA penalties), `resilience.py` (audit + benchmark), `demand.py` (demand shocks), `calibration.py` (learn from recorded outcomes) — all unit-tested, no model in the loop.
+- **Web**: Next.js 16, React Flow twin + Leaflet/OSM map, Supabase (RLS, orgs & roles), SSE streaming from the agents to the browser, Decision Inbox with autonomy policy, execution checklists and recorded outcomes, Slack one-click approvals, web push (PWA), ERP/TMS connectors (SAP/NetSuite/Odoo/CSV/REST), shipments in flight, rate cards & carrier quotes, contracts & SLAs, playbooks, Agent Ops with estimate accuracy.
 
 ## Challenges
 - Free-tier model quotas are tiny; we built key rotation + model fallback and a JSON-mode fallback for large nested schemas that Gemini's function-calling path rejects.
@@ -45,7 +45,7 @@ A complete loop — watch → assess → compute → decide → approve → reme
 Strands' Graph + typed outputs make multi-agent pipelines debuggable: you can read the execution order and each node's object. The best agent products do most of their work silently.
 
 ## What's next
-Bedrock/AgentCore deployment with the same container; carrier-rate feeds for real lane costs; ERP connectors (SAP/NetSuite) for demand-weighted impact; Slack/Teams approval buttons; A2A endpoint so other agents can ask "is this lane safe?".
+Bedrock/AgentCore deployment with the same container; a real AIS/vessel-tracking provider behind the existing tracking interface; production tenants so the anonymised benchmark and the outcome calibration become statistically meaningful; a marketplace for third-party Sentinel tools and playbooks.
 
 ## Built with
 Strands Agents SDK · Python · FastAPI · Pydantic · Amazon Bedrock (provider) · Gemini · Next.js 16 · React Flow · Supabase · Tavily · OpenWeather · Mem0 · Google Cloud Run
