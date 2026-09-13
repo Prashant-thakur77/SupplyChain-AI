@@ -92,7 +92,7 @@ export function useIncident(opts: Options) {
     const failed = [...allNodes].filter((id) => !onRouteNodes.has(id) && row.title.toLowerCase().includes((useDigitalTwinStore.getState().nodes.find((n) => n.id === id)?.data?.label ?? "\u0000").toLowerCase()))
     const result: IncidentResult = {
       assessment: { event_id: row.event_id ?? "", title: row.title, summary: row.summary, severity: "HIGH", confidence: row.confidence, failed_node_ids: failed, failed_edge_ids: [], affected_node_ids: [], affected_edge_ids: [], sources: row.sources ?? [], needs_review: row.confidence < 0.6, category: "OTHER" },
-      plan: { severity: "HIGH", feasible_count: candidates.filter((c) => c.feasible).length, infeasible_count: candidates.filter((c) => !c.feasible).length, severed_pairs: [], candidates },
+      plan: { severity: "HIGH", feasible_count: new Set(candidates.filter((c) => c.feasible).map((c) => `${c.origin}>${c.destination}`)).size, infeasible_count: new Set(candidates.filter((c) => !c.feasible).map((c) => `${c.origin}>${c.destination}`)).size, severed_pairs: [], candidates },
       ranking: { ranked_candidate_ids: rankedIds, recommended_candidate_id: row.recommended_option_id, rationale: row.rationale, tradeoffs: [], wait_is_viable: false, wait_rationale: "" },
       impact: null, mitigation: null, decision: { ...row }, decision_id: row.id, notification_id: null, trace_id: row.trace_id ?? "", status: "decision", execution_order: [],
     }

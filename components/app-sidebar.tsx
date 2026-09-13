@@ -17,6 +17,8 @@ import { ThemeToggle } from "@/components/theme"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { NotificationDropdown } from "@/components/layout/notification-dropdown"
+import { DecisionsBadge } from "@/components/decisions/decisions-badge"
+import { AgentHealthDot } from "@/components/layout/agent-health-dot"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -83,6 +85,8 @@ export function AppSidebar() {
 
       {/* Right: Notification + Theme + Profile */}
       <div className="flex items-center gap-2">
+        <AgentHealthDot />
+        <DecisionsBadge />
         <NotificationDropdown />
         <ThemeToggle />
         {footerItems.map((item) => {

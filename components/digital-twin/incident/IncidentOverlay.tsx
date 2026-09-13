@@ -22,7 +22,8 @@ function Stat({ label, value, tone }: { label: string; value: string; tone: "amb
 /** Turn a streamed IncidentResult into the row shape the DecisionCard renders. */
 export function toDecisionRow(r: IncidentResult, userId = "demo"): DecisionRow | null {
   if (!r.decision) return null
-  return { ...r.decision, id: r.decision_id ?? `local-${r.trace_id}`, user_id: userId, chosen_option_id: null, status: "pending", created_at: new Date().toISOString(), decided_at: null, memories: r.memories ?? [] }
+  const d = r.decision as any
+  return { ...r.decision, id: r.decision_id ?? `local-${r.trace_id}`, user_id: d.user_id ?? userId, chosen_option_id: d.chosen_option_id ?? null, status: d.status ?? "pending", created_at: d.created_at ?? new Date().toISOString(), decided_at: d.decided_at ?? null, memories: r.memories ?? d.memories ?? [] }
 }
 
 interface Props {
