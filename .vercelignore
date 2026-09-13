@@ -1,4 +1,4 @@
-agent-service
-infra
-supabase
+/agent-service
+/infra
+/supabase
 .env.local.bak-local-supabase

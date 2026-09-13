@@ -30,17 +30,17 @@
         "app/api/cron/digest/route.ts": {
           "maxDuration": 60
         }
-      },
-      "crons": [
-        {
-          "path": "/api/cron/scan",
-          "schedule": "0 6 * * *"
-        },
-        {
-          "path": "/api/cron/digest",
-          "schedule": "0 7 * * 1"
-        }
-      ]
+      }
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/scan",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/digest",
+      "schedule": "0 7 * * 1"
+    }
+  ]
 }
