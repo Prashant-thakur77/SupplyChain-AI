@@ -11,7 +11,8 @@ export function ApiKeysCard({ orgId, canEdit }: { orgId: string; canEdit: boolea
   const load = () => fetch(`/api/api-keys?orgId=${orgId}`).then((r) => r.json()).then((j) => setKeys(j.keys ?? []))
   useEffect(() => { load() }, [orgId]) // eslint-disable-line react-hooks/exhaustive-deps
   const create = async () => { setBusy(true); try { const r = await fetch("/api/api-keys", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ orgId, name: name || "default" }) }); const j = await r.json(); if (!r.ok) throw new Error(j.error); setFresh(j.key); setName(""); load() } catch (e) { toast.error((e as Error).message) } finally { setBusy(false) } }
-  const a2a = `${process.env.NEXT_PUBLIC_AGENT_SERVICE_URL ?? "https://<agent-service>"}/a2a/.well-known/agent-card.json`
+  const [a2a, setA2a] = useState<string>("…")
+  useEffect(() => { fetch("/api/agent/status").then((r) => r.json()).then((j) => setA2a(j.a2a_url ?? "")).catch(() => setA2a("")) }, [])
   return (
     <section className="rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-5">
       <div className="flex items-center gap-2"><KeyRound className="h-4 w-4 text-theme-blue" /><h2 className="font-display text-lg text-theme-text-primary">API keys · A2A</h2></div>

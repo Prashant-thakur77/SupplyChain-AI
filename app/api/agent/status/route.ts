@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
   } catch (e) {
     service = { ok: false, error: (e as Error).message, latency_ms: Date.now() - started }
   }
-  if (!userId) return NextResponse.json({ service })
+  const a2a_url = `${(process.env.AGENT_PUBLIC_URL || process.env.AGENT_SERVICE_URL || "http://localhost:8080").replace(/\/$/, "")}/a2a/.well-known/agent-card.json`
+  if (!userId) return NextResponse.json({ service, a2a_url })
   const self = await requireSelf(userId); if ("error" in self) return NextResponse.json({ service })  // service health is public; user stats are not
 
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
     const last: Record<string, string> = {}
     for (const s of scans.data ?? []) if (s.supply_chain_id && !last[s.supply_chain_id]) last[s.supply_chain_id] = s.started_at
     return NextResponse.json({
-      service,
+      service, a2a_url,
       twins: (chains.data ?? []).map((c) => ({ id: c.supply_chain_id, name: c.name, last_scan: last[c.supply_chain_id] ?? null })),
       pending_decisions: pending.count ?? 0,
       alerts_24h: alerts.count ?? 0,

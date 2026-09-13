@@ -111,6 +111,23 @@ def _structured(gres, node_id: str, model):
     return so if isinstance(so, model) else None
 
 
+def reconcile_assessment(twin: Twin, event: Event, a: Assessment) -> Assessment:
+    """Keep the model honest about *what* failed vs *who* is affected.
+
+    - If the event names failed sites/lanes (manual, simulation, Sentinel-mapped), that set is authoritative: the model may
+      not widen it — downstream sites are affected, not failed, and treating them as failed hides real bypasses.
+    - Affected sites/lanes are always the engine's blast radius (plus anything the model added).
+    """
+    if event.failed_node_ids or event.failed_edge_ids:
+        a.failed_node_ids = [n for n in event.failed_node_ids if any(x.id == n for x in twin.nodes)] or list(event.failed_node_ids)
+        a.failed_edge_ids = list(event.failed_edge_ids)
+    if a.failed_node_ids or a.failed_edge_ids:
+        br = blast_radius(twin, a.failed_node_ids, a.failed_edge_ids)
+        a.affected_node_ids = sorted((set(a.affected_node_ids) | set(br.downstream_node_ids)) - set(a.failed_node_ids))
+        a.affected_edge_ids = sorted(set(a.affected_edge_ids) | set(br.broken_edge_ids))
+    return a
+
+
 def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = lambda e: None, persist: bool = True) -> IncidentResult:
     trace_id = new_session_id("incident")
     hooks = [TraceHooks(trace_id, user_id, supply_chain_id, "incident")]
@@ -131,10 +148,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
     mem = recall_memory(supply_chain_id=supply_chain_id, query=event.title)
     memories = (mem["content"][0].get("json", {}) or {}).get("memories", []) if mem.get("status") == "success" else []
     a = analyst.run_analyst(analyst.build(hooks), twin, event, memories)
-    if a.failed_node_ids or a.failed_edge_ids:  # the model names what failed; the engine names what that reaches
-        br = blast_radius(twin, a.failed_node_ids, a.failed_edge_ids)
-        a.affected_node_ids = sorted(set(a.affected_node_ids) | set(br.downstream_node_ids))
-        a.affected_edge_ids = sorted(set(a.affected_edge_ids) | set(br.broken_edge_ids))
+    reconcile_assessment(twin, event, a)
     done("analyst", t, {"severity": a.severity.value, "confidence": a.confidence, "failed": a.failed_node_ids, "affected": a.affected_node_ids,
                         "needs_review": a.needs_review, "memories": len(memories)})
 
