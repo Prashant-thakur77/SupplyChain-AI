@@ -147,7 +147,8 @@ def _manual_assessment(inp: SimpleIn, title: str) -> Assessment:
 # ---- routes ----------------------------------------------------------------------------------------------------------
 @app.get("/ping")
 def ping():
-    return {"status": "healthy", "provider": settings.agent_model_provider, "model": settings.bedrock_model_id if settings.agent_model_provider == "bedrock" else settings.gemini_model_id}
+    model = {"bedrock": settings.bedrock_model_id, "openai": settings.openai_model_id, "ollama": settings.ollama_model_id}.get(settings.agent_model_provider, settings.gemini_model_id)
+    return {"status": "healthy", "provider": settings.agent_model_provider, "model": model}
 
 
 @app.post("/reroute", dependencies=[Depends(auth)])
@@ -421,6 +422,10 @@ def twin_draft(inp: TwinDraftIn):
     draft = twin_builder.run_twin_builder(twin_builder.build(hooks), inp.description[:6000])
     ids = {n.id for n in draft.nodes}
     draft.edges = [e for e in draft.edges if e.source in ids and e.target in ids and e.source != e.target]
+    connected = {e.source for e in draft.edges} | {e.target for e in draft.edges}
+    for n in draft.nodes:
+        if n.id not in connected:
+            draft.assumptions.append(f"'{n.label}' has no lanes yet — connect it on the canvas or describe how goods reach it.")
     return draft.model_dump()
 
 
