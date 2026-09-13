@@ -391,8 +391,8 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
                 const pane = (event.currentTarget as Element).getBoundingClientRect();
                 setContextMenu({
                   id: node.id,
-                  top: event.clientY - pane.top,
-                  left: event.clientX - pane.left,
+                  top: Number.isFinite(event.clientY) ? event.clientY - pane.top : 80,
+                  left: Number.isFinite(event.clientX) ? event.clientX - pane.left : 80,
                 });
               }
             }}
