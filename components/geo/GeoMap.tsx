@@ -81,7 +81,8 @@ export function GeoMap({ nodes: propNodes, edges: propEdges, className, showCont
       const m = L_.circleMarker(c, { radius: 7 + Math.min(4, Number(n.data?.capacity ?? 0) / 40), color: "#fff", weight: 2, fillColor: color, fillOpacity: 1 })
       m.bindPopup(`<div style="font:13px Inter,system-ui;min-width:180px"><div style="font-weight:700">${n.data?.label ?? n.id}</div>
         <div style="color:#5C5850;text-transform:uppercase;font-size:10px;letter-spacing:.08em">${kind}${n.data?.country ? " · " + n.data.country : ""}</div>
-        <div style="margin-top:6px;font-size:12px">Capacity ${n.data?.capacity ?? "—"} · Risk ${n.data?.riskLevel ?? (risk ? Math.round(risk * 100) + "%" : "—")}${st ? `<br/><b style="color:${color}">${st === "failed" ? "FAILED" : st === "onRoute" ? "On reroute" : "Downstream impact"}</b>` : ""}</div></div>`)
+        <div style="margin-top:6px;font-size:12px">Capacity ${n.data?.capacity ?? "—"} · Risk ${n.data?.riskLevel ?? (risk ? Math.round(risk * 100) + "%" : "—")}${st ? `<br/><b style="color:${color}">${st === "failed" ? "FAILED" : st === "onRoute" ? "On reroute" : "Downstream impact"}</b>` : ""}</div>
+        ${n.data?.riskBreakdown?.reasons?.length ? `<div style="margin-top:6px;font-size:11px;color:#5C5850">Why: ${n.data.riskBreakdown.reasons.slice(0, 3).join(" · ")}</div>` : ""}</div>`)
       m.on("click", () => setSelectedElement(n))
       if (showLabels) m.bindTooltip(String(n.data?.label ?? n.id), { permanent: true, direction: "top", offset: [0, -8], className: "geo-label" })
       m.addTo(g)

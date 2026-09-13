@@ -327,6 +327,8 @@ def invocations(payload: dict):
         return report_strategy(SimulationIn(**payload))
     if action == "report_forecast":
         return report_forecast(ForecastReportIn(**payload))
+    if action == "risk_recompute":
+        return risk_recompute(RiskIn(**payload))
     if action == "resilience":
         return resilience_ep(ResilienceIn(**payload))
     if action == "twin_draft":
@@ -406,6 +408,51 @@ def memory_ep(inp: MemoryIn):
     out = store_memory(supply_chain_id=inp.supply_chain_id, text=text)
     db.insert_audit(inp.user_id, "Memory", f"Stored: {text}", {"supply_chain_id": inp.supply_chain_id})
     return {"stored": out.get("status") == "success" and (out["content"][0].get("json") or {}).get("stored", False), "text": text}
+
+
+class RiskIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    twin: Optional[Twin] = None
+    persist: bool = True
+
+
+@app.post("/risk/recompute", dependencies=[Depends(auth)])
+def risk_recompute(inp: RiskIn):
+    """Recompute explainable site risk scores (structure + geography + recent news/weather). Persists to nodes.risk_level / data.riskBreakdown."""
+    from datetime import datetime, timedelta, timezone
+
+    from risk import score_twin
+
+    twin = _twin(inp)
+    news: dict[str, int] = {}
+    adverse: set[str] = set()
+    if inp.persist:
+        try:
+            since = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+            rows = db.client().table("notifications").select("citations").gte("created_at", since).execute().data or []
+            for r in rows:
+                c = r.get("citations") or {}
+                if c.get("supplyChainId") == inp.supply_chain_id:
+                    for nid in (c.get("failedNodes") or []) + (c.get("affectedNodes") or []):
+                        news[nid] = news.get(nid, 0) + 1
+            w = db.client().table("weather_intelligence").select("node_id,is_adverse").eq("supply_chain_id", inp.supply_chain_id).eq("is_adverse", True).execute().data or []
+            adverse = {x["node_id"] for x in w}
+        except Exception as e:  # noqa: BLE001
+            print(f"[risk] signals unavailable: {e}")
+    scores = score_twin(twin, news, adverse)
+    if inp.persist:
+        for r in scores:
+            try:
+                node = db.client().table("nodes").select("data").eq("node_id", r.node_id).limit(1).execute().data
+                data = (node[0].get("data") if node else None) or {}
+                data.update({"riskLevel": r.level, "riskScore": round(r.score / 5.0, 2), "riskBreakdown": {"components": r.components, "reasons": r.reasons, "computed_at": datetime.now(timezone.utc).isoformat()}})
+                db.client().table("nodes").update({"risk_level": r.score, "data": data}).eq("node_id", r.node_id).execute()
+            except Exception as e:  # noqa: BLE001
+                print(f"[risk] persist failed for {r.node_id}: {e}")
+        twin_cache.clear(inp.supply_chain_id)
+        db.insert_audit(inp.user_id, "RiskScorer", f"Recomputed risk for {len(scores)} sites", {"supply_chain_id": inp.supply_chain_id, "top": [(r.label, r.score) for r in scores[:3]]})
+    return {"scores": [r.__dict__ for r in scores]}
 
 
 class ResilienceIn(BaseModel):

@@ -26,6 +26,16 @@ export async function GET(req: NextRequest) {
   const toExpire = (pending ?? []).filter((d) => Date.now() - new Date(d.created_at).getTime() > (expireHours.get(d.supply_chain_id) ?? 48) * 3600 * 1000).map((d) => d.id)
   if (toExpire.length) await supabaseServer.from("decisions").update({ status: "expired", decided_at: new Date().toISOString() }).in("id", toExpire)
 
+  // Site risk scores: recompute at most every 6h per twin (explainable, deterministic).
+  const sixH = new Date(Date.now() - 6 * 3600 * 1000).toISOString()
+  const { data: riskRuns } = await supabaseServer.from("audit_logs").select("details").eq("actor", "RiskScorer").gte("timestamp", sixH)
+  const riskDone = new Set((riskRuns ?? []).map((r: any) => r.details?.supply_chain_id))
+  let riskRecomputed = 0
+  for (const c of chains ?? []) {
+    if (riskDone.has(c.supply_chain_id)) continue
+    try { await agentClient.post("/risk/recompute", { supply_chain_id: c.supply_chain_id, user_id: c.user_id }); riskRecomputed++ } catch (e) { console.warn("[cron] risk recompute failed:", (e as Error).message) }
+  }
+
   const due = (chains ?? []).filter((c) => !recentlyScanned.has(c.supply_chain_id))
   const results: any[] = []
   for (let i = 0; i < due.length; i += CONCURRENCY) {
@@ -40,5 +50,5 @@ export async function GET(req: NextRequest) {
     }))
     results.push(...out)
   }
-  return NextResponse.json({ ok: true, total: chains?.length ?? 0, skipped: recentlyScanned.size, scanned: results.length, expired: toExpire.length, results, at: new Date().toISOString() })
+  return NextResponse.json({ ok: true, total: chains?.length ?? 0, skipped: recentlyScanned.size, scanned: results.length, expired: toExpire.length, riskRecomputed, results, at: new Date().toISOString() })
 }
