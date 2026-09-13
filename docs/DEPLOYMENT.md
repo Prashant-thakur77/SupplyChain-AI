@@ -49,8 +49,9 @@ Then set `AGENT_SERVICE_URL` in the web app to the runtime's invocation URL (all
 No GCP account needed. The Python service runs as a Docker web service; the web app runs on Vercel.
 
 **agent-service → Railway** (`agent-service/railway.json`) or **Render** (`render.yaml` at the repo root):
-1. New project → Deploy from GitHub → pick this repo; Railway: set *Root directory* to `agent-service` (the `railway.json`
-   there selects the Dockerfile). Render reads `render.yaml` automatically (Blueprint).
+1. Railway (what the hosted demo runs on): create an empty service, then deploy the folder with the CLI so the build context is
+   exactly `agent-service/` — `cd agent-service && RAILWAY_TOKEN=<project token> npx @railway/cli up --service <name> --detach`
+   (repeat to redeploy). Render reads `render.yaml` automatically (Blueprint).
 2. Variables (copy from `agent-service/.env.example`): `AGENT_MODEL_PROVIDER=openai`, `OPENAI_BASE_URL=https://api.groq.com/openai/v1`,
    `OPENAI_API_KEY`, `OPENAI_API_KEYS` (comma-separated pool, rotated on 429), `OPENAI_MODEL_ID=qwen/qwen3.8-27b`,
    `OPENAI_FALLBACK_MODELS=openai/gpt-oss-120b`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TAVILY_API_KEY`,
