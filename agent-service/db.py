@@ -7,7 +7,7 @@ from functools import lru_cache
 from typing import Any, Optional
 
 from config import settings
-from schemas import Assessment, Decision, RouteCandidate, Twin, TwinEdge, TwinNode
+from schemas import Assessment, Decision, MitigationPlan, RouteCandidate, Twin, TwinEdge, TwinNode
 
 
 @lru_cache(maxsize=1)
@@ -124,7 +124,8 @@ def load_policy(supply_chain_id: str) -> Optional[dict]:
         return None
 
 
-def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate], auto_approved: bool = False, policy_reason: Optional[str] = None) -> str:
+def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate], auto_approved: bool = False, policy_reason: Optional[str] = None,
+                    mitigation: Optional[MitigationPlan] = None) -> str:
     sb = client()
     row = {
         "user_id": user_id,
@@ -156,6 +157,14 @@ def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate],
                 for c in candidates
             ]
         ).execute()
+    if mitigation and mitigation.steps:
+        try:
+            sb.table("decision_tasks").insert([
+                {"decision_id": did, "user_id": user_id, "position": i, "title": st.title, "owner": st.owner, "due_in_days": st.due_in_days, "detail": st.detail}
+                for i, st in enumerate(mitigation.steps)
+            ]).execute()
+        except Exception as e:  # older databases without the table
+            print(f"[tasks] insert failed: {e}")
     return did
 
 

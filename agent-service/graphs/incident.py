@@ -225,7 +225,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
     auto, reason = evaluate(policy, decision, plan.infeasible_count, a.needs_review or status == "partial")
     done("policy", t, {"auto_approved": auto, "reason": reason})
 
-    decision_id = db.insert_decision(user_id, decision, plan.candidates, auto_approved=auto, policy_reason=reason) if persist else None
+    decision_id = db.insert_decision(user_id, decision, plan.candidates, auto_approved=auto, policy_reason=reason, mitigation=mit) if persist else None
     if persist:
         rec = next((o for o in decision.options if o.id == decision.recommended_option_id), None)
         db.insert_audit(user_id, "IncidentGraph", ("Auto-approved by policy: " if auto else "Decision created: ") + decision.title,
