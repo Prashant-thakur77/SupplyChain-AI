@@ -3,7 +3,7 @@ from strands.agent.conversation_manager import SlidingWindowConversationManager
 
 from tools.intel import get_weather, search_news
 from tools.memory import recall_memory
-from tools.twin import compute_blast_radius, estimate_impact_numbers, find_reroutes, load_twin
+from tools.twin import compute_blast_radius, estimate_impact_numbers, find_reroutes, list_delayed_shipments, load_twin
 
 from .base import make_agent
 
@@ -36,7 +36,7 @@ def build(hooks, supply_chain_id: str, model=None, history: list[dict] | None = 
     agent = make_agent(
         "copilot",
         PROMPT + f"\nCurrent supply chain id: {supply_chain_id}",
-        tools=[load_twin, compute_blast_radius, find_reroutes, estimate_impact_numbers, search_news, get_weather, recall_memory],
+        tools=[load_twin, compute_blast_radius, find_reroutes, estimate_impact_numbers, list_delayed_shipments, search_news, get_weather, recall_memory],
         hooks=hooks,
         model=model,
     )

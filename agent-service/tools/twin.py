@@ -111,3 +111,27 @@ def estimate_impact_numbers(supply_chain_id: str, failed_node_ids: list[str], de
         })
     except Exception as e:
         return err(f"estimate_impact_numbers failed: {e}")
+
+
+@tool
+def list_delayed_shipments(supply_chain_id: str) -> dict:
+    """Shipments currently in flight on this supply chain that are delayed or past their planned ETA, with value and lane."""
+    try:
+        from datetime import datetime, timezone
+
+        rows = db.client().table("shipments").select("reference,origin_node_id,destination_node_id,mode,carrier,status,planned_eta,current_eta,progress,last_event,value_usd") \
+            .eq("supply_chain_id", supply_chain_id).in_("status", ["in_transit", "delayed"]).execute().data or []
+        labels = {n.id: n.label for n in twin_cache.get(supply_chain_id).nodes}
+        now = datetime.now(timezone.utc).isoformat()
+        out = []
+        for r in rows:
+            late_days = 0.0
+            if r.get("current_eta") and r.get("planned_eta"):
+                from datetime import datetime as dt
+                late_days = round((dt.fromisoformat(r["current_eta"].replace("Z", "+00:00")) - dt.fromisoformat(r["planned_eta"].replace("Z", "+00:00"))).total_seconds() / 86400, 1)
+            if r["status"] == "delayed" or late_days > 0 or (r.get("planned_eta") and r["planned_eta"] < now):
+                out.append({"reference": r["reference"], "lane": f"{labels.get(r['origin_node_id'], r['origin_node_id'])} → {labels.get(r['destination_node_id'], r['destination_node_id'])}", "mode": r["mode"], "carrier": r.get("carrier"),
+                            "status": r["status"], "late_days": late_days, "progress": r.get("progress"), "last_event": r.get("last_event"), "value_usd": r.get("value_usd")})
+        return ok({"delayed": out, "count": len(out), "total_value_usd": sum(float(x.get("value_usd") or 0) for x in out)})
+    except Exception as e:
+        return err(f"list_delayed_shipments failed: {e}")

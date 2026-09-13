@@ -5,6 +5,7 @@ from schemas import Event, Twin
 from strands_tools import current_time
 
 from tools.intel import get_weather, search_news
+from tools.twin import list_delayed_shipments
 
 from .base import call_structured, make_agent
 
@@ -19,11 +20,11 @@ to look for disruptions in the last 7 days: port closures/congestion, strikes, s
 canal blockages, factory fires, customs holds.
 Only report events that plausibly touch a node or lane in THIS twin. Map each event to failed_node_ids / failed_edge_ids using the
 twin's exact ids. Use kind="news" or kind="weather". Give each event a short unique id.
-Call current_time first so 'last 7 days' and occurred_at are anchored to today. Return an empty list if nothing relevant. Never invent sources — every event needs at least one real source URL from your searches."""
+Call current_time first so 'last 7 days' and occurred_at are anchored to today. Also call list_delayed_shipments: a delayed shipment of material value is an event too (kind='news', map it to the lane's destination node). Return an empty list if nothing relevant. Never invent sources — every event needs at least one real source URL from your searches."""
 
 
 def build(hooks, model=None):
-    return make_agent("sentinel", PROMPT, tools=[current_time, search_news, get_weather], hooks=hooks, model=model)
+    return make_agent("sentinel", PROMPT, tools=[current_time, search_news, get_weather, list_delayed_shipments], hooks=hooks, model=model)
 
 
 def run_sentinel(agent, twin: Twin) -> list[Event]:
