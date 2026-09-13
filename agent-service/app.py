@@ -327,6 +327,8 @@ def invocations(payload: dict):
         return report_strategy(SimulationIn(**payload))
     if action == "report_forecast":
         return report_forecast(ForecastReportIn(**payload))
+    if action == "warroom":
+        return warroom_ep(WarRoomIn(**payload))
     if action == "risk_recompute":
         return risk_recompute(RiskIn(**payload))
     if action == "resilience":
@@ -408,6 +410,27 @@ def memory_ep(inp: MemoryIn):
     out = store_memory(supply_chain_id=inp.supply_chain_id, text=text)
     db.insert_audit(inp.user_id, "Memory", f"Stored: {text}", {"supply_chain_id": inp.supply_chain_id})
     return {"stored": out.get("status") == "success" and (out["content"][0].get("json") or {}).get("stored", False), "text": text}
+
+
+class WarRoomIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    twin: Optional[Twin] = None
+    scenarios: list[dict] = []
+    use_presets: bool = False
+
+
+@app.post("/warroom", dependencies=[Depends(auth)])
+def warroom_ep(inp: WarRoomIn):
+    """Compare what-if scenarios side by side (deterministic)."""
+    from warroom import ScenarioIn, compare, presets, to_dicts
+
+    twin = _twin(inp)
+    scs = [ScenarioIn(str(s.get("name") or "Scenario"), list(s.get("failed_node_ids") or []), list(s.get("failed_edge_ids") or []), float(s.get("duration_days") or 14)) for s in inp.scenarios]
+    if inp.use_presets or not scs:
+        scs = presets(twin) + scs
+    rows = compare(twin, scs)
+    return {"scenarios": to_dicts(rows), "has_flows": bool(twin.flows)}
 
 
 class RiskIn(BaseModel):

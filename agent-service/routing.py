@@ -218,8 +218,9 @@ def lanes_through(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[
     for e in twin.edges:
         outdeg[e.source] = outdeg.get(e.source, 0) + 1
         indeg[e.target] = indeg.get(e.target, 0) + 1
-    sources = [n.id for n in twin.nodes if indeg.get(n.id, 0) == 0 and n.id not in failed_n]
-    sinks = [n.id for n in twin.nodes if outdeg.get(n.id, 0) == 0 and n.id not in failed_n]
+    # Failed endpoints stay in the lists on purpose: a lane whose origin or destination is down has no bypass at all.
+    sources = [n.id for n in twin.nodes if indeg.get(n.id, 0) == 0 and outdeg.get(n.id, 0) > 0]
+    sinks = [n.id for n in twin.nodes if outdeg.get(n.id, 0) == 0 and indeg.get(n.id, 0) > 0]
     lanes: list[tuple[str, str]] = []
     healthy_lanes = 0
     for a in sources:

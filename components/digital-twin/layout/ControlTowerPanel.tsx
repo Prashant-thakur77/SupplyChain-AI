@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
 import type { IncidentEvent } from '@/types/agent';
 import { ResilienceDialog } from '@/components/resilience/ResilienceDialog';
+import { WarRoomDialog } from '@/components/warroom/WarRoomDialog';
 import { FlowsDialog } from '@/components/digital-twin/forms/FlowsDialog';
 import { useUser } from '@/lib/stores/user';
 
@@ -80,6 +81,7 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
               <FlowsDialog isOpen={flowsOpen} onClose={() => setFlowsOpen(false)} supplyChainId={selectedSupplyChain} userId={userData.id} />
             </>
           )}
+          <WarRoomDialog endpoint="/api/agent/warroom" onFail={onIncident} />
           <ResilienceDialog fetchReport={async () => { const st = useDigitalTwinStore.getState(); const r = await fetch("/api/agent/resilience", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ supplyChainId: st.selectedSupplyChain, nodes: st.nodes, edges: st.edges }) }); const j = await r.json(); if (!r.ok) throw new Error(j.detail ?? j.error); return j }} onFail={onIncident} />
         </div>
       ) : (

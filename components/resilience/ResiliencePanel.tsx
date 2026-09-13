@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown"
 import { cn } from "@/lib/utils"
 import type { IncidentEvent } from "@/types/agent"
 
-export interface ResilienceReport { score: number; grade: string; total_lanes: number; single_points_of_failure: string[]; cases: { kind: "node" | "lane"; id: string; label: string; lanes_affected: number; lanes_reroutable: number; lanes_cut: number; best_added_cost: number; best_added_days: number; downstream_nodes: number; fragility: number }[]; summary: string[]; network: Record<string, any>; narrative?: string }
+export interface ResilienceReport { score: number; grade: string; total_lanes: number; single_points_of_failure: string[]; single_source_sites?: string[]; cases: { kind: "node" | "lane" | "endpoint"; id: string; label: string; lanes_affected: number; lanes_reroutable: number; lanes_cut: number; best_added_cost: number; best_added_days: number; downstream_nodes: number; fragility: number }[]; summary: string[]; network: Record<string, any>; narrative?: string }
 
 const GRADE: Record<string, string> = { A: "text-theme-green border-theme-green/30 bg-theme-green-soft", B: "text-theme-green border-theme-green/30 bg-theme-green-soft", C: "text-theme-amber border-theme-amber/30 bg-theme-amber-soft", D: "text-theme-red border-theme-red/30 bg-theme-red-soft", E: "text-theme-red border-theme-red/30 bg-theme-red-soft" }
 
@@ -47,6 +47,7 @@ export function ResiliencePanel({ fetchReport, onFail, compact, className }: Pro
           ) : (
             <div className="flex items-center gap-2 rounded-theme-md border border-theme-green/30 bg-theme-green-soft p-2.5 text-sm text-theme-text-primary"><ShieldCheck className="h-4 w-4 text-theme-green" /> No single point of failure — every site has a bypass.</div>
           )}
+          {rep.single_source_sites && rep.single_source_sites.length > 0 && <div className="rounded-theme-md border border-theme-amber/30 bg-theme-amber-soft p-2.5 text-sm text-theme-text-primary"><strong>Single-sourced:</strong> {rep.single_source_sites.join(", ")} — an outage stops flow; the fix is a second site (dual sourcing / backup DC), not a route.</div>}
           <ul className="space-y-1 text-xs text-theme-text-secondary">{rep.summary.map((s, i) => <li key={i}>• {s}</li>)}</ul>
           <div className="overflow-x-auto rounded-theme-md border border-theme-border-subtle">
             <table className="w-full text-xs">
@@ -59,7 +60,7 @@ export function ResiliencePanel({ fetchReport, onFail, compact, className }: Pro
                     <td className={cn("px-2 py-1.5 text-right", c.lanes_cut && "font-semibold text-theme-red")}>{c.lanes_cut}</td>
                     <td className="px-2 py-1.5 text-right font-mono">{c.lanes_reroutable ? `+$${Math.round(c.best_added_cost).toLocaleString()} · +${Math.round(c.best_added_days)}d` : "none"}</td>
                     <td className="px-2 py-1.5 text-right"><span className="inline-flex items-center gap-1.5"><span className="h-1.5 w-14 overflow-hidden rounded bg-theme-bg-secondary"><span className={cn("block h-full", c.fragility >= 60 ? "bg-theme-red" : c.fragility >= 30 ? "bg-theme-amber" : "bg-theme-green")} style={{ width: `${Math.min(100, c.fragility)}%` }} /></span><span className="w-8 text-right font-mono">{Math.round(c.fragility)}</span></span></td>
-                    {onFail && <td className="px-2 py-1.5 text-right">{c.kind === "node" && <button type="button" onClick={() => onFail({ id: `audit-${c.id}-${Date.now()}`, kind: "simulation", title: `${c.label}: simulated outage (from resilience audit)`, description: `What-if from the resilience audit: ${c.label} is unavailable for 2 weeks.`, failed_node_ids: [c.id], failed_edge_ids: [], sources: [] })} className="rounded-full border border-theme-border-subtle px-2 py-0.5 text-[10px] font-semibold text-theme-text-secondary hover:border-theme-red hover:text-theme-red">Fail it</button>}</td>}
+                    {onFail && <td className="px-2 py-1.5 text-right">{c.kind !== "lane" && <button type="button" onClick={() => onFail({ id: `audit-${c.id}-${Date.now()}`, kind: "simulation", title: `${c.label}: simulated outage (from resilience audit)`, description: `What-if from the resilience audit: ${c.label} is unavailable for 2 weeks.`, failed_node_ids: [c.id], failed_edge_ids: [], sources: [] })} className="rounded-full border border-theme-border-subtle px-2 py-0.5 text-[10px] font-semibold text-theme-text-secondary hover:border-theme-red hover:text-theme-red">Fail it</button>}</td>}
                   </tr>
                 ))}
               </tbody>
