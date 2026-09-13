@@ -221,16 +221,20 @@ def lanes_through(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[
     sources = [n.id for n in twin.nodes if indeg.get(n.id, 0) == 0 and n.id not in failed_n]
     sinks = [n.id for n in twin.nodes if outdeg.get(n.id, 0) == 0 and n.id not in failed_n]
     lanes: list[tuple[str, str]] = []
+    healthy_lanes = 0
     for a in sources:
         for b in sinks:
             base = shortest_path(g, a, b)
-            if base and (failed_n & set(base.path) or failed_e & set(base.edge_ids)):
+            if not base:
+                continue
+            healthy_lanes += 1
+            if failed_n & set(base.path) or failed_e & set(base.edge_ids):
                 lanes.append((a, b))
-    if lanes or not failed_n:
-        return lanes
-    # Fallback: local segments around the failed nodes (cyclic or single-node twins).
+    if healthy_lanes or not (failed_n or failed_e):
+        return lanes  # a failure the healthy lanes never touch is simply not a routing problem
+    # Fallback only for cyclic twins with no sources/sinks: local segments around the failed nodes.
     br = blast_radius(twin, failed_node_ids, failed_edge_ids)
-    return [(p_, s_) for p_, s_ in br.severed_pairs if (bp := shortest_path(g, p_, s_)) and failed_n & set(bp.path)]
+    return [(p_, s_) for p_, s_ in br.severed_pairs if (bp := shortest_path(g, p_, s_)) and (failed_n & set(bp.path) or failed_e & set(bp.edge_ids))]
 
 
 def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str], k: int = 3) -> ReroutePlan:

@@ -327,6 +327,8 @@ def invocations(payload: dict):
         return report_strategy(SimulationIn(**payload))
     if action == "report_forecast":
         return report_forecast(ForecastReportIn(**payload))
+    if action == "resilience":
+        return resilience_ep(ResilienceIn(**payload))
     if action == "twin_draft":
         return twin_draft(TwinDraftIn(**payload))
     if action == "sentinel":
@@ -404,6 +406,34 @@ def memory_ep(inp: MemoryIn):
     out = store_memory(supply_chain_id=inp.supply_chain_id, text=text)
     db.insert_audit(inp.user_id, "Memory", f"Stored: {text}", {"supply_chain_id": inp.supply_chain_id})
     return {"stored": out.get("status") == "success" and (out["content"][0].get("json") or {}).get("stored", False), "text": text}
+
+
+class ResilienceIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    twin: Optional[Twin] = None
+    narrative: bool = False
+
+
+@app.post("/resilience", dependencies=[Depends(auth)])
+def resilience_ep(inp: ResilienceIn):
+    """Deterministic resilience audit (fail every node and lane). `narrative=true` adds a short Strategist write-up."""
+    from resilience import audit, report_to_dict
+
+    twin = _twin(inp)
+    rep = report_to_dict(audit(twin))
+    if inp.narrative:
+        try:
+            from agents.base import make_agent
+
+            agent = make_agent("strategist", "You are the Strategist. Given a resilience audit (score, single points of failure, fragility table), write 4-6 crisp "
+                               "recommendations an operations manager can act on this quarter: dual-sourcing, buffer stock, alternate ports, contracts. Markdown bullets, specific to the sites named.",
+                               hooks=_hooks("resilience", inp), name="resilience_narrative")
+            rep["narrative"] = str(agent(f"Audit: {json.dumps({k: rep[k] for k in ('score','grade','single_points_of_failure','summary')})}\nTop cases: {json.dumps(rep['cases'][:8])}"))
+        except Exception as ex:  # noqa: BLE001
+            rep["narrative_error"] = str(ex)
+    db.insert_audit(inp.user_id, "ResilienceAudit", f"Resilience audit: score {rep['score']} ({rep['grade']})", {"supply_chain_id": inp.supply_chain_id})
+    return rep
 
 
 class TwinDraftIn(BaseModel):
