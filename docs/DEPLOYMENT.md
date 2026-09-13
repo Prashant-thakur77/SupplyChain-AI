@@ -25,6 +25,8 @@ gcloud scheduler jobs create http supplychain-scan \
   --headers="Authorization=Bearer $CRON_SECRET" --location=us-central1
 ```
 
+Weekly digest: `gcloud scheduler jobs create http supplychain-digest --schedule="0 7 * * 1" --uri="https://<web-url>/api/cron/digest" --http-method=GET --headers="Authorization=Bearer $CRON_SECRET" --location=us-central1`
+
 `.env.yaml` format: one `KEY: "value"` per line. Never commit it (`*.env.yaml` is gitignored).
 
 ## Option B — Amazon Bedrock AgentCore Runtime (agent-service)
