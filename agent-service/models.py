@@ -54,6 +54,16 @@ def make_model(role: str, api_key: str | None = None, model_id: str | None = Non
 
         return BedrockModel(model_id=model_id or settings.bedrock_model_id, region_name=settings.aws_region, temperature=temperature,
                             max_tokens=MAX_OUTPUT_TOKENS)
+    if settings.agent_model_provider == "openai":
+        from strands.models.openai import OpenAIModel
+
+        client_args: dict = {"api_key": settings.openai_api_key}
+        if settings.openai_base_url:
+            client_args["base_url"] = settings.openai_base_url
+        params: dict = {"temperature": temperature, "max_tokens": min(MAX_OUTPUT_TOKENS, 8192)}
+        if json_mode:
+            params["response_format"] = {"type": "json_object"}
+        return OpenAIModel(client_args=client_args, model_id=model_id or settings.openai_model_id, params=params)
     from strands.models.gemini import GeminiModel
 
     params: dict = {"temperature": temperature, "max_output_tokens": MAX_OUTPUT_TOKENS}
@@ -74,8 +84,8 @@ def is_transient(err: BaseException) -> bool:
 
 def model_plans(role: str, max_attempts: int = 5) -> list[tuple[str | None, str | None]]:
     """(api_key, model_id) attempts in order: primary key → second key → fallback models on the primary key."""
-    if settings.agent_model_provider == "bedrock":
-        return [(None, None)] * max_attempts
+    if settings.agent_model_provider in ("bedrock", "openai"):
+        return [(None, None)] * min(max_attempts, 3)
     keys = gemini_keys(role) or [None]
     plans: list[tuple[str | None, str | None]] = [(keys[0], None)] + ([(keys[1], None)] if len(keys) > 1 else [])
     plans += [(keys[0], m) for m in FALLBACK_GEMINI_MODELS if m != settings.gemini_model_id]

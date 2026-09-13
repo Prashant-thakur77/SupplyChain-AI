@@ -14,3 +14,16 @@ def test_make_model_gemini(monkeypatch):
     reload(config); reload(models)
     m = models.make_model("router")
     assert type(m).__name__ == "GeminiModel"
+
+
+def test_make_model_openai_compatible(monkeypatch):
+    monkeypatch.setenv("AGENT_MODEL_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_API_KEY", "k")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1")
+    monkeypatch.setenv("OPENAI_MODEL_ID", "llama-3.3-70b-versatile")
+    import config, models
+    reload(config); reload(models)
+    m = models.make_model("router", json_mode=True)
+    assert type(m).__name__ == "OpenAIModel" and m.config["model_id"] == "llama-3.3-70b-versatile"
+    assert models.model_plans("router") == [(None, None)] * 3
+    monkeypatch.setenv("AGENT_MODEL_PROVIDER", "gemini"); reload(config); reload(models)

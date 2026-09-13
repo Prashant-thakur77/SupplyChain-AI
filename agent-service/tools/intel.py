@@ -23,6 +23,9 @@ def grounded_news(query: str, max_results: int = 5) -> list[dict]:
 
     from models import invoke_with_retry
 
+    if settings.agent_model_provider != "gemini":
+        raise RuntimeError("Google Search grounding needs the gemini provider; set TAVILY_API_KEY for other providers")
+
     prompt = (
         f"Search the web for news from the last 7 days about: {query}\n"
         f"Return ONLY a JSON array (max {max_results} items) of objects with keys title, url, published_at (ISO date or null), "

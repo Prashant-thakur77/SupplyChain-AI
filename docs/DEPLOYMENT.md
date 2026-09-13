@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Supabase project: run `supabase/migrations/*.sql` (in order) in the SQL editor.
+- Supabase project: run `supabase/setup.sql` once in the SQL editor (idempotent; creates every table, RLS policy and the auth→users trigger).
 - Model access: a Gemini API key with billing enabled (free tiers are ~20–250 requests/day and will not survive a demo),
   **or** an AWS account with Bedrock model access (`AGENT_MODEL_PROVIDER=bedrock`).
 - Optional: Tavily, OpenWeather, Mem0 keys.
