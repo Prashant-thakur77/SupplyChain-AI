@@ -552,7 +552,13 @@ def resilience_ep(inp: ResilienceIn):
             rep["narrative"] = str(agent(f"Audit: {json.dumps({k: rep[k] for k in ('score','grade','single_points_of_failure','summary')})}\nTop cases: {json.dumps(rep['cases'][:8])}"))
         except Exception as ex:  # noqa: BLE001
             rep["narrative_error"] = str(ex)
-    db.insert_audit(inp.user_id, "ResilienceAudit", f"Resilience audit: score {rep['score']} ({rep['grade']})", {"supply_chain_id": inp.supply_chain_id})
+    import benchmark
+
+    real_nodes = [n for n in twin.nodes]
+    if inp.supply_chain_id and inp.supply_chain_id != "demo":
+        benchmark.record(inp.supply_chain_id, len(real_nodes), len(twin.edges), rep["score"], len(rep["single_points_of_failure"]), len(rep.get("single_source_sites", [])))
+    rep["benchmark"] = benchmark.percentile(inp.supply_chain_id, len(real_nodes), rep["score"])
+    db.insert_audit(inp.user_id, "ResilienceAudit", f"Resilience audit: score {rep['score']} ({rep['grade']}) — better than {rep['benchmark']['percentile']}% of similar networks", {"supply_chain_id": inp.supply_chain_id})
     return rep
 
 

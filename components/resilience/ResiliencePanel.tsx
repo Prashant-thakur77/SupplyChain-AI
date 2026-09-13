@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown"
 import { cn } from "@/lib/utils"
 import type { IncidentEvent } from "@/types/agent"
 
-export interface ResilienceReport { score: number; grade: string; total_lanes: number; single_points_of_failure: string[]; single_source_sites?: string[]; cases: { kind: "node" | "lane" | "endpoint"; id: string; label: string; lanes_affected: number; lanes_reroutable: number; lanes_cut: number; best_added_cost: number; best_added_days: number; downstream_nodes: number; fragility: number }[]; summary: string[]; network: Record<string, any>; narrative?: string }
+export interface ResilienceReport { score: number; grade: string; total_lanes: number; single_points_of_failure: string[]; single_source_sites?: string[]; cases: { kind: "node" | "lane" | "endpoint"; id: string; label: string; lanes_affected: number; lanes_reroutable: number; lanes_cut: number; best_added_cost: number; best_added_days: number; downstream_nodes: number; fragility: number }[]; summary: string[]; network: Record<string, any>; narrative?: string; benchmark?: { size_band: string; percentile: number; peers: number; reference: number; median_score: number | null; top_quartile_score: number | null; gap_to_top_quartile: number } }
 
 const GRADE: Record<string, string> = { A: "text-theme-green border-theme-green/30 bg-theme-green-soft", B: "text-theme-green border-theme-green/30 bg-theme-green-soft", C: "text-theme-amber border-theme-amber/30 bg-theme-amber-soft", D: "text-theme-red border-theme-red/30 bg-theme-red-soft", E: "text-theme-red border-theme-red/30 bg-theme-red-soft" }
 
@@ -48,6 +48,13 @@ export function ResiliencePanel({ fetchReport, onFail, compact, className }: Pro
             <div className="flex items-center gap-2 rounded-theme-md border border-theme-green/30 bg-theme-green-soft p-2.5 text-sm text-theme-text-primary"><ShieldCheck className="h-4 w-4 text-theme-green" /> No single point of failure — every site has a bypass.</div>
           )}
           {rep.single_source_sites && rep.single_source_sites.length > 0 && <div className="rounded-theme-md border border-theme-amber/30 bg-theme-amber-soft p-2.5 text-sm text-theme-text-primary"><strong>Single-sourced:</strong> {rep.single_source_sites.join(", ")} — an outage stops flow; the fix is a second site (dual sourcing / backup DC), not a route.</div>}
+          {rep.benchmark && (
+            <div className="rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary/60 p-2.5 text-xs text-theme-text-secondary">
+              <div className="flex items-center justify-between"><span className="font-semibold text-theme-text-primary">Benchmark · {rep.benchmark.size_band} networks</span><span className={cn("font-bold", rep.benchmark.percentile >= 75 ? "text-theme-green" : rep.benchmark.percentile >= 40 ? "text-theme-amber" : "text-theme-red")}>better than {rep.benchmark.percentile}%</span></div>
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-theme-bg-surface"><div className="h-full rounded-full bg-theme-blue" style={{ width: `${rep.benchmark.percentile}%` }} /></div>
+              <div className="mt-1 flex justify-between text-[10px] text-theme-text-muted"><span>median {rep.benchmark.median_score}</span><span>{rep.benchmark.gap_to_top_quartile > 0 ? `+${rep.benchmark.gap_to_top_quartile} pts to top quartile` : "top quartile"}</span><span>{rep.benchmark.peers + rep.benchmark.reference} networks, anonymised</span></div>
+            </div>
+          )}
           <ul className="space-y-1 text-xs text-theme-text-secondary">{rep.summary.map((s, i) => <li key={i}>• {s}</li>)}</ul>
           <div className="overflow-x-auto rounded-theme-md border border-theme-border-subtle">
             <table className="w-full text-xs">
