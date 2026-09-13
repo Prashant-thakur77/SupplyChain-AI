@@ -237,6 +237,34 @@ def lanes_through(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[
     return [(p_, s_) for p_, s_ in br.severed_pairs if (bp := shortest_path(g, p_, s_)) and (failed_n & set(bp.path) or failed_e & set(bp.edge_ids))]
 
 
+def flow_value_at_risk(twin: Twin, lanes: list[tuple[str, str]]) -> dict[tuple[str, str], float]:
+    """Weekly commercial value moving on each origin→destination lane (0 when the twin has no flows)."""
+    out: dict[tuple[str, str], float] = {}
+    for f in twin.flows:
+        key = (f.origin, f.destination)
+        if key in lanes:
+            out[key] = out.get(key, 0.0) + f.value_per_week
+    return out
+
+
+def _apply_flows(twin: Twin, candidates: list[RouteCandidate]) -> None:
+    if not twin.flows:
+        return
+    by_lane: dict[tuple[str, str], list] = {}
+    for f in twin.flows:
+        by_lane.setdefault((f.origin, f.destination), []).append(f)
+    for c in candidates:
+        fl = by_lane.get((c.origin, c.destination))
+        if not fl:
+            continue
+        units = sum(f.units_per_week for f in fl)
+        c.weekly_value = sum(f.value_per_week for f in fl)
+        c.added_cost_per_week = round(c.added_cost * max(units / 100.0, 1.0), 0) if c.feasible else 0  # ~100 units per container/truck
+        c.delay_penalty = round(c.added_days * sum(f.penalty_per_day for f in fl), 0) if c.feasible else 0
+        cover = [f.inventory_days for f in fl if f.inventory_days]
+        c.days_of_cover = min(cover) if cover else None
+
+
 def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str], k: int = 3) -> ReroutePlan:
     g = build_graph(twin)
     lanes = lanes_through(twin, failed_node_ids, failed_edge_ids)
@@ -260,6 +288,7 @@ def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[s
                     cost=0, transit_days=0, max_risk=0, baseline_cost=0, baseline_days=0, added_cost=0, added_days=0, feasible=False,
                 )
             )
+    _apply_flows(twin, candidates)
     candidates.sort(key=lambda c: (not c.feasible, c.added_cost, c.added_days))
 
     if infeasible:

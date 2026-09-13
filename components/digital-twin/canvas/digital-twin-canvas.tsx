@@ -39,7 +39,8 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
   const [isDragOver, setIsDragOver] = React.useState(false);
   const [contextMenu, setContextMenu] = React.useState<{ id: string; top: number; left: number } | null>(null);
   const [disruptionModalNodeId, setDisruptionModalNodeId] = React.useState<string | null>(null);
-  const { isControlTowerMode, setControlTowerMode, disruptedNodes } = useDigitalTwinStore();
+  const { isControlTowerMode, setControlTowerMode, disruptedNodes, setSelectedSupplyChain } = useDigitalTwinStore();
+  React.useEffect(() => { if (supplyChainId) setSelectedSupplyChain(supplyChainId); }, [supplyChainId, setSelectedSupplyChain]);
   const { simulateDisruption, clearDisruptions } = useDisruptionSimulation();
   const [incidentUserId, setIncidentUserId] = React.useState<string | undefined>(userId);
   React.useEffect(() => { if (!userId) getUserData().then((u) => setIncidentUserId(u?.id ?? undefined)).catch(() => undefined); }, [userId]);

@@ -37,11 +37,30 @@ class TwinEdge(BaseModel):
     capacity: Optional[float] = None
 
 
+class Flow(BaseModel):
+    """A recurring shipment lane with commercial value — what a disruption actually puts at risk."""
+
+    id: Optional[str] = None
+    origin: str
+    destination: str
+    product: Optional[str] = None
+    units_per_week: float = 0
+    value_per_unit: float = 0
+    lead_time_days: Optional[float] = None
+    penalty_per_day: float = 0
+    inventory_days: float = 0
+
+    @property
+    def value_per_week(self) -> float:
+        return self.units_per_week * self.value_per_unit
+
+
 class Twin(BaseModel):
     supply_chain_id: str
     name: str = ""
     nodes: list[TwinNode]
     edges: list[TwinEdge]
+    flows: list[Flow] = Field(default_factory=list)
 
 
 class Source(BaseModel):
@@ -97,6 +116,11 @@ class RouteCandidate(BaseModel):
     added_cost: float
     added_days: float
     feasible: bool = True
+    # Flow-weighted (filled when the twin has flows on this lane)
+    weekly_value: float = 0
+    added_cost_per_week: float = 0  # added_cost × containers/trucks per week ≈ added_cost × units_per_week / 100
+    delay_penalty: float = 0        # added_days × penalty_per_day
+    days_of_cover: Optional[float] = None
 
 
 class RouteRanking(BaseModel):

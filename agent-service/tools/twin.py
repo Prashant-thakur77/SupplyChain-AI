@@ -86,8 +86,24 @@ def estimate_impact_numbers(supply_chain_id: str, failed_node_ids: list[str], de
         total = sum(cap.values()) or 1.0
         hit = sum(cap.get(i, 0) for i in br.downstream_node_ids + failed_node_ids)
         share = min(100.0, 100.0 * hit / total)
+        # Value-weighted when the twin has flows: weekly value on lanes whose healthy path crosses the failure.
+        from routing import flow_value_at_risk, lanes_through
+
+        lanes = lanes_through(t, failed_node_ids, [])
+        var = flow_value_at_risk(t, lanes)
+        if var:
+            weekly = sum(var.values())
+            penalties = sum(f.penalty_per_day for f in t.flows if (f.origin, f.destination) in var) * max(delay_days, 0)
+            cover = [f.inventory_days for f in t.flows if (f.origin, f.destination) in var and f.inventory_days]
+            return ok({
+                "basis": "flows", "nodes_affected": len(br.downstream_node_ids) + len(failed_node_ids), "network_share_pct": round(share, 1),
+                "weekly_value_on_affected_lanes_usd": round(weekly, 0), "revenue_at_risk_usd": round(weekly * max(delay_days, 1) / 7.0 + penalties, 0),
+                "late_penalties_usd": round(penalties, 0), "min_days_of_cover": min(cover) if cover else None, "delay_days": delay_days,
+                "lanes": [{"origin": a, "destination": b, "weekly_value_usd": round(v, 0)} for (a, b), v in var.items()],
+            })
         flow_cost = sum(e.cost for e in t.edges) or 1.0
         return ok({
+            "basis": "capacity-proxy (add flows for value-weighted impact)",
             "nodes_affected": len(br.downstream_node_ids) + len(failed_node_ids),
             "network_share_pct": round(share, 1),
             "revenue_at_risk_usd": round(flow_cost * (share / 100.0) * max(delay_days, 1) * 10, 0),

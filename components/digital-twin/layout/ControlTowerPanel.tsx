@@ -1,11 +1,13 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { AlertCircle, Loader2, Radar, ShieldAlert, Search } from 'lucide-react';
+import { AlertCircle, Loader2, Radar, ShieldAlert, Search, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
 import type { IncidentEvent } from '@/types/agent';
 import { ResilienceDialog } from '@/components/resilience/ResilienceDialog';
+import { FlowsDialog } from '@/components/digital-twin/forms/FlowsDialog';
+import { useUser } from '@/lib/stores/user';
 
 interface Props {
   /** Starts the Strands incident graph for a live-detected event. */
@@ -17,6 +19,9 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
   const { isControlTowerMode, disruptedNodes, nodes, clearDisruptions, incident, isAnalyzingDisruption, updateNode } = useDigitalTwinStore();
   const [isScanning, setIsScanning] = useState(false);
   const [lastScan, setLastScan] = useState<{ description: string; max: number } | null>(null);
+  const [flowsOpen, setFlowsOpen] = useState(false);
+  const { userData } = useUser();
+  const selectedSupplyChain = useDigitalTwinStore((s) => s.selectedSupplyChain);
 
   if (!isControlTowerMode) return null;
 
@@ -69,6 +74,12 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
             {nodes.length === 0 ? 'Add nodes to scan' : isScanning ? 'Scanning global feeds…' : 'Scan live intelligence'}
           </button>
           {lastScan && <p className="text-xs leading-relaxed text-theme-text-muted">{lastScan.description}</p>}
+          {userData?.id && selectedSupplyChain && selectedSupplyChain !== 'default-chain' && (
+            <>
+              <button onClick={() => setFlowsOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-border-subtle bg-theme-bg-surface px-3 py-2 text-sm font-medium text-theme-text-primary hover:border-theme-blue hover:text-theme-blue"><Truck className="h-4 w-4" /> Flows (value at risk)</button>
+              <FlowsDialog isOpen={flowsOpen} onClose={() => setFlowsOpen(false)} supplyChainId={selectedSupplyChain} userId={userData.id} />
+            </>
+          )}
           <ResilienceDialog fetchReport={async () => { const st = useDigitalTwinStore.getState(); const r = await fetch("/api/agent/resilience", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ supplyChainId: st.selectedSupplyChain, nodes: st.nodes, edges: st.edges }) }); const j = await r.json(); if (!r.ok) throw new Error(j.detail ?? j.error); return j }} onFail={onIncident} />
         </div>
       ) : (

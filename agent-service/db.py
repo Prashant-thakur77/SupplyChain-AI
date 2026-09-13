@@ -7,7 +7,7 @@ from functools import lru_cache
 from typing import Any, Optional
 
 from config import settings
-from schemas import Assessment, Decision, MitigationPlan, RouteCandidate, Twin, TwinEdge, TwinNode
+from schemas import Assessment, Decision, Flow, MitigationPlan, RouteCandidate, Twin, TwinEdge, TwinNode
 
 
 @lru_cache(maxsize=1)
@@ -63,12 +63,25 @@ def rows_to_twin(supply_chain_id: str, name: str, nodes: list[dict], edges: list
     return Twin(supply_chain_id=supply_chain_id, name=name, nodes=tn, edges=te)
 
 
+def load_flows(supply_chain_id: str) -> list[Flow]:
+    try:
+        rows = client().table("flows").select("*").eq("supply_chain_id", supply_chain_id).eq("active", True).execute().data or []
+    except Exception as e:  # table may not exist yet
+        print(f"[flows] load failed: {e}")
+        return []
+    return [Flow(id=r["id"], origin=r["origin_node_id"], destination=r["destination_node_id"], product=r.get("product"), units_per_week=_num(r.get("units_per_week")),
+                 value_per_unit=_num(r.get("value_per_unit")), lead_time_days=r.get("lead_time_days"), penalty_per_day=_num(r.get("penalty_per_day")), inventory_days=_num(r.get("inventory_days")))
+            for r in rows]
+
+
 def load_twin(supply_chain_id: str) -> Twin:
     sb = client()
     sc = sb.table("supply_chains").select("name").eq("supply_chain_id", supply_chain_id).limit(1).execute().data
     nodes = sb.table("nodes").select("*").eq("supply_chain_id", supply_chain_id).execute().data or []
     edges = sb.table("edges").select("*").eq("supply_chain_id", supply_chain_id).execute().data or []
-    return rows_to_twin(supply_chain_id, (sc[0]["name"] if sc else ""), nodes, edges)
+    twin = rows_to_twin(supply_chain_id, (sc[0]["name"] if sc else ""), nodes, edges)
+    twin.flows = load_flows(supply_chain_id)
+    return twin
 
 
 def list_supply_chains() -> list[dict]:
