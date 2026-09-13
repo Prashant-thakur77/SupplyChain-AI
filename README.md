@@ -163,9 +163,6 @@ are supported for teams outside AWS — see [`docs/DEPLOYMENT.md`](docs/DEPLOYME
 - `agent-service` (80 tests): routing (Dijkstra, Yen, blast radius, lane detection, flows, carbon objective), inventory, contracts, playbooks, calibration, benchmark, demand shock, hazard feeds (mocked HTTP), lane tools, schemas, agent post-processing, graph gates, API (`TestClient`).
 - web (34 tests): SSE parser (incl. CRLF), decision formatting, CSV/Excel twin import, tracking provider, connectors (presets, CSV, mapping, site resolution).
 
-## Disclosure
-
-The digital-twin canvas, Supabase schema and simulation screens come from the author's earlier open-source work. Everything the agent does was built during the hackathon: the Strands `agent-service` (agents, tools, graphs, hooks, provider switch, AgentCore contract), the deterministic routing engine, the Decision Inbox and incident view, the background scan loop, the public demo, and these docs.
 
 ## License
 
