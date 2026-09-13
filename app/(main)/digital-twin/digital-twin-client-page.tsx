@@ -343,11 +343,12 @@ export default function DigitalTwinClientPage() {
 
           {viewMode === "graph" && (
             activeTwinData.hasArchData ? (
-              <DigitalTwinCanvas />
+              <DigitalTwinCanvas supplyChainId={twinId ?? undefined} />
             ) : (
               <DigitalTwinCanvas
                 initialNodes={activeTwinData.nodes}
                 initialEdges={activeTwinData.edges}
+                supplyChainId={twinId ?? undefined}
               />
             )
           )}
