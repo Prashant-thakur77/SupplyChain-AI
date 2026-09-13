@@ -45,11 +45,25 @@ Two entry points run concurrently; the strategist gets both outputs; `execution_
 A `HookProvider` on `BeforeInvocationEvent`/`AfterInvocationEvent` writes one row per agent run to `agent_traces`.
 The product's "Trace" drawer is just a query on that table.
 
-## 5. Provider switch and AgentCore
+## 5. Amazon Bedrock and AgentCore
 
-`AGENT_MODEL_PROVIDER=bedrock` swaps `GeminiModel` for `BedrockModel`; nothing else changes. The FastAPI service also
-implements `POST /invocations` and `GET /ping`, with a `BedrockAgentCoreApp` entrypoint, so it deploys to Amazon Bedrock
-AgentCore Runtime unchanged.
+`AGENT_MODEL_PROVIDER=bedrock` swaps the model for `BedrockModel` (a cross-region inference profile such as
+`us.anthropic.claude-sonnet-4-6`); nothing else in the agents changes, which is the point of Strands' model abstraction. The
+FastAPI service implements `POST /invocations` and `GET /ping`, with a `BedrockAgentCoreApp` entrypoint, so the same
+container deploys to Amazon Bedrock AgentCore Runtime — the IAM execution role, the least-privilege policy (Bedrock invoke,
+ECR pull, CloudWatch logs, X-Ray) and an EventBridge rule for the 15-minute Sentinel loop are in `infra/aws/`. AgentCore's
+session isolation and observability map cleanly onto the `agent_traces` rows the hooks already write.
+
+A second Strands feature I leaned on: `A2AServer`. The Lane Assessor agent is exposed over the Agent-to-Agent protocol at
+`/a2a`, so a procurement bot or a customer's own agent can ask "is Shenzhen → Rotterdam safe this week?" and get the exact
+engine numbers back.
+
+## 6. Surviving free tiers
+
+Not every builder has a billed model account on day one. Strands made it cheap to support four providers behind one flag
+(Bedrock, Gemini, OpenAI-compatible such as Groq, local Ollama), and the incident graph is written so that when a node
+fails — a rate limit, a refused structured-output tool — the deterministic engine still produces a decision, marked
+"partial" with reduced confidence, rather than nothing.
 
 ## What I'd tell another builder
 
