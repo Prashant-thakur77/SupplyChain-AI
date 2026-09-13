@@ -55,7 +55,12 @@ export function ProductTour() {
   // Navigate to the step's route, then track its anchor's rect (re-measured on scroll/resize and while layout settles).
   useEffect(() => {
     if (!active || !step) return
-    if (pathname !== step.route) { router.push(step.route); return }
+    if (pathname !== step.route) {
+      setRect(null)  // never spotlight a stale anchor while the next page loads
+      router.push(step.route)
+      const retry = window.setTimeout(() => router.push(step.route), 2500)  // dev compiles / slow routes: nudge again
+      return () => window.clearTimeout(retry)
+    }
     let alive = true, tries = 0
     setMissing(false)
     const measure = () => {

@@ -51,21 +51,9 @@ export default function MainLayout({
           console.log('⚠️ Error fetching user data:', error)
         }
 
-        // Only redirect if critical fields are completely missing
-        // Skip profile check for main dashboard during development
-        const skipProfileCheck = pathname.includes('/dashboard') || 
-                                pathname.includes('/digital-twin') ||
-                                pathname.includes('/simulation') ||
-                                pathname.includes('/orchestrator') ||
-                                pathname.includes('/risk-prediction')
-        
-        if (userData && !skipProfileCheck && (
-          !userData.organisation_name || userData.organisation_name.trim() === ''
-        )) {
-          console.log('⚠️ Missing organization name, redirecting to profile')
-          router.push('/profile?show_popup=true')
-          return
-        }
+        // Organisation membership is created automatically (ensure_personal_org); the profile form is optional and
+        // reachable from Profile → Update Profile, so we never bounce a new user out of the page they asked for.
+        if (userData && !userData.organisation_name) console.log('ℹ️ Organisation profile not filled in yet')
 
         console.log('✅ Profile check passed, proceeding to main app')
 
