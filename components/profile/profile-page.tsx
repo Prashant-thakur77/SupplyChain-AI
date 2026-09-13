@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { TOUR_START_EVENT } from "@/components/onboarding/ProductTour"
+import { Sparkles } from "lucide-react"
 import { Edit, Lock, Mail, Phone, Globe, LogOut, Activity } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -196,6 +198,14 @@ export function ProfilePage(): React.ReactElement {
                 >
                   <Lock className="h-4 w-4 mr-2" />
                   Change Password
+                </Button>
+              </div>
+              <div className="mt-4 p-4 rounded-xl border border-theme-border-subtle bg-theme-bg-secondary/60">
+                <h4 className="font-medium mb-2 text-theme-text-primary">Product tour</h4>
+                <p className="text-sm text-theme-text-secondary mb-4">Replay the guided walkthrough of every tab — Dashboard, Decision Inbox, Digital Twin, Playbooks, Site risk, Agent Ops and Team.</p>
+                <Button onClick={() => window.dispatchEvent(new Event(TOUR_START_EVENT))} variant="outline" className="w-full">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Take the tour
                 </Button>
               </div>
             </CardContent>

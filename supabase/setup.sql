@@ -607,3 +607,5 @@ alter table public.autonomy_policies add column if not exists carbon_weight nume
 alter table public.autonomy_policies add column if not exists carbon_price numeric not null default 100;
 -- Keep the impact estimate with the decision so the card shows revenue at risk, delay and SLA penalties.
 alter table public.decisions add column if not exists impact jsonb;
+-- First-run product tour: set once the user finishes or skips it (replayable from Profile).
+alter table public.users add column if not exists tour_completed_at timestamptz;

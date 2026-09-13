@@ -25,7 +25,7 @@ export function AgentStatusCard({ className }: { className?: string }) {
   }, [])
   const ok = st?.service.ok
   return (
-    <div className={cn("rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4", className)}>
+    <div data-tour="agent-status" className={cn("rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4", className)}>
       <div className="flex items-center gap-2">
         <Bot className="h-4 w-4 text-theme-blue" />
         <h3 className="text-sm font-semibold text-theme-text-primary">Agent status</h3>

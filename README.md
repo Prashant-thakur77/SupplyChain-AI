@@ -56,7 +56,7 @@ Who it is for: the person who owns "keep the goods moving" at a company with 5�
 | **Contracts & SLAs** — paste a clause, the Contracts agent extracts lead time / grace / penalty per day / cap; penalties are added deterministically to every impact estimate. | **Learning from outcomes** — record what a decision really cost; estimate accuracy (MAPE, bias) on Agent Ops; estimated lanes are calibrated by the observed bias. |
 | **Public hazard feeds** — GDACS, USGS and NWS alerts (keyless) filtered to the twin's sites, as Sentinel tools. | **Carbon & cost co-optimisation** — CO₂e per lane from the rate card; a policy slider weighs carbon in the routing objective; every option shows its tCO₂e delta. |
 | **Demand shock** — scale demand on flows: which lanes saturate, cost to serve, stock-out timing. **Inventory model** — "wait and monitor" is only viable when days of cover outlast the expected outage. | **A2A endpoint** — other agents ask *"is this lane safe?"* over the Agent-to-Agent protocol with org API keys; **benchmarking** — resilience percentile vs anonymised peers; **multi-region** agent-service routing by org. |
-| Roadmap and what shipped: [`docs/ROADMAP.md`](docs/ROADMAP.md). | |
+| **Guided tour** — a spotlight walkthrough of every tab and control starts on first sign-in (replay from Profile or the `?` in the header). | Roadmap and what shipped: [`docs/ROADMAP.md`](docs/ROADMAP.md). |
 
 <p align="center"><img src="docs/img/demo-map.png" alt="Geo view with incident overlay" width="80%"></p>
 

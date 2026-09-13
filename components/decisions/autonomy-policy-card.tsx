@@ -35,7 +35,7 @@ export function AutonomyPolicyCard({ userId }: { userId: string }) {
   if (!twins || twins.length === 0) return null
   const f = form!
   return (
-    <div className="mt-6 rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface">
+    <div data-tour="policy" className="mt-6 rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface">
       <button type="button" onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
         <span className={cn("flex h-8 w-8 items-center justify-center rounded-full", f.auto_approve ? "bg-theme-green-soft text-theme-green" : "bg-theme-bg-secondary text-theme-text-secondary")}><ShieldCheck className="h-4 w-4" /></span>
         <span className="min-w-0 flex-1">

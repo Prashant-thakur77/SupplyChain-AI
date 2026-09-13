@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
 import { ISCAChat } from "@/components/copilot/ISCA/ISCAChat"
 import { CopilotProvider } from "@/components/copilot/copilot-provider"
+import { ProductTour } from "@/components/onboarding/ProductTour"
 import { supabaseClient } from "@/lib/supabase/client"
 import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -119,6 +120,7 @@ export default function MainLayout({
         
         {/* Add ISCA Chat Assistant */}
         <ISCAChat />
+        <ProductTour />
       </div>
   )
 }

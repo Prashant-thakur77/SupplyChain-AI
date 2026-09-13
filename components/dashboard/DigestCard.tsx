@@ -13,7 +13,7 @@ export function DigestCard({ className }: { className?: string }) {
   if (!d) return null
   const money = (n: number) => `$${Math.round(n).toLocaleString()}`
   return (
-    <div className={cn("rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4", className)}>
+    <div data-tour="digest" className={cn("rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4", className)}>
       <div className="flex items-center gap-2"><PiggyBank className="h-4 w-4 text-theme-green" /><h3 className="text-sm font-semibold text-theme-text-primary">Last 7 days</h3><span className="ml-auto text-[11px] text-theme-text-muted">cost of inaction avoided</span></div>
       <div className="mt-2 flex items-end gap-3"><span className="font-display text-3xl font-semibold text-theme-green">{money(d.avoided_usd)}</span><span className="pb-1 text-xs text-theme-text-secondary">vs {money(d.spent_on_reroutes_usd)} spent on reroutes · {money(d.est_model_cost_usd)} in model cost</span></div>
       <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">

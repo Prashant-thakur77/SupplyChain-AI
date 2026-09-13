@@ -209,7 +209,7 @@ export default function DigitalTwinDashboard() {
             )}
           </h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div data-tour="twin-create" className="flex items-center gap-2">
           <button
             onClick={handleRefresh}
             disabled={refreshing}
@@ -272,7 +272,7 @@ export default function DigitalTwinDashboard() {
             </div>
           </div>
         ) : (
-          <div className="border border-theme-border-subtle rounded-theme-lg bg-theme-bg-surface overflow-hidden shadow-sm">
+          <div data-tour="twin-registry" className="border border-theme-border-subtle rounded-theme-lg bg-theme-bg-surface overflow-hidden shadow-sm">
             {/* Table Header */}
             <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] items-center border-b border-theme-border-subtle px-6 py-3.5 text-[10px] uppercase tracking-wider text-theme-text-muted font-bold gap-4 bg-theme-bg-secondary/20">
               <span>Graph Name</span>

@@ -74,7 +74,7 @@ export function DecisionInbox() {
         icon={<Inbox className="h-5 w-5" />}
         actions={
           <div className="flex items-center gap-2">
-            <PushToggle />
+            <span data-tour="push"><PushToggle /></span>
             <Button variant="outline" size="sm" className="gap-1.5" disabled={refreshing || !user?.id} onClick={async () => { setRefreshing(true); await load(user.id).catch(() => undefined); setRefreshing(false) }}>
               <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} /> Refresh
             </Button>
