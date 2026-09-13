@@ -441,6 +441,14 @@ class MemoryIn(BaseModel):
     when: Optional[str] = None
 
 
+@app.get("/playbooks/catalog", dependencies=[Depends(auth)])
+def playbooks_catalog():
+    """Built-in playbook catalogue (installed per org from the Playbooks page)."""
+    import playbooks as pb
+
+    return {"playbooks": pb.BUILTIN}
+
+
 @app.post("/memory", dependencies=[Depends(auth)])
 def memory_ep(inp: MemoryIn):
     """Store the outcome of a decision so the next incident can recall it."""

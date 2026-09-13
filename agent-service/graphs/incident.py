@@ -16,6 +16,7 @@ from models import invoke_with_retry
 
 import db
 import inventory
+import playbooks
 from agents import analyst, impact, router, strategist
 from routing import ReroutePlan, reroute_plan
 from schemas import (
@@ -150,6 +151,9 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
     t = stage("graph")
     try:
         delay = max([c.added_days for c in plan.candidates if c.feasible] or [7.0])
+        pbs = db.load_playbooks(supply_chain_id) if persist else playbooks.BUILTIN
+        matched = playbooks.match(pbs, a.category, f"{a.title} {a.summary}")
+        pb_text = ("\n\nORGANISATION PLAYBOOK(S) — the strategist must follow the guidance and include these steps (adapt owners/dates):\n" + playbooks.render(matched)) if matched else ""
         task = (
             f"Supply chain id: {supply_chain_id}\nDisruption: {a.model_dump_json()}\nSevered pairs: {plan.severed_pairs}\n"
             f"Best feasible reroute adds {delay} days; infeasible lanes: {plan.infeasible_count}.\n"
@@ -158,6 +162,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
             "- router: rank the feasible candidates by added cost/days/risk and decide whether waiting is viable.\n"
             "- impact: quantify the business impact; you are the only node with estimate_impact_numbers — call it first.\n"
             "- strategist: you receive the router and impact outputs as input; write the mitigation plan. Do not call tools you don't have."
+            + pb_text
         )
 
         def attempt(model):
@@ -178,7 +183,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
         ranking = _structured(gres, "router", RouteRanking)
         imp = _structured(gres, "impact", ImpactEstimate)
         mit = _structured(gres, "strategist", MitigationPlan)
-        done("graph", t, {"status": str(gres.status), "order": exec_order,
+        done("graph", t, {"status": str(gres.status), "order": exec_order, "playbooks": [p["name"] for p in matched],
                           "usage": dict(gres.accumulated_usage) if gres.accumulated_usage else None})
     except Exception as e:  # graph failure must not lose the deterministic result
         emit(GraphEvent(type="error", node="graph", payload={"error": str(e)}))
@@ -210,7 +215,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
     if mit is None and imp is not None:
         t = stage("strategist")
         try:
-            mit = strategist.run_strategist(strategist.build(hooks), twin, a, ranking, imp)
+            mit = strategist.run_strategist(strategist.build(hooks), twin, a, ranking, imp, db.load_playbooks(supply_chain_id) if persist else None)
         except Exception as e:
             emit(GraphEvent(type="error", node="strategist", payload={"error": str(e)}))
             status = "partial"

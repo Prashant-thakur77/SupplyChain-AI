@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import {
+  BookOpen,
   Home,
   LineChart,
   Network,
@@ -29,6 +30,7 @@ export function AppSidebar() {
     { href: "/dashboard", icon: Home, label: "Dashboard", isActive: pathname === "/dashboard" },
     { href: "/decisions", icon: Inbox, label: "Decisions", isActive: pathname === "/decisions" },
     { href: "/agents", icon: Activity, label: "Agent Ops", isActive: pathname === "/agents" },
+    { href: "/playbooks", icon: BookOpen, label: "Playbooks", isActive: pathname === "/playbooks" },
     { href: "/digital-twin", icon: Network, label: "Digital Twin", isActive: pathname === "/digital-twin" },
     { href: "/simulation", icon: LineChart, label: "Simulation", isActive: pathname === "/simulation" },
     { href: "/risk-prediction", icon: Brain, label: "Risk ML", isActive: pathname === "/risk-prediction" },

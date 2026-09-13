@@ -261,3 +261,19 @@ def api_key_valid(key: str) -> bool:
         return bool(rows)
     except Exception:
         return False
+
+
+def load_playbooks(supply_chain_id: str) -> list[dict]:
+    """The org's enabled playbooks for this chain; the built-in catalogue when the org has none installed."""
+    import playbooks as pb
+
+    try:
+        sc = client().table("supply_chains").select("org_id").eq("supply_chain_id", supply_chain_id).limit(1).execute().data
+        org = sc[0].get("org_id") if sc else None
+        if org:
+            rows = client().table("playbooks").select("key,name,category,triggers,steps,guidance,enabled").eq("org_id", org).eq("enabled", True).execute().data or []
+            if rows:
+                return rows
+    except Exception:
+        pass
+    return pb.BUILTIN

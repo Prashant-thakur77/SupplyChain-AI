@@ -14,11 +14,15 @@ def build(hooks, structured: bool = False, model=None):
     return make_agent("strategist", PROMPT, tools=[recall_memory], hooks=hooks, structured_output_model=MitigationPlan if structured else None, model=model)
 
 
-def run_strategist(agent, twin: Twin, a: Assessment, r: RouteRanking, i: ImpactEstimate) -> MitigationPlan:
+def run_strategist(agent, twin: Twin, a: Assessment, r: RouteRanking, i: ImpactEstimate, playbooks: list[dict] | None = None) -> MitigationPlan:
+    import playbooks as pb
+
+    matched = pb.match(playbooks if playbooks is not None else pb.BUILTIN, a.category, f"{a.title} {a.summary}")
+    pb_text = ("\n\nORGANISATION PLAYBOOK(S) — follow the guidance and include these steps (adapt owners/dates to this incident):\n" + pb.render(matched)) if matched else ""
     out = call_structured(
         agent,
         f"Supply chain id: {twin.supply_chain_id}\nDisruption: {a.model_dump_json()}\nRouting decision: {r.model_dump_json()}\n"
-        f"Impact: {i.model_dump_json()}\nWrite the plan.",
+        f"Impact: {i.model_dump_json()}{pb_text}\nWrite the plan.",
         MitigationPlan,
     )
     return out
