@@ -1,5 +1,6 @@
 "use client"
 
+import { enrichRfTwin, type EnrichSummary } from "@/lib/twin-enrich-client"
 import { useEffect, useRef, useState } from "react"
 import {
   Dialog,
@@ -108,12 +109,22 @@ export function ImportTwinDialog({ isOpen, onClose, onImport }: ImportTwinDialog
 
   const canImport = !!result && result.errors.length === 0 && result.stats.nodeCount > 0
 
+  const [enrich, setEnrich] = useState<EnrichSummary | null>(null)
+
   async function handleImport() {
     if (!result || !canImport || importing) return
     setImporting(true)
     setImportError(null)
     try {
-      await onImport({ name: name.trim() || "Imported Supply Chain", nodes: result.nodes, edges: result.edges })
+      // Geocode nodes without coordinates and estimate missing lane costs so Sentinel, weather and routing work immediately.
+      let nodes = result.nodes, edges = result.edges
+      try {
+        const en = await enrichRfTwin(result.nodes, result.edges)
+        nodes = en.nodes; edges = en.edges; setEnrich(en.summary)
+      } catch (e) {
+        console.warn("[import] enrichment skipped:", (e as Error).message)
+      }
+      await onImport({ name: name.trim() || "Imported Supply Chain", nodes, edges })
       reset()
     } catch (e: any) {
       setImportError(e?.message || "Import failed. Please try again.")

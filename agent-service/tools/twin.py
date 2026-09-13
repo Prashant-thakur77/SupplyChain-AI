@@ -4,6 +4,7 @@ from __future__ import annotations
 from strands import tool
 
 import db
+from enrich import enrich_twin
 from routing import blast_radius, reroute_plan
 from schemas import Twin
 from tools._result import err, ok
@@ -16,12 +17,12 @@ class _TwinCache:
         self._m: dict[str, Twin] = {}
 
     def put(self, t: Twin) -> None:
-        self._m[t.supply_chain_id] = t
+        self._m[t.supply_chain_id] = enrich_twin(t)[0]
 
     def get(self, supply_chain_id: str) -> Twin:
         if supply_chain_id in self._m:
             return self._m[supply_chain_id]
-        t = db.load_twin(supply_chain_id)
+        t = enrich_twin(db.load_twin(supply_chain_id))[0]
         self._m[supply_chain_id] = t
         return t
 
