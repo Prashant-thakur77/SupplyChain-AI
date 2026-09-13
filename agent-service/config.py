@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     # OpenAI-compatible providers (OpenAI, Groq, xAI Grok, Together…): AGENT_MODEL_PROVIDER=openai
     openai_api_key: str = ""
+    openai_api_keys: str = ""  # optional comma-separated pool (Groq free tier: rotate on 429)
+    openai_fallback_models: str = ""  # optional comma-separated model ids tried after the primary on transient errors
     openai_base_url: str = ""  # e.g. https://api.groq.com/openai/v1 or https://api.x.ai/v1
     openai_model_id: str = "gpt-4o-mini"  # e.g. llama-3.3-70b-versatile (Groq), grok-4-fast (xAI)
     # Local models via Ollama: AGENT_MODEL_PROVIDER=ollama

@@ -24,6 +24,7 @@ from graphs.analysis import run_analysis
 from graphs.incident import run_incident
 from routing import reroute_plan
 from schemas import Assessment, Event, GraphEvent, Severity, Twin
+from tools._ctx import set_current_chain
 from tools.twin import twin_cache
 from tracing import TraceHooks, new_session_id
 
@@ -170,12 +171,14 @@ def _stream(worker: Callable[[Callable[[GraphEvent], None]], Any]) -> EventSourc
 
 
 def _twin(inp) -> Twin:
+    set_current_chain(inp.supply_chain_id)
     if getattr(inp, "twin", None):
         twin_cache.put(inp.twin)
     return twin_cache.get(inp.supply_chain_id)
 
 
 def _hooks(stage: str, inp) -> list:
+    set_current_chain(getattr(inp, 'supply_chain_id', None))
     return [TraceHooks(new_session_id(stage), getattr(inp, "user_id", None), inp.supply_chain_id, stage)]
 
 

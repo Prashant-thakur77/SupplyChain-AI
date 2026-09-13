@@ -44,6 +44,33 @@ agentcore invoke '{"action":"reroute","supply_chain_id":"<id>","failed_node_ids"
 Then set `AGENT_SERVICE_URL` in the web app to the runtime's invocation URL (all handlers are reachable through
 `POST /invocations` with an `action` field). The web app can stay on Cloud Run or move to App Runner.
 
+## Option C — Vercel (web) + Railway or Render (agent-service)
+
+No GCP account needed. The Python service runs as a Docker web service; the web app runs on Vercel.
+
+**agent-service → Railway** (`agent-service/railway.json`) or **Render** (`render.yaml` at the repo root):
+1. New project → Deploy from GitHub → pick this repo; Railway: set *Root directory* to `agent-service` (the `railway.json`
+   there selects the Dockerfile). Render reads `render.yaml` automatically (Blueprint).
+2. Variables (copy from `agent-service/.env.example`): `AGENT_MODEL_PROVIDER=openai`, `OPENAI_BASE_URL=https://api.groq.com/openai/v1`,
+   `OPENAI_API_KEY`, `OPENAI_API_KEYS` (comma-separated pool, rotated on 429), `OPENAI_MODEL_ID=qwen/qwen3.8-27b`,
+   `OPENAI_FALLBACK_MODELS=openai/gpt-oss-120b`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `TAVILY_API_KEY`,
+   `OPENWEATHER_API_KEY`, `AGENT_SERVICE_SECRET`, `APP_URL` (the Vercel URL, for deep links + push), `AGENT_PUBLIC_URL` (its own URL).
+3. Note the public URL — `https://….up.railway.app` / `https://….onrender.com`. `GET /ping` must answer.
+
+**web → Vercel** (`vercel.json`):
+1. `vercel` → import the repo (framework: Next.js, root `/`).
+2. Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+   `AGENT_SERVICE_URL=<agent-service url>`, `AGENT_SERVICE_SECRET` (same value), `CRON_SECRET`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
+   `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `TRACKING_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL=<vercel url>`.
+3. Deploy. `vercel.json` raises the function timeouts for the streaming routes and registers the cron endpoints
+   (Vercel's Hobby plan runs crons once a day; for the 15-minute Sentinel loop point a free external scheduler such as
+   cron-job.org at `GET /api/cron/scan` with header `Authorization: Bearer $CRON_SECRET`, and `/api/cron/sync` every 30 min).
+
+## Option D — AWS end to end
+
+See [`infra/aws/README.md`](../infra/aws/README.md): Bedrock as the model provider, AgentCore Runtime for the agent-service
+(`infra/aws/deploy-agentcore.sh`), IAM policy and EventBridge schedule included.
+
 ## Local
 
 ```bash

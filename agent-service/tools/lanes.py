@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from strands import tool
 
+from tools._ctx import chain_id
+
 import resilience
 import risk
 from routing import build_graph, k_best_routes, shortest_path
@@ -19,9 +21,10 @@ def _resolve(twin, ref: str) -> str | None:
 
 
 @tool
-def assess_lane(supply_chain_id: str, origin: str, destination: str) -> dict:
+def assess_lane(supply_chain_id: str = "", origin: str = "", destination: str = "") -> dict:
     """Is this lane safe? Returns the current best path, cost, days, max node risk on the path, whether an alternative exists,
     and how much the alternative would cost. Origin/destination accept site ids or names."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         twin = twin_cache.get(supply_chain_id)
         o, d = _resolve(twin, origin), _resolve(twin, destination)
@@ -51,8 +54,9 @@ def assess_lane(supply_chain_id: str, origin: str, destination: str) -> dict:
 
 
 @tool
-def network_resilience(supply_chain_id: str) -> dict:
+def network_resilience(supply_chain_id: str = "") -> dict:
     """Resilience score (0-100), grade, single points of failure and single-source sites for a supply chain."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         r = resilience.audit(twin_cache.get(supply_chain_id))
         return ok(r.model_dump() if hasattr(r, "model_dump") else r.__dict__)

@@ -1,0 +1,38 @@
+# Render blueprint: the Python agent-service as a Docker web service. (Web app goes to Vercel — see docs/DEPLOYMENT.md.)
+services:
+  - type: web
+    name: supplychain-agents
+    runtime: docker
+    rootDir: agent-service
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /ping
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: AGENT_MODEL_PROVIDER
+        value: openai
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_MODEL_ID
+        value: qwen/qwen3.8-27b
+      - key: OPENAI_FALLBACK_MODELS
+        value: openai/gpt-oss-120b
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEYS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: AGENT_SERVICE_SECRET
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: AGENT_PUBLIC_URL
+        sync: false

@@ -145,6 +145,14 @@ Database: run **`supabase/setup.sql`** once in the Supabase SQL editor (all tabl
 | `AGENT_SERVICE_URL`, `AGENT_SERVICE_SECRET` | web | how Next.js reaches the agents |
 | `CRON_SECRET` | web | protects `/api/cron/scan` |
 
+## Runs on AWS
+
+The service is built on **Strands Agents** and runs natively on AWS: `AGENT_MODEL_PROVIDER=bedrock` switches every agent to
+**Amazon Bedrock** (`BedrockModel`, cross-region inference profile), and the same container deploys to **Amazon Bedrock
+AgentCore Runtime** through `agent-service/agentcore_entry.py` (`POST /invocations`, `GET /ping`). IAM policy, execution role,
+EventBridge schedule and a one-shot deploy script live in [`infra/aws/`](infra/aws/). Cloud Run / Railway / Render / Vercel
+are supported for teams outside AWS — see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+
 ## Deploy
 
 - **Cloud Run** (current): `pnpm deploy:agents` then `pnpm deploy:gcp`; a Cloud Scheduler job calls `/api/cron/scan` every 15 minutes. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).

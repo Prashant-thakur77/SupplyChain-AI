@@ -12,6 +12,8 @@ from datetime import datetime, timedelta, timezone
 import httpx
 from strands import tool
 
+from tools._ctx import chain_id
+
 from enrich import haversine_km
 from tools._result import err, ok
 from tools.twin import twin_cache
@@ -29,8 +31,9 @@ def _near(sites, lat, lng, km):
 
 
 @tool
-def gdacs_disasters(supply_chain_id: str, radius_km: float = 300, days: int = 7) -> dict:
+def gdacs_disasters(supply_chain_id: str = "", radius_km: float = 300, days: int = 7) -> dict:
     """Active/recent natural disasters from GDACS (cyclones, floods, earthquakes, volcanoes, droughts) within radius_km of any site in the twin. Keyless."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         sites = _sites(supply_chain_id)
         since = datetime.now(timezone.utc) - timedelta(days=days)
@@ -61,8 +64,9 @@ def gdacs_disasters(supply_chain_id: str, radius_km: float = 300, days: int = 7)
 
 
 @tool
-def usgs_earthquakes(supply_chain_id: str, min_magnitude: float = 5.5, radius_km: float = 250, days: int = 7) -> dict:
+def usgs_earthquakes(supply_chain_id: str = "", min_magnitude: float = 5.5, radius_km: float = 250, days: int = 7) -> dict:
     """Recent earthquakes (USGS) at or above min_magnitude within radius_km of any twin site. Keyless."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         sites = _sites(supply_chain_id)
         start = (datetime.now(timezone.utc) - timedelta(days=days)).date().isoformat()
@@ -82,8 +86,9 @@ def usgs_earthquakes(supply_chain_id: str, min_magnitude: float = 5.5, radius_km
 
 
 @tool
-def nws_alerts(supply_chain_id: str) -> dict:
+def nws_alerts(supply_chain_id: str = "") -> dict:
     """Active US National Weather Service alerts (hurricane, flood, winter storm, tornado…) at each US site in the twin. Keyless; US only."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         sites = [s for s in _sites(supply_chain_id) if 24 <= s[2] <= 50 and -125 <= s[3] <= -66]  # CONUS bbox
         out = []

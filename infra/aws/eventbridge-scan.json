@@ -1,0 +1,13 @@
+{
+  "Name": "supplychain-ai-sentinel-scan",
+  "ScheduleExpression": "rate(15 minutes)",
+  "State": "ENABLED",
+  "Description": "Sentinel scan of every twin (calls the web app cron endpoint with the bearer secret)",
+  "Targets": [
+    {
+      "Id": "web-cron-scan",
+      "Arn": "arn:aws:events:REGION:ACCOUNT:api-destination/supplychain-ai-web/*",
+      "HttpParameters": { "PathParameterValues": [], "HeaderParameters": { "Authorization": "Bearer ${CRON_SECRET}" } }
+    }
+  ]
+}

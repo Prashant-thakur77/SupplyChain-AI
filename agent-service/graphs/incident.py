@@ -6,13 +6,16 @@ Every LLM step is a Strands Agent with a Pydantic structured output; the route m
 """
 from __future__ import annotations
 
+import json
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from strands.multiagent import GraphBuilder
 
-from models import invoke_with_retry
+from compact_schema import compact_schema
+from models import invoke_with_retry, structured_tools_supported
 
 import db
 import contracts
@@ -26,6 +29,7 @@ from schemas import (
 from notify import decision_message, post_webhook, push_decision
 from policy import Policy, evaluate
 from tools.memory import recall_memory, store_memory
+from tools._ctx import set_current_chain
 from tools.twin import twin_cache
 from tracing import TraceHooks, new_session_id
 
@@ -103,12 +107,25 @@ def _candidates_block(twin: Twin, plan: ReroutePlan) -> str:
          if plan.carbon_weight > 0 else "")
 
 
+_JSON_BLOCK = re.compile(r"\{.*\}", re.S)
+
+
 def _structured(gres, node_id: str, model):
-    """Pull the typed output of a graph node, if the node ran and produced one."""
+    """Pull the typed output of a graph node: the structured-output tool result when the provider supports it, otherwise
+    the JSON object the node was told to print (validated against the same schema)."""
     nr = gres.results.get(node_id)
     res = getattr(nr, "result", None)
     so = getattr(res, "structured_output", None)
-    return so if isinstance(so, model) else None
+    if isinstance(so, model):
+        return so
+    text = str(res) if res is not None else ""
+    m = _JSON_BLOCK.search(text)
+    if not m:
+        return None
+    try:
+        return model.model_validate_json(m.group(0))
+    except Exception:  # noqa: BLE001 — a malformed object falls through to the sequential fallback
+        return None
 
 
 def reconcile_assessment(twin: Twin, event: Event, a: Assessment) -> Assessment:
@@ -129,6 +146,7 @@ def reconcile_assessment(twin: Twin, event: Event, a: Assessment) -> Assessment:
 
 
 def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = lambda e: None, persist: bool = True) -> IncidentResult:
+    set_current_chain(supply_chain_id)
     trace_id = new_session_id("incident")
     hooks = [TraceHooks(trace_id, user_id, supply_chain_id, "incident")]
     twin = twin_cache.get(supply_chain_id)
@@ -184,6 +202,11 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
             "- impact: quantify the business impact; you are the only node with estimate_impact_numbers and contract_exposure — call both first.\n"
             "- strategist: you receive the router and impact outputs as input; write the mitigation plan. Do not call tools you don't have."
             + pb_text
+            + ("" if structured_tools_supported() else (
+                "\n\nOUTPUT FORMAT (mandatory): after any tool calls, reply with ONLY one JSON object, no markdown fences, no prose, matching your role's schema:\n"
+                f"- router: {compact_schema(RouteRanking)}\n"
+                f"- impact: {compact_schema(ImpactEstimate)}\n"
+                f"- strategist: {compact_schema(MitigationPlan)}"))
         )
 
         def attempt(model):

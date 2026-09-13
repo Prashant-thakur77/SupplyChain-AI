@@ -26,7 +26,7 @@ ROLE_TEMPERATURE: dict[str, float] = {
 }
 
 FALLBACK_GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-2.5-flash"]
-_TRANSIENT = ("unsupported operand type(s)", "503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
+_TRANSIENT = ("unsupported operand type(s)", "Tool call validation failed", "throttl", "Throttl", "503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
 
 
 def gemini_keys(role: str) -> list[str]:
@@ -57,13 +57,19 @@ def make_model(role: str, api_key: str | None = None, model_id: str | None = Non
     if settings.agent_model_provider == "openai":
         from strands.models.openai import OpenAIModel
 
-        client_args: dict = {"api_key": settings.openai_api_key}
+        client_args: dict = {"api_key": api_key or openai_keys()[0]}
         if settings.openai_base_url:
             client_args["base_url"] = settings.openai_base_url
+        mid = model_id or settings.openai_model_id
         params: dict = {"temperature": temperature, "max_tokens": min(MAX_OUTPUT_TOKENS, 8192)}
         if json_mode:
             params["response_format"] = {"type": "json_object"}
-        return OpenAIModel(client_args=client_args, model_id=model_id or settings.openai_model_id, params=params)
+        if "groq.com" in (settings.openai_base_url or ""):
+            # Free-tier Groq: ~8k tokens/min per model per key. Reasoning traces burn that budget, and Strands' own
+            # exponential retry on 429 sleeps for minutes — surface throttles at once so the key/model rotation kicks in.
+            params["reasoning_effort"] = "none" if "qwen" in mid else "low"
+            _fast_throttle()
+        return OpenAIModel(client_args=client_args, model_id=mid, params=params)
     if settings.agent_model_provider == "ollama":
         from strands.models.ollama import OllamaModel
 
@@ -112,9 +118,37 @@ def is_transient(err: BaseException) -> bool:
     return any(tok.lower() in msg.lower() for tok in _TRANSIENT)
 
 
+def _fast_throttle() -> None:
+    try:
+        from strands.event_loop import event_loop as _el
+
+        _el.MAX_ATTEMPTS, _el.INITIAL_DELAY, _el.MAX_DELAY = 2, 2, 4
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def structured_tools_supported() -> bool:
+    """Whether the provider accepts Strands' structured-output tool (a forced function call named after the schema).
+    Groq's OpenAI-compatible endpoint validates tool calls against request.tools and rejects it; those deployments get
+    JSON mode + validation instead (same typed result, one extra parse)."""
+    if settings.agent_model_provider == "openai" and "groq.com" in (settings.openai_base_url or ""):
+        return False
+    return True
+
+
+def openai_keys() -> list[str]:
+    pool = [k.strip() for k in settings.openai_api_keys.split(",") if k.strip()]
+    return pool or [settings.openai_api_key]
+
+
 def model_plans(role: str, max_attempts: int = 5) -> list[tuple[str | None, str | None]]:
     """(api_key, model_id) attempts in order: primary key → second key → fallback models on the primary key."""
-    if settings.agent_model_provider in ("bedrock", "openai", "ollama"):
+    if settings.agent_model_provider == "openai":
+        keys = openai_keys()
+        fallbacks = [m.strip() for m in settings.openai_fallback_models.split(",") if m.strip()]
+        plans: list[tuple[str | None, str | None]] = [(k, None) for k in keys] + [(keys[0], m) for m in fallbacks]
+        return plans[:max_attempts] or [(None, None)]
+    if settings.agent_model_provider in ("bedrock", "ollama"):
         return [(None, None)] * min(max_attempts, 3)
     keys = gemini_keys(role) or [None]
     plans: list[tuple[str | None, str | None]] = [(keys[0], None)] + ([(keys[1], None)] if len(keys) > 1 else [])

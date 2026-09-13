@@ -12,7 +12,9 @@
     "sentry:setup": "node scripts/add-sentry-to-apis.mjs",
     "sentry:check": "node scripts/check-api-routes.mjs",
     "test": "vitest run",
-    "deploy:agents": "gcloud run deploy supplychain-agents --source agent-service --project prism-ai-production --region us-central1 --allow-unauthenticated --port 8080 --memory 1Gi --timeout 300 --env-vars-file=agent-service/.env.yaml"
+    "deploy:agents": "gcloud run deploy supplychain-agents --source agent-service --project prism-ai-production --region us-central1 --allow-unauthenticated --port 8080 --memory 1Gi --timeout 300 --env-vars-file=agent-service/.env.yaml",
+    "deploy:vercel": "vercel --prod",
+    "deploy:agentcore": "bash infra/aws/deploy-agentcore.sh"
   },
   "dependencies": {
     "@copilotkit/react-core": "^1.9.1",

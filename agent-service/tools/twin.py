@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from strands import tool
 
+from tools._ctx import chain_id
+
 import db
 import calibration
 from enrich import enrich_twin
@@ -34,6 +36,7 @@ class _TwinCache:
         self._m[sid] = enrich_twin(t)[0]
 
     def get(self, supply_chain_id: str) -> Twin:
+        supply_chain_id = chain_id(supply_chain_id)
         if supply_chain_id in self._m:
             return self._m[supply_chain_id]
         t = enrich_twin(db.load_twin(supply_chain_id))[0]
@@ -70,8 +73,9 @@ def resolve_edges(t, refs: list[str]) -> list[str]:
 
 
 @tool
-def load_twin(supply_chain_id: str) -> dict:
+def load_twin(supply_chain_id: str = "") -> dict:
     """Load the supply chain digital twin (nodes with type/location/capacity/risk and edges with mode, cost, transit days) for a supply chain id."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         t = twin_cache.get(supply_chain_id)
         return ok({"name": t.name, "nodes": [n.model_dump(exclude={"data"}) for n in t.nodes], "edges": [e.model_dump() for e in t.edges]})
@@ -80,8 +84,9 @@ def load_twin(supply_chain_id: str) -> dict:
 
 
 @tool
-def compute_blast_radius(supply_chain_id: str, failed_node_ids: list[str], failed_edge_ids: list[str] = []) -> dict:
+def compute_blast_radius(supply_chain_id: str = "", failed_node_ids: list[str] = [], failed_edge_ids: list[str] = []) -> dict:
     """Deterministically compute which downstream nodes and edges are cut off when the given nodes/edges fail."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         t = twin_cache.get(supply_chain_id)
         failed_node_ids, failed_edge_ids = resolve_nodes(t, failed_node_ids), resolve_edges(t, failed_edge_ids)
@@ -101,8 +106,9 @@ def compute_blast_radius(supply_chain_id: str, failed_node_ids: list[str], faile
 
 
 @tool
-def find_reroutes(supply_chain_id: str, failed_node_ids: list[str], failed_edge_ids: list[str] = [], k: int = 3) -> dict:
+def find_reroutes(supply_chain_id: str = "", failed_node_ids: list[str] = [], failed_edge_ids: list[str] = [], k: int = 3) -> dict:
     """Compute the k cheapest feasible alternate routes around failed nodes/edges with weighted Dijkstra. Returns exact added cost and days per candidate."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         t = twin_cache.get(supply_chain_id)
         failed_node_ids, failed_edge_ids = resolve_nodes(t, failed_node_ids), resolve_edges(t, failed_edge_ids)
@@ -121,8 +127,9 @@ def find_reroutes(supply_chain_id: str, failed_node_ids: list[str], failed_edge_
 
 
 @tool
-def estimate_impact_numbers(supply_chain_id: str, failed_node_ids: list[str], delay_days: float) -> dict:
+def estimate_impact_numbers(supply_chain_id: str = "", failed_node_ids: list[str] = [], delay_days: float = 7.0) -> dict:
     """Deterministic impact baseline: downstream node count, share of network cut off, and revenue-at-risk using node capacity and lane cost as proxies."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         t = twin_cache.get(supply_chain_id)
         failed_node_ids = resolve_nodes(t, failed_node_ids)
@@ -161,8 +168,9 @@ def estimate_impact_numbers(supply_chain_id: str, failed_node_ids: list[str], de
 
 
 @tool
-def list_delayed_shipments(supply_chain_id: str) -> dict:
+def list_delayed_shipments(supply_chain_id: str = "") -> dict:
     """Shipments currently in flight on this supply chain that are delayed or past their planned ETA, with value and lane."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         from datetime import datetime, timezone
 
@@ -185,8 +193,9 @@ def list_delayed_shipments(supply_chain_id: str) -> dict:
 
 
 @tool
-def contract_exposure(supply_chain_id: str, delay_days: float, affected_node_ids: list[str] = []) -> dict:
+def contract_exposure(supply_chain_id: str = "", delay_days: float = 7.0, affected_node_ids: list[str] = []) -> dict:
     """Contractual penalties (customer SLAs, supplier/carrier clauses) a delay of delay_days triggers on the affected sites. Deterministic from the contracts register."""
+    supply_chain_id = chain_id(supply_chain_id)
     try:
         import contracts as ct
 

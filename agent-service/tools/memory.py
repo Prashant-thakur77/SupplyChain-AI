@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from strands import tool
 
+from tools._ctx import chain_id
+
 from config import settings
 from tools._result import err, ok
 
@@ -14,8 +16,9 @@ def _client():
 
 
 @tool
-def recall_memory(supply_chain_id: str, query: str) -> dict:
+def recall_memory(supply_chain_id: str = "", query: str = "") -> dict:
     """Recall past disruptions, decisions and outcomes for this supply chain that resemble the query."""
+    supply_chain_id = chain_id(supply_chain_id)
     if not settings.mem0_api_key:
         return ok({"memories": []})
     try:
@@ -31,8 +34,9 @@ def recall_memory(supply_chain_id: str, query: str) -> dict:
 
 
 @tool
-def store_memory(supply_chain_id: str, text: str) -> dict:
+def store_memory(supply_chain_id: str = "", text: str = "") -> dict:
     """Store a durable memory (event, decision taken, outcome) for this supply chain."""
+    supply_chain_id = chain_id(supply_chain_id)
     if not settings.mem0_api_key:
         return ok({"stored": False})
     try:
