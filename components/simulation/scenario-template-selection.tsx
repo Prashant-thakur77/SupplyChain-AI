@@ -443,7 +443,7 @@ export function ScenarioTemplateSelection({
               <p className="text-sm text-slate-600 dark:text-slate-300">
                 Let AI suggest scenarios based on your supply chain data and industry best practices
               </p>
-              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+              <Badge className="bg-theme-blue text-white">
                 Smart Recommendations
               </Badge>
             </CardContent>

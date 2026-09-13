@@ -104,7 +104,7 @@ export function Problem() {
 }
 
 /* ────────────────────────────── Stats ────────────────────────────── */
-const STATS = [["~30 s", "from event to a ranked, sourced decision"], ["0", "routes or costs invented by the model"], ["8", "Strands agents · 2 graphs · typed outputs"], ["100%", "of agent runs traced and auditable"]]
+const STATS = [["~30 s", "from event to a ranked, sourced decision"], ["0", "routes or costs invented by the model"], ["10", "Strands agents · 2 graphs · typed outputs"], ["100%", "of agent runs traced and auditable"]]
 export function Stats() {
   return (
     <section className="bg-[#0F1420] text-white">
@@ -153,6 +153,7 @@ export function HowItWorks() {
 const AGENTS = [
   ["Sentinel", "watches news & weather", "#2748E8"], ["Analyst", "severity · confidence · blast radius", "#7C3AED"], ["Router", "ranks exact reroutes", "#1A7F4B"],
   ["Impact", "revenue at risk · delay", "#B91C1C"], ["Strategist", "executable mitigation", "#B45309"], ["Forecaster", "30-day risk drivers", "#0E7490"], ["Scenario", "what-ifs on your twin", "#5C5850"], ["Copilot", "asks the routing engine", "#18160F"],
+  ["Contracts", "SLA clauses → penalties", "#9333EA"], ["Lane Assessor", "answers other agents (A2A)", "#0F766E"],
 ]
 export function Agents() {
   return (
@@ -160,7 +161,7 @@ export function Agents() {
       <div className="mx-auto grid max-w-[1200px] items-center gap-12 px-6 py-20 lg:grid-cols-[1fr_1.1fr] lg:py-28">
         <Reveal>
           <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2748E8]">Strands Agents SDK</div>
-          <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.8rem)] font-semibold leading-[1.08] tracking-[-0.02em] text-[#18160F]">Eight specialised agents. One incident graph.</h2>
+          <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.8rem)] font-semibold leading-[1.08] tracking-[-0.02em] text-[#18160F]">Ten specialised agents. One incident graph.</h2>
           <p className="mt-4 max-w-[50ch] text-[1.02rem] leading-relaxed text-[#5C5850]">Every agent is a Strands <code className="rounded bg-white px-1.5 py-0.5 font-mono text-[13px]">Agent</code> with tools and a typed Pydantic output. The incident pipeline is a <code className="rounded bg-white px-1.5 py-0.5 font-mono text-[13px]">GraphBuilder</code> graph — Router and Impact in parallel, feeding the Strategist — with hooks tracing every run. Model-agnostic: Gemini, Amazon Bedrock, Groq or a local Ollama model with one environment variable.</p>
           <div className="mt-6 flex flex-wrap gap-2">{["GraphBuilder", "structured_output_model", "@tool", "HookProvider", "stream_async", "AgentCore /invocations"].map((t) => <span key={t} className="rounded-full border border-[#E5DFD6] bg-white px-2.5 py-1 font-mono text-[11px] text-[#5C5850]">{t}</span>)}</div>
           <a href="https://github.com/Prashant-thakur77/SupplyChain-AI#how-strands-is-used" target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 text-[14px] font-semibold text-[#2748E8] hover:underline">Read the architecture <ArrowRight className="h-4 w-4" /></a>
@@ -206,6 +207,39 @@ export function InboxPreview() {
           <p className="mt-4 max-w-[48ch] text-[1.02rem] leading-relaxed text-[#5C5850]">Every card carries exact cost, time and risk deltas, the agent's rationale, its sources and a confidence badge. Approve it and the reroute is drawn on your twin, the team is notified, the audit trail is written — and the agent remembers what you chose.</p>
           <ul className="mt-6 grid gap-2 text-[14px] text-[#18160F] sm:grid-cols-2">{[["Bot", "Typed outputs, traced runs"], ["GitBranch", "Routes drawn on the twin"], ["Cpu", "Deterministic numbers"], ["Inbox", "Approve · reject · snooze"]].map(([i, t]) => { const I = { Bot, GitBranch, Cpu, Inbox }[i as string]!; return <li key={t} className="flex items-center gap-2"><I className="h-4 w-4 text-[#2748E8]" />{t}</li> })}</ul>
         </Reveal>
+      </div>
+    </section>
+  )
+}
+
+/* ────────────────────────────── Real network ────────────────────────────── */
+const REAL = [
+  ["Flows, rate cards, quotes", "Impact and reroute cost are weighted by what actually moves; real carrier prices override estimates."],
+  ["ERP / TMS connectors", "SAP OData, NetSuite SuiteQL, Odoo, CSV or any REST feed — flows and shipments sync on a schedule."],
+  ["Contracts & SLAs", "Paste a penalty clause; every impact estimate adds the exact liquidated damages."],
+  ["Inventory-aware waiting", "\"Wait and monitor\" is only offered when days of cover outlast the outage."],
+  ["Playbooks", "Your standard responses per disruption type — the Strategist follows them, the checklist inherits their steps."],
+  ["Carbon co-optimisation", "CO₂e per lane; a policy slider decides how much a tonne weighs against a dollar in the ranking."],
+  ["Orgs, roles, Slack, push", "Owners approve, planners simulate, viewers read; approve from Slack or a phone at 2 a.m."],
+  ["A2A + public feeds", "Other agents ask \"is this lane safe?\"; Sentinel reads GDACS, USGS and NWS alongside the news."],
+]
+export function RealNetwork() {
+  return (
+    <section className="bg-[#F6F3EE]">
+      <div className="mx-auto max-w-[1200px] px-6 py-20 lg:py-28">
+        <Reveal className="max-w-[60ch]">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#2748E8]">Built for a real network</div>
+          <h2 className="mt-3 font-display text-[clamp(1.9rem,3.4vw,2.8rem)] font-semibold leading-[1.08] tracking-[-0.02em] text-[#18160F]">The demo is a toy twin. The product is not.</h2>
+          <p className="mt-4 text-[1.02rem] leading-relaxed text-[#5C5850]">Everything a supply-chain team needs to trust an agent with real money: the data it decides on, the limits it acts within, and the paper trail it leaves.</p>
+        </Reveal>
+        <RevealGroup className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {REAL.map(([t, d]) => (
+            <RevealItem key={t} className="rounded-2xl border border-[#E5DFD6] bg-white p-5 transition-transform hover:-translate-y-1">
+              <div className="font-display text-[17px] font-semibold text-[#18160F]">{t}</div>
+              <div className="mt-2 text-[13px] leading-relaxed text-[#5C5850]">{d}</div>
+            </RevealItem>
+          ))}
+        </RevealGroup>
       </div>
     </section>
   )

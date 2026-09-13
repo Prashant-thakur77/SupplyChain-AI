@@ -410,9 +410,9 @@ function SimulationPageContent() {
         /* Issues badge in sidebar */
         .issues-badge-sidebar {
           display: inline-flex; align-items: center; gap: 7px; margin-top: auto;
-          background: #FEF2F2; border: 1px solid rgba(185,28,28,0.25);
+          background: rgba(39,72,232,0.08); border: 1px solid rgba(39,72,232,0.3);
           border-radius: 100px; padding: 7px 12px;
-          font-size: 0.75rem; font-weight: 700; color: #B91C1C; cursor: pointer;
+          font-size: 0.75rem; font-weight: 700; color: #2748E8; cursor: pointer;
           width: fit-content;
         }
 
@@ -511,7 +511,7 @@ function SimulationPageContent() {
           </div>
 
           <div className="issues-badge-sidebar" onClick={() => setIsAIScenarioOpen(true)}>
-            <span className="text-theme-red font-extrabold mr-1">✦</span>
+            <span className="text-theme-blue font-extrabold mr-1">✦</span>
             AI Generator
           </div>
         </aside>

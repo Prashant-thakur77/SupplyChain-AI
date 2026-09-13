@@ -91,10 +91,10 @@ function DemoInner() {
           })}
         </ol>
         <div className="space-y-2 rounded-theme-md border border-theme-border-subtle p-3 text-xs text-theme-text-secondary">
-          <div className="flex items-center gap-2"><Radar className="h-3.5 w-3.5 text-theme-blue" /> In production, <strong className="text-theme-text-primary">Sentinel</strong> finds these events itself every 15 minutes.</div>
-          <div className="flex items-center gap-2"><GitBranch className="h-3.5 w-3.5 text-theme-blue" /> Routes are computed by Dijkstra — the model only ranks and explains.</div>
-          <div className="flex items-center gap-2"><Inbox className="h-3.5 w-3.5 text-theme-blue" /> Approving writes to the Decision Inbox and the audit log.</div>
-          <div className="flex items-center gap-2"><Bot className="h-3.5 w-3.5 text-theme-blue" /> Every step is a Strands Agent with a typed output.</div>
+          <div className="flex items-start gap-2"><Radar className="mt-0.5 h-3.5 w-3.5 shrink-0 text-theme-blue" /><span>In production, <strong className="text-theme-text-primary">Sentinel</strong> finds these events itself every 15 minutes.</span></div>
+          <div className="flex items-start gap-2"><GitBranch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-theme-blue" /><span>Routes are computed by Dijkstra — the model only ranks and explains.</span></div>
+          <div className="flex items-start gap-2"><Inbox className="mt-0.5 h-3.5 w-3.5 shrink-0 text-theme-blue" /><span>Approving writes to the Decision Inbox and the audit log.</span></div>
+          <div className="flex items-start gap-2"><Bot className="mt-0.5 h-3.5 w-3.5 shrink-0 text-theme-blue" /><span>Every step is a Strands Agent with a typed output.</span></div>
         </div>
         <div className="rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary p-3">
           <div className="flex items-center justify-between gap-2">

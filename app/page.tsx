@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ArrowRight, Github, Menu, ShieldAlert, X } from "lucide-react"
 import { Footer } from "@/components/home-page"
-import { Agents, CTA, Hero, HowItWorks, InboxPreview, Problem, Stats, Ticker } from "@/components/landing/sections"
+import { Agents, CTA, Hero, HowItWorks, InboxPreview, RealNetwork, Problem, Stats, Ticker } from "@/components/landing/sections"
 
 const NAV = [["#how-it-works", "How it works"], ["#inbox", "Decision Inbox"], ["/demo", "Live demo"]] as const
 
@@ -53,6 +53,7 @@ export default function Home() {
         <HowItWorks />
         <Agents />
         <InboxPreview />
+        <RealNetwork />
         <CTA />
       </main>
       <Footer />

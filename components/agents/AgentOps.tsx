@@ -21,6 +21,8 @@ export function AgentOps() {
   const load = async () => { if (!uid) return; setLoading(true); try { setOps(await fetch(`/api/agents/ops?userId=${uid}&days=${days}`, { cache: "no-store" }).then((r) => r.json())) } finally { setLoading(false) } }
   useEffect(() => { load() }, [uid, days]) // eslint-disable-line react-hooks/exhaustive-deps
   const max = Math.max(1, ...(ops?.by_day.map((d) => d.runs) ?? [1]))
+  // Fill every day of the window so a single busy day does not render as one full-width block.
+  const series = (() => { if (!ops) return []; const by = new Map(ops.by_day.map((d) => [d.day, d.runs])); const out: { day: string; runs: number }[] = []; for (let i = ops.days - 1; i >= 0; i--) { const day = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10); out.push({ day, runs: by.get(day) ?? 0 }) } return out })()
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
@@ -38,7 +40,7 @@ export function AgentOps() {
           </div>
           <div className="mt-4 rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4">
             <div className="text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">Runs per day</div>
-            <div className="mt-3 flex h-24 items-end gap-1">{ops.by_day.length === 0 && <span className="text-xs text-theme-text-muted">No runs in this window.</span>}{ops.by_day.map((d) => <div key={d.day} title={`${d.day}: ${d.runs}`} className="flex-1 rounded-t bg-theme-blue opacity-80" style={{ height: `${(d.runs / max) * 100}%` }} />)}</div>
+            <div className="mt-3 flex h-24 items-end gap-1">{ops.runs === 0 && <span className="text-xs text-theme-text-muted">No runs in this window.</span>}{ops.runs > 0 && series.map((d) => <div key={d.day} title={`${d.day}: ${d.runs} run${d.runs === 1 ? "" : "s"}`} className="flex h-full flex-1 flex-col items-center justify-end gap-1"><div className={cn("w-full rounded-t", d.runs ? "bg-theme-blue opacity-80" : "bg-theme-border-subtle")} style={{ height: `${Math.max(d.runs ? 6 : 2, Math.round((d.runs / max) * 72))}px` }} />{ops.days <= 30 && <span className="text-[9px] text-theme-text-muted">{d.day.slice(5)}</span>}</div>)}</div>
           </div>
           <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr]">
             <div className="overflow-x-auto rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface">
@@ -47,12 +49,12 @@ export function AgentOps() {
             </div>
             <div className="rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4">
               <div className="text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">By workflow</div>
-              <ul className="mt-2 space-y-1.5">{ops.stages.map((s) => <li key={s.stage} className="flex items-center justify-between text-sm"><span className="text-theme-text-primary">{STAGE_HINT[s.stage] ?? s.stage}</span><span className="text-xs text-theme-text-secondary">{s.runs} runs · {(s.avg_ms / 1000).toFixed(1)}s avg</span></li>)}</ul>
+              <ul className="mt-2 space-y-1.5">{ops.stages.map((s) => <li key={s.stage} className="flex items-center justify-between text-sm"><span className="text-theme-text-primary">{STAGE_HINT[s.stage] ?? s.stage}</span><span className="text-xs text-theme-text-secondary">{s.runs} run{s.runs === 1 ? "" : "s"} · {(s.avg_ms / 1000).toFixed(1)}s avg</span></li>)}</ul>
               <div className="mt-4 border-t border-theme-border-subtle pt-3 text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">Estimate accuracy</div>
               {ops.accuracy && ops.accuracy.outcomes > 0 ? (
                 <ul className="mt-2 space-y-1.5 text-sm">
                   <li className="flex justify-between"><span className="text-theme-text-primary">Outcomes recorded</span><span className="text-xs text-theme-text-secondary">{ops.accuracy.outcomes} · {ops.accuracy.resolved_pct}% resolved</span></li>
-                  {ops.accuracy.cost_mape_pct != null && <li className="flex justify-between"><span className="text-theme-text-primary">Cost error (MAPE)</span><span className={cn("text-xs", ops.accuracy.cost_mape_pct > 25 ? "text-theme-amber" : "text-theme-green")}>{ops.accuracy.cost_mape_pct}% · bias {ops.accuracy.cost_bias_pct! >= 0 ? "+" : ""}{ops.accuracy.cost_bias_pct}%</span></li>}
+                  {ops.accuracy.cost_mape_pct != null && <li className="flex justify-between"><span className="text-theme-text-primary">Cost error (MAPE)</span><span className={cn("text-xs", ops.accuracy.cost_mape_pct >= 20 ? "text-theme-amber" : "text-theme-green")}>{ops.accuracy.cost_mape_pct}% · bias {ops.accuracy.cost_bias_pct! >= 0 ? "+" : ""}{ops.accuracy.cost_bias_pct}%</span></li>}
                   {ops.accuracy.days_mae != null && <li className="flex justify-between"><span className="text-theme-text-primary">Delay error (MAE)</span><span className={cn("text-xs", ops.accuracy.days_mae > 2 ? "text-theme-amber" : "text-theme-green")}>{ops.accuracy.days_mae}d · bias {ops.accuracy.days_bias! >= 0 ? "+" : ""}{ops.accuracy.days_bias}d</span></li>}
                   <li className="text-[11px] text-theme-text-muted">Estimated lanes are calibrated by the observed bias on the next incident.</li>
                 </ul>

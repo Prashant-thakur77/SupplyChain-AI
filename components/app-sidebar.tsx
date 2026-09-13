@@ -33,7 +33,7 @@ export function AppSidebar() {
     { href: "/playbooks", icon: BookOpen, label: "Playbooks", isActive: pathname === "/playbooks" },
     { href: "/digital-twin", icon: Network, label: "Digital Twin", isActive: pathname === "/digital-twin" },
     { href: "/simulation", icon: LineChart, label: "Simulation", isActive: pathname === "/simulation" },
-    { href: "/risk-prediction", icon: Brain, label: "Risk ML", isActive: pathname === "/risk-prediction" },
+    { href: "/risk-prediction", icon: Brain, label: "Site Risk", isActive: pathname === "/risk-prediction" },
   ]
 
   const footerItems = [

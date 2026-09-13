@@ -29,7 +29,8 @@ export function StrandsChat({ supplyChainId, userId, nodes, edges, endpoint = "/
   const [input, setInput] = useState("")
   const [busy, setBusy] = useState(false)
   const bottom = useRef<HTMLDivElement>(null)
-  useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }) }, [msgs])
+  // Scroll the chat's own list only (scrollIntoView on mount would drag the whole sidebar down to the composer).
+  useEffect(() => { if (msgs.length) bottom.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }) }, [msgs])
 
   async function send(text: string) {
     const q = text.trim()

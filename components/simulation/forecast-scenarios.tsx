@@ -312,7 +312,7 @@ export function ForecastScenarios({ onSelectScenario }: ForecastScenariosProps) 
               size="sm"
               onClick={handleGenerateForecast}
               disabled={isGenerating || isLoading || !selectedSupplyChainId}
-              className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-0"
+              className="flex items-center gap-2 rounded-full bg-theme-blue text-white hover:opacity-90 border-0"
             >
               {isGenerating ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
