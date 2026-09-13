@@ -19,3 +19,19 @@ def test_enrich_fills_only_missing_values():
     assert t.edges[0].cost > 0 and t.edges[0].transit_days == 5
     assert t.edges[1].cost == 1000
     assert t.edges[2].cost == 0 and any("no coordinates" in n for n in notes)
+
+
+def test_org_rate_card_overrides_default():
+    from enrich import estimate_lane
+    default_cost, _ = estimate_lane("sea", 2600)
+    custom_cost, _ = estimate_lane("sea", 2600, {"sea": {"usd_per_km": 1.0, "km_per_day": 650, "fixed_days": 2, "min_usd": 400}})
+    assert custom_cost > default_cost
+
+
+def test_quotes_override_lane():
+    from db import apply_quotes
+    from tests.test_routing import twin
+    t = twin()
+    n = apply_quotes(t, [{"origin_node_id": "shenzhen", "destination_node_id": "singapore", "mode": "sea", "cost": "1234", "transit_days": "6", "carrier": "Maersk"}])
+    e = next(x for x in t.edges if x.id == "e1")
+    assert n == 1 and e.cost == 1234 and e.provenance == "quote" and e.carrier == "Maersk"

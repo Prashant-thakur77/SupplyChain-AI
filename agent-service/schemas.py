@@ -35,6 +35,8 @@ class TwinEdge(BaseModel):
     transit_days: float = 0
     risk_multiplier: float = 1.0
     capacity: Optional[float] = None
+    provenance: Literal["user", "estimate", "quote"] = "user"
+    carrier: Optional[str] = None
 
 
 class Flow(BaseModel):
@@ -61,6 +63,7 @@ class Twin(BaseModel):
     nodes: list[TwinNode]
     edges: list[TwinEdge]
     flows: list[Flow] = Field(default_factory=list)
+    rate_card: dict[str, dict[str, float]] = Field(default_factory=dict, description="mode → {usd_per_km, km_per_day, fixed_days, min_usd, co2_g_per_tkm}; overrides the default")
 
 
 class Source(BaseModel):

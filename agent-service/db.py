@@ -81,7 +81,50 @@ def load_twin(supply_chain_id: str) -> Twin:
     edges = sb.table("edges").select("*").eq("supply_chain_id", supply_chain_id).execute().data or []
     twin = rows_to_twin(supply_chain_id, (sc[0]["name"] if sc else ""), nodes, edges)
     twin.flows = load_flows(supply_chain_id)
+    twin.rate_card = load_rate_card(supply_chain_id)
+    apply_quotes(twin, load_quotes(supply_chain_id))
     return twin
+
+
+def load_rate_card(supply_chain_id: str) -> dict[str, dict[str, float]]:
+    try:
+        org = client().table("supply_chains").select("org_id").eq("supply_chain_id", supply_chain_id).limit(1).execute().data
+        org_id = org[0].get("org_id") if org else None
+        if not org_id:
+            return {}
+        rows = client().table("rate_cards").select("*").eq("org_id", org_id).execute().data or []
+        return {r["mode"]: {"usd_per_km": _num(r["usd_per_km"]), "km_per_day": _num(r["km_per_day"]), "fixed_days": _num(r.get("fixed_days")), "min_usd": _num(r.get("min_usd")), "co2_g_per_tkm": _num(r.get("co2_g_per_tkm"))} for r in rows}
+    except Exception as e:
+        print(f"[rate_card] load failed: {e}")
+        return {}
+
+
+def load_quotes(supply_chain_id: str) -> list[dict]:
+    try:
+        from datetime import date
+
+        rows = client().table("carrier_quotes").select("*").eq("supply_chain_id", supply_chain_id).execute().data or []
+        today = date.today().isoformat()
+        return [r for r in rows if not r.get("valid_until") or r["valid_until"] >= today]
+    except Exception as e:
+        print(f"[quotes] load failed: {e}")
+        return []
+
+
+def apply_quotes(twin: Twin, quotes: list[dict]) -> int:
+    """Cheapest valid carrier quote per (origin, destination, mode) overrides the lane's cost/days — real numbers beat estimates."""
+    best: dict[tuple[str, str, str], dict] = {}
+    for q in quotes:
+        k = (q["origin_node_id"], q["destination_node_id"], q["mode"])
+        if k not in best or _num(q["cost"]) < _num(best[k]["cost"]):
+            best[k] = q
+    n = 0
+    for e in twin.edges:
+        q = best.get((e.source, e.target, e.mode))
+        if q:
+            e.cost, e.transit_days, e.provenance, e.carrier = _num(q["cost"]), _num(q["transit_days"]), "quote", q.get("carrier")
+            n += 1
+    return n
 
 
 def list_supply_chains() -> list[dict]:

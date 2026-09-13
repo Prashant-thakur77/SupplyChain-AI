@@ -28,9 +28,9 @@ def haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     return 2 * r * math.asin(math.sqrt(a))
 
 
-def estimate_lane(mode: str, distance_km: float) -> tuple[float, float]:
+def estimate_lane(mode: str, distance_km: float, rate_card: dict[str, dict[str, float]] | None = None) -> tuple[float, float]:
     """(cost_usd, transit_days) for a mode and great-circle distance. Sea/rail routes are longer than the crow flies."""
-    card = RATE_CARD.get(mode, RATE_CARD["road"])
+    card = (rate_card or {}).get(mode) or RATE_CARD.get(mode, RATE_CARD["road"])
     detour = 1.35 if mode == "sea" else 1.2 if mode in ("rail", "road") else 1.05
     km = distance_km * detour
     cost = max(card["min_usd"], round(km * card["usd_per_km"], -1))
@@ -50,10 +50,11 @@ def enrich_twin(twin: Twin) -> tuple[Twin, list[str]]:
         if not a or not b:
             notes.append(f"lane {e.id}: no coordinates on both ends — cannot estimate {'cost' if needs_cost else 'days'}")
             continue
-        cost, days = estimate_lane(e.mode, haversine_km(a[0], a[1], b[0], b[1]))
+        cost, days = estimate_lane(e.mode, haversine_km(a[0], a[1], b[0], b[1]), twin.rate_card)
         if needs_cost:
             e.cost = cost
         if needs_days:
             e.transit_days = days
+        e.provenance = "estimate"
         notes.append(f"lane {e.id} ({e.mode}): estimated {'cost $%.0f' % cost if needs_cost else ''}{' and ' if needs_cost and needs_days else ''}{'%.1f days' % days if needs_days else ''}")
     return twin, notes

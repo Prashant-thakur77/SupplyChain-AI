@@ -15,8 +15,10 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
   return 2 * r * Math.asin(Math.sqrt(a))
 }
 
-export function estimateLane(mode: string, distanceKm: number): { cost: number; transitDays: number } {
-  const card = RATE_CARD[mode] ?? RATE_CARD.road
+export type RateCard = Record<string, { usdPerKm: number; kmPerDay: number; fixedDays: number; minUsd: number }>
+
+export function estimateLane(mode: string, distanceKm: number, rateCard?: RateCard): { cost: number; transitDays: number } {
+  const card = rateCard?.[mode] ?? RATE_CARD[mode] ?? RATE_CARD.road
   const detour = mode === "sea" ? 1.35 : mode === "rail" || mode === "road" ? 1.2 : 1.05
   const km = distanceKm * detour
   return { cost: Math.max(card.minUsd, Math.round((km * card.usdPerKm) / 10) * 10), transitDays: Math.round((card.fixedDays + km / card.kmPerDay) * 10) / 10 }
@@ -26,7 +28,7 @@ export interface EnrichableNode { id: string; lat?: number | null; lng?: number 
 export interface EnrichableEdge { id: string; source: string; target: string; mode?: string; cost?: number | null; transitTime?: number | null }
 
 /** Fill missing cost/transitTime on edges whose endpoints have coordinates. Marks `estimated: true`. */
-export function enrichEdges<E extends EnrichableEdge>(nodes: EnrichableNode[], edges: E[]): { edges: (E & { estimated?: boolean })[]; notes: string[] } {
+export function enrichEdges<E extends EnrichableEdge>(nodes: EnrichableNode[], edges: E[], rateCard?: RateCard): { edges: (E & { estimated?: boolean })[]; notes: string[] } {
   const coords = new Map(nodes.filter((n) => n.lat != null && n.lng != null).map((n) => [n.id, [n.lat!, n.lng!] as const]))
   const notes: string[] = []
   const out = edges.map((e) => {
@@ -34,7 +36,7 @@ export function enrichEdges<E extends EnrichableEdge>(nodes: EnrichableNode[], e
     if (!needsCost && !needsDays) return e
     const a = coords.get(e.source), b = coords.get(e.target)
     if (!a || !b) { notes.push(`Lane ${e.id}: no coordinates on both ends — cost/days left blank.`); return e }
-    const est = estimateLane(e.mode ?? "road", haversineKm(a[0], a[1], b[0], b[1]))
+    const est = estimateLane(e.mode ?? "road", haversineKm(a[0], a[1], b[0], b[1]), rateCard)
     notes.push(`Lane ${e.id} (${e.mode ?? "road"}): estimated ${needsCost ? `$${est.cost}` : ""}${needsCost && needsDays ? " and " : ""}${needsDays ? `${est.transitDays} days` : ""}.`)
     return { ...e, cost: needsCost ? est.cost : e.cost, transitTime: needsDays ? est.transitDays : e.transitTime, estimated: true }
   })

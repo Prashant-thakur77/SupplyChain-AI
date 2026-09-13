@@ -1,13 +1,14 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { AlertCircle, Loader2, Radar, ShieldAlert, Search, Truck } from 'lucide-react';
+import { AlertCircle, FileText, Loader2, Radar, ShieldAlert, Search, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
 import type { IncidentEvent } from '@/types/agent';
 import { ResilienceDialog } from '@/components/resilience/ResilienceDialog';
 import { WarRoomDialog } from '@/components/warroom/WarRoomDialog';
 import { FlowsDialog } from '@/components/digital-twin/forms/FlowsDialog';
+import { QuotesDialog } from '@/components/digital-twin/forms/QuotesDialog';
 import { useUser } from '@/lib/stores/user';
 
 interface Props {
@@ -21,6 +22,7 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [lastScan, setLastScan] = useState<{ description: string; max: number } | null>(null);
   const [flowsOpen, setFlowsOpen] = useState(false);
+  const [quotesOpen, setQuotesOpen] = useState(false);
   const { userData } = useUser();
   const selectedSupplyChain = useDigitalTwinStore((s) => s.selectedSupplyChain);
 
@@ -79,6 +81,8 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
             <>
               <button onClick={() => setFlowsOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-border-subtle bg-theme-bg-surface px-3 py-2 text-sm font-medium text-theme-text-primary hover:border-theme-blue hover:text-theme-blue"><Truck className="h-4 w-4" /> Flows (value at risk)</button>
               <FlowsDialog isOpen={flowsOpen} onClose={() => setFlowsOpen(false)} supplyChainId={selectedSupplyChain} userId={userData.id} />
+              <button onClick={() => setQuotesOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-border-subtle bg-theme-bg-surface px-3 py-2 text-sm font-medium text-theme-text-primary hover:border-theme-blue hover:text-theme-blue"><FileText className="h-4 w-4" /> Carrier quotes</button>
+              <QuotesDialog isOpen={quotesOpen} onClose={() => setQuotesOpen(false)} supplyChainId={selectedSupplyChain} userId={userData.id} />
             </>
           )}
           <WarRoomDialog endpoint="/api/agent/warroom" onFail={onIncident} />

@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/ui/page-header"
 import { cn } from "@/lib/utils"
+import { RateCardCard } from "./RateCardCard"
 
 interface Org { id: string; name: string; role: string }
 interface Member { user_id: string; role: string; email: string | null; since: string }
@@ -43,6 +44,7 @@ export function TeamPage() {
                 {isOwner && m.user_id !== me.user?.id && <button type="button" onClick={() => remove(m)} className="text-theme-text-muted hover:text-theme-red" aria-label="Remove"><Trash2 className="h-4 w-4" /></button>}
               </li>))}</ul>
           </div>
+          <RateCardCard orgId={org.id} canEdit={org.role === "owner" || org.role === "approver"} />
           {isOwner && (
             <div className="mt-4 rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-theme-text-primary"><UserPlus className="h-4 w-4 text-theme-blue" /> Invite a teammate</div>
