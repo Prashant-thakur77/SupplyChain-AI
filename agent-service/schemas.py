@@ -142,6 +142,8 @@ class ImpactEstimate(BaseModel):
     orders_affected_pct: float = Field(ge=0, le=100)
     summary: str
     assumptions: list[str]
+    contract_penalties_usd: float = 0
+    contract_lines: list[dict] = Field(default_factory=list)
 
 
 class MitigationStep(BaseModel):

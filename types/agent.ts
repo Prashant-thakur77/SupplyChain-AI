@@ -36,7 +36,7 @@ export interface RouteCandidate {
 export interface ReroutePlan { severity: Severity; feasible_count: number; infeasible_count: number; severed_pairs: [string, string][]; baseline?: Record<string, number>; candidates: RouteCandidate[] }
 
 export interface RouteRanking { ranked_candidate_ids: string[]; recommended_candidate_id: string | null; rationale: string; tradeoffs: string[]; wait_is_viable: boolean; wait_rationale: string }
-export interface ImpactEstimate { revenue_at_risk_usd: number; delay_days: number; nodes_affected: number; orders_affected_pct: number; summary: string; assumptions: string[] }
+export interface ImpactEstimate { revenue_at_risk_usd: number; delay_days: number; nodes_affected: number; orders_affected_pct: number; summary: string; assumptions: string[]; contract_penalties_usd?: number; contract_lines?: { counterparty: string; kind: string; site: string; penalty_usd: number; capped?: boolean }[] }
 export interface MitigationStep { title: string; owner: string; due_in_days: number; detail: string }
 export interface MitigationPlan { title: string; summary: string; steps: MitigationStep[]; estimated_cost_usd: number; risk_after: Severity }
 

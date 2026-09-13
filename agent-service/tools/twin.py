@@ -137,3 +137,17 @@ def list_delayed_shipments(supply_chain_id: str) -> dict:
         return ok({"delayed": out, "count": len(out), "total_value_usd": sum(float(x.get("value_usd") or 0) for x in out)})
     except Exception as e:
         return err(f"list_delayed_shipments failed: {e}")
+
+
+@tool
+def contract_exposure(supply_chain_id: str, delay_days: float, affected_node_ids: list[str] = []) -> dict:
+    """Contractual penalties (customer SLAs, supplier/carrier clauses) a delay of delay_days triggers on the affected sites. Deterministic from the contracts register."""
+    try:
+        import contracts as ct
+
+        twin = twin_cache.get(supply_chain_id)
+        labels = {n.id: n.label for n in twin.nodes}
+        ex = ct.exposure(ct.load(supply_chain_id), delay_days, affected_node_ids or [n.id for n in twin.nodes], labels)
+        return ok({"penalties_usd": ex.total_usd, "lines": ex.lines, "contracts_considered": ex.contracts_considered})
+    except Exception as e:
+        return err(f"contract_exposure failed: {e}")

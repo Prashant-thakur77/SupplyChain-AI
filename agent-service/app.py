@@ -441,6 +441,30 @@ class MemoryIn(BaseModel):
     when: Optional[str] = None
 
 
+class ContractParseIn(BaseModel):
+    text: str
+    user_id: str = "system"
+    supply_chain_id: str = ""
+
+
+@app.post("/contracts/parse", dependencies=[Depends(auth)])
+def contracts_parse(inp: ContractParseIn):
+    """Contracts agent: pasted contract / SLA text → structured clauses (lead time, grace, penalty/day, cap, service level)."""
+    from agents.base import call_structured, make_agent
+    from contracts import ContractTerms
+    from pydantic import BaseModel as _BM
+
+    class Terms(_BM):
+        contracts: list[ContractTerms]
+
+    agent = make_agent("contracts", "You extract commercial terms from supply-chain contracts and SLAs. Return one entry per counterparty/clause: "
+                       "promised lead time in days, grace period before penalties, penalty per day in USD (convert percentages of order value into USD only if a value is stated; otherwise 0 and explain in notes), "
+                       "cap, OTIF/service level, expiry, and the site or city the clause names. Never invent numbers not in the text.",
+                       hooks=_hooks("contracts", inp), name="contracts_parser")
+    out = call_structured(agent, f"Contract text:\n\n{inp.text[:12000]}\n\nExtract the terms.", Terms)
+    return {"contracts": [c.model_dump() for c in out.contracts]}
+
+
 @app.get("/playbooks/catalog", dependencies=[Depends(auth)])
 def playbooks_catalog():
     """Built-in playbook catalogue (installed per org from the Playbooks page)."""

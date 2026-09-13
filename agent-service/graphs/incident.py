@@ -15,10 +15,11 @@ from strands.multiagent import GraphBuilder
 from models import invoke_with_retry
 
 import db
+import contracts
 import inventory
 import playbooks
 from agents import analyst, impact, router, strategist
-from routing import ReroutePlan, reroute_plan
+from routing import ReroutePlan, blast_radius, reroute_plan
 from schemas import (
     Assessment, Decision, DecisionOption, Event, GraphEvent, ImpactEstimate, MitigationPlan, RouteRanking, Severity, Twin,
 )
@@ -160,7 +161,7 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
             f"Route candidates (computed exactly by the routing engine — do not recompute):\n{_candidates_block(twin, plan)}\n\n"
             "Instructions by role — only follow the line for your own role:\n"
             "- router: rank the feasible candidates by added cost/days/risk and decide whether waiting is viable.\n"
-            "- impact: quantify the business impact; you are the only node with estimate_impact_numbers — call it first.\n"
+            "- impact: quantify the business impact; you are the only node with estimate_impact_numbers and contract_exposure — call both first.\n"
             "- strategist: you receive the router and impact outputs as input; write the mitigation plan. Do not call tools you don't have."
             + pb_text
         )
@@ -220,6 +221,16 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
             emit(GraphEvent(type="error", node="strategist", payload={"error": str(e)}))
             status = "partial"
         done("strategist", t, {"steps": len(mit.steps) if mit else 0})
+
+    # Contract/SLA penalties (deterministic) — attached to the impact estimate whatever the model said.
+    if imp is not None and persist:
+        downstream = blast_radius(twin, a.failed_node_ids, a.failed_edge_ids).downstream_node_ids
+        ex = contracts.exposure(contracts.load(supply_chain_id), imp.delay_days, list(set(a.failed_node_ids + a.affected_node_ids + downstream)), {n.id: n.label for n in twin.nodes})
+        if ex.contracts_considered:
+            imp.contract_penalties_usd = ex.total_usd
+            imp.contract_lines = ex.lines
+            t = stage("contracts")
+            done("contracts", t, {"penalties_usd": ex.total_usd, "contracts": ex.contracts_considered, "lines": ex.lines[:5]})
 
     # Inventory model (deterministic): the LLM judges waiting on transit slack; stock on hand has the final say.
     inv = inventory.assess(twin, plan, float(imp.delay_days) if imp and imp.delay_days else 7.0)

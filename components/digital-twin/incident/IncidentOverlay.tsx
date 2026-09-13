@@ -65,6 +65,7 @@ export function IncidentOverlay({ onClose, local, className }: Props) {
               <Stat label="Downstream" value={String(incident.assessment.affected_node_ids.length)} tone="amber" />
               <Stat label="Lanes reroutable" value={`${incident.plan?.feasible_count ?? 0}/${(incident.plan?.feasible_count ?? 0) + (incident.plan?.infeasible_count ?? 0)}`} tone="green" />
               <Stat label="Revenue at risk" value={incident.impact ? `$${Math.round(incident.impact.revenue_at_risk_usd / 1000)}k` : "—"} tone="red" />
+              {!!incident.impact?.contract_penalties_usd && <Stat label="SLA penalties" value={`$${Math.round(incident.impact.contract_penalties_usd / 1000)}k`} tone="amber" />}
             </div>
           )}
           <AgentActivityPanel events={events} status={status} error={error} compact />
