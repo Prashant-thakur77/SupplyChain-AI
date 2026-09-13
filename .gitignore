@@ -44,3 +44,6 @@ agent-service/__pycache__
 agent-service/**/__pycache__
 agent-service/.pytest_cache
 *.env.yaml
+
+# editor + MCP configs (contain tokens)
+.vscode/
