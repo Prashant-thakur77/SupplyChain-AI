@@ -126,3 +126,20 @@ deterministic engine the incident graph uses. Calls need an org API key (`x-api-
 curl -X POST https://<agent-service>/a2a/ -H "x-api-key: sca_…" -H "content-type: application/json" \
   -d '{"jsonrpc":"2.0","id":"1","method":"message/send","params":{"message":{"role":"user","messageId":"m1","parts":[{"kind":"text","text":"On supply chain <id>, is Port of Singapore -> Port of Rotterdam safe?"}]}}}'
 ```
+
+
+## Deterministic modules added in phases B–D
+
+| Module | What it decides | Where it runs |
+|---|---|---|
+| `inventory.py` | whether "wait and monitor" is survivable: days of cover vs expected outage (+2d safety margin) — overrides the Router's judgement | incident graph stage `inventory` |
+| `contracts.py` | SLA penalties on affected sites: `max(0, delay − grace) × $/day`, capped; attached to `ImpactEstimate.contract_penalties_usd` | incident stage `contracts`; Impact tool `contract_exposure`; `/contracts/parse` (Contracts agent) |
+| `playbooks.py` | which org playbook applies (trigger keywords → category); rendered into the Strategist prompt | incident graph task; `/playbooks/catalog` |
+| `calibration.py` | median actual/estimated ratio from `decision_outcomes` (≥3 samples, clamped 0.5–2.0) applied to *estimated* lanes | `twin_cache.get` |
+| `benchmark.py` | resilience percentile vs anonymised peers + reference distribution by size band | `/resilience` |
+| `demand.py` | demand shock coupled to flows: lane saturation, cost to serve, stock-out timing | `/demand-shock` |
+| `routing.objective` | ranking objective `added_cost + carbon_weight × tCO₂e × carbon_price` (policy) | `reroute_plan` |
+| `tools/feeds.py` | GDACS / USGS / NWS hazards filtered to the twin's sites | Sentinel tools |
+| `tools/lanes.py` | `assess_lane`, `network_resilience` | Lane Assessor (A2A) + copilot |
+
+Web-side: `lib/connectors/*` (ERP/TMS presets → canonical rows → upsert), `lib/tracking/providers.ts` (shipment tracking interface; mock + carrier webhook), `lib/push/server.ts` (web push), region-aware `lib/agent-client.ts`.

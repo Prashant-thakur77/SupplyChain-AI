@@ -4,9 +4,11 @@
 
 ## 0. Where we are
 
-Working today: digital twin (canvas, CSV, text-to-twin, templates), deterministic routing engine, eight Strands agents in two graphs, background Sentinel scans, Decision Inbox with autonomy policy, memory, geo view, Agent Ops, webhooks, four model providers. All persisted in Postgres with RLS; provider-agnostic; deployable to Cloud Run or AgentCore.
+**Status (2026-09-13): every item in phases A–D below is built, tested and wired into the product.** The tables are kept as the design record; the "How" column is what shipped.
 
-What is *not* true yet: the twin knows lanes but not **flows** (what moves, how much, worth how much, due when), so impact is a capacity proxy; approvals end at "approved" rather than at "done"; one user = one org; no external systems feed it.
+Working today: digital twin (canvas, CSV, text-to-twin, templates, ERP/TMS connectors), deterministic routing engine with flow-weighting, carbon objective and outcome calibration, ten Strands agents (incident + analysis graphs, copilot, Sentinel with public hazard feeds, Contracts parser, Lane Assessor over A2A), Decision Inbox with autonomy policy, execution checklists and recorded outcomes, orgs & roles with API keys, Slack/webhook + web-push notifications, resilience audit with anonymised benchmarking, war room, demand-shock simulation, shipments in flight, rate cards & carrier quotes, contracts & SLA penalties, inventory-based wait viability, playbooks, multi-region routing, PWA. All persisted in Postgres with RLS; provider-agnostic; deployable to Cloud Run or AgentCore.
+
+What remains is operational rather than functional: a billed model key, a cloud Supabase project, real AIS / carrier credentials for the tracking provider, and production tenants to make the benchmark distribution and calibration factors meaningful.
 
 ## 1. Who we build for (in order)
 
@@ -78,6 +80,6 @@ Goal: an operator can run one real network on it and believe every number.
 
 Success metrics: time-to-first-twin < 10 min; event→decision < 60 s; % decisions auto-approved within policy; $ avoided vs "wait"; weekly active approvers.
 
-## 5. Immediate build order (this iteration)
+## 5. Build order (done)
 
-A1 Resilience audit → A3 Execution checklist → A6 Data quality gate → A5 Evidence panel → A2 Flows.
+A1 → A3 → A6 → A5 → A2 → A4 → B1 → B2 → B3 → B4 → B5 → B6 → B7 → B8 → C1 → C2 → C3 → C4 → C5 → D1 → D2 → D3 → D4 → D5. See `git log` for one commit per item.

@@ -51,7 +51,12 @@ Who it is for: the person who owns "keep the goods moving" at a company with 5�
 | **Geocoding + lane estimation** — sites without coordinates are geocoded; lanes without cost/days are estimated from great-circle distance × a mode rate card and flagged *estimated*, so routing never sees a free lane. | **Slack / Teams / webhook** notifications with deep links; **decision SLA** — pending decisions expire per policy. |
 | **Geo view** — Leaflet + OpenStreetMap, great-circle lanes by mode, incident overlay (failed / downstream / candidate routes). | **Agent Ops** — every run traced (duration, tokens, failures, cost estimate) with CSV exports of decisions, audit, traces and alerts. |
 | **Resilience audit** — fails every site and lane one at a time (pure routing math), ranks fragility, names single points of failure, scores the network 0–100; "Fail it" runs the incident graph for any case. | **Execution checklist** — the Strategist's steps become trackable tasks on every decision; **evidence panel** shows the routing engine's candidates and the policy verdict behind each recommendation. |
-| **Data health** — lint on every twin (missing coordinates, free lanes, orphans, duplicates) with fixes. | Roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md) — flows, orgs & roles, Slack approvals, ERP connectors, A2A, outcome learning. |
+| **Data health** — lint on every twin (missing coordinates, free lanes, orphans, duplicates) with fixes. **Flows** (units, value, penalties, days of cover) make impact and reroute cost flow-weighted; **rate cards** per org and **carrier quotes** per lane replace estimates with real prices. | **Orgs & roles** (owner / approver / planner / viewer), approve from Slack with signed one-click links, **web push** (PWA) at 2 a.m., weekly **digest** with the cost of inaction. |
+| **ERP / TMS connectors** — generic REST, CSV URL, SAP OData, NetSuite SuiteQL, Odoo JSON-RPC presets; scheduled sync of flows and shipments. **Shipments in flight** with carrier milestone webhooks; Sentinel treats a delayed shipment as an event. | **Playbooks** — six built-in disruption responses (port closure, supplier outage, storm, chokepoint, customs, strike) the org installs and edits; the Strategist follows them and their steps seed the checklist. |
+| **Contracts & SLAs** — paste a clause, the Contracts agent extracts lead time / grace / penalty per day / cap; penalties are added deterministically to every impact estimate. | **Learning from outcomes** — record what a decision really cost; estimate accuracy (MAPE, bias) on Agent Ops; estimated lanes are calibrated by the observed bias. |
+| **Public hazard feeds** — GDACS, USGS and NWS alerts (keyless) filtered to the twin's sites, as Sentinel tools. | **Carbon & cost co-optimisation** — CO₂e per lane from the rate card; a policy slider weighs carbon in the routing objective; every option shows its tCO₂e delta. |
+| **Demand shock** — scale demand on flows: which lanes saturate, cost to serve, stock-out timing. **Inventory model** — "wait and monitor" is only viable when days of cover outlast the expected outage. | **A2A endpoint** — other agents ask *"is this lane safe?"* over the Agent-to-Agent protocol with org API keys; **benchmarking** — resilience percentile vs anonymised peers; **multi-region** agent-service routing by org. |
+| Roadmap and what shipped: [`docs/ROADMAP.md`](docs/ROADMAP.md). | |
 
 <p align="center"><img src="docs/img/demo-map.png" alt="Geo view with incident overlay" width="80%"></p>
 
@@ -147,8 +152,8 @@ Database: run **`supabase/setup.sql`** once in the Supabase SQL editor (all tabl
 
 ## Tests
 
-- `agent-service`: routing (Dijkstra, Yen, blast radius, lane detection), schemas, tools (mocked HTTP), agent post-processing, graph gates, API (`TestClient`).
-- web: SSE parser (incl. CRLF), decision formatting, CSV/Excel twin import.
+- `agent-service` (80 tests): routing (Dijkstra, Yen, blast radius, lane detection, flows, carbon objective), inventory, contracts, playbooks, calibration, benchmark, demand shock, hazard feeds (mocked HTTP), lane tools, schemas, agent post-processing, graph gates, API (`TestClient`).
+- web (34 tests): SSE parser (incl. CRLF), decision formatting, CSV/Excel twin import, tracking provider, connectors (presets, CSV, mapping, site resolution).
 
 ## Disclosure
 
