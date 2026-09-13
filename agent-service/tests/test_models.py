@@ -37,3 +37,18 @@ def test_make_model_ollama(monkeypatch):
     m = models.make_model("router")
     assert type(m).__name__ == "OllamaModel" and m.config["model_id"] == "qwen2.5:7b"
     monkeypatch.setenv("AGENT_MODEL_PROVIDER", "gemini"); reload(config); reload(models)
+
+
+def test_ollama_metadata_none_counts_are_coalesced():
+    from types import SimpleNamespace
+
+    from models import _harden_ollama
+
+    class Fake:
+        def format_chunk(self, event):
+            d = event["data"]
+            return d.eval_count + d.prompt_eval_count
+
+    _harden_ollama(Fake)
+    assert Fake().format_chunk({"chunk_type": "metadata", "data": SimpleNamespace(eval_count=None, prompt_eval_count=None)}) == 0
+    assert Fake().format_chunk({"chunk_type": "metadata", "data": SimpleNamespace(eval_count=3, prompt_eval_count=4)}) == 7

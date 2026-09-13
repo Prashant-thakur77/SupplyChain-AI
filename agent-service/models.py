@@ -26,7 +26,7 @@ ROLE_TEMPERATURE: dict[str, float] = {
 }
 
 FALLBACK_GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-2.5-flash"]
-_TRANSIENT = ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
+_TRANSIENT = ("unsupported operand type(s) for +: 'NoneType'", "503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED", "overloaded", "high demand", "rate", "quota", "ThrottlingException", "404", "NOT_FOUND", "no longer available")
 
 
 def gemini_keys(role: str) -> list[str]:
@@ -67,6 +67,7 @@ def make_model(role: str, api_key: str | None = None, model_id: str | None = Non
     if settings.agent_model_provider == "ollama":
         from strands.models.ollama import OllamaModel
 
+        _harden_ollama(OllamaModel)
         # JSON mode: Ollama honours format="json" via additional_args.
         extra_o: dict = {"additional_args": {"format": "json"}} if json_mode else {}
         return OllamaModel(settings.ollama_host, model_id=model_id or settings.ollama_model_id, temperature=temperature,
@@ -82,6 +83,28 @@ def make_model(role: str, api_key: str | None = None, model_id: str | None = Non
 
         extra["gemini_tools"] = [gtypes.Tool(google_search=gtypes.GoogleSearch())]
     return GeminiModel(client_args={"api_key": api_key or settings.gemini_key(role)}, model_id=model_id or settings.gemini_model_id, params=params, **extra)
+
+
+def _harden_ollama(cls) -> None:
+    """Ollama sometimes omits eval_count/prompt_eval_count on the final chunk (model still loading, cache hit); the
+    upstream formatter then dies on None + None and takes the whole graph node with it. Coalesce to 0."""
+    if getattr(cls, "_sc_hardened", False):
+        return
+    orig = cls.format_chunk
+
+    def format_chunk(self, event):
+        data = event.get("data") if isinstance(event, dict) else None
+        if event.get("chunk_type") == "metadata" and data is not None:
+            for attr in ("eval_count", "prompt_eval_count"):
+                if getattr(data, attr, None) is None:
+                    try:
+                        setattr(data, attr, 0)
+                    except Exception:  # noqa: BLE001 — frozen model; fall through to the original
+                        pass
+        return orig(self, event)
+
+    cls.format_chunk = format_chunk
+    cls._sc_hardened = True
 
 
 def is_transient(err: BaseException) -> bool:

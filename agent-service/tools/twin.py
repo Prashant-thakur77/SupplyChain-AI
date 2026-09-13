@@ -18,7 +18,20 @@ class _TwinCache:
         self._m: dict[str, Twin] = {}
 
     def put(self, t: Twin) -> None:
-        self._m[t.supply_chain_id] = enrich_twin(t)[0]
+        """Cache an inline twin (canvas state / demo). Canvas payloads carry only nodes and lanes, so the saved chain's
+        commercial data — flows, rate card, carrier quotes — is merged in; otherwise a canvas call would silently
+        downgrade every later call on that chain to "no flows"."""
+        sid = t.supply_chain_id
+        if sid and not sid.startswith("demo") and sid not in ("canvas", "default-chain"):
+            try:
+                if not t.flows:
+                    t.flows = db.load_flows(sid)
+                if not t.rate_card:
+                    t.rate_card = db.load_rate_card(sid)
+                db.apply_quotes(t, db.load_quotes(sid))
+            except Exception as e:  # noqa: BLE001 — commercial data is optional
+                print(f"[twin_cache] could not merge saved commercial data for {sid}: {e}")
+        self._m[sid] = enrich_twin(t)[0]
 
     def get(self, supply_chain_id: str) -> Twin:
         if supply_chain_id in self._m:

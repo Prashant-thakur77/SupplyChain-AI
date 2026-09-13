@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { guardSavedTwin } from "@/lib/auth-server"
+import { getSessionUser, guardSavedTwin } from "@/lib/auth-server"
 import { agentClient, agentErrorResponse } from "@/lib/agent-client"
 import { loadTwinForAgent, rfToTwin } from "@/lib/server/twin"
 

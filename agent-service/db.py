@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any, Optional
@@ -246,10 +247,14 @@ def insert_trace(
         print(f"[trace] insert failed: {e}")
 
 
+_UUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+
+
 def insert_audit(user_id: Optional[str], actor: str, action: str, details: Optional[dict] = None) -> None:
     try:
+        uid = user_id if user_id and _UUID.match(user_id) else None  # "demo" / "anonymous" callers are logged without a user
         client().table("audit_logs").insert(
-            {"user_id": user_id, "actor": actor, "action": action, "details": details or {}, "status": "success"}
+            {"user_id": uid, "actor": actor, "action": action, "details": details or {}, "status": "success"}
         ).execute()
     except Exception as e:
         print(f"[audit] insert failed: {e}")

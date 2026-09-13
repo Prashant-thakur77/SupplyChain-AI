@@ -27,3 +27,16 @@ def test_tools_accept_labels_not_just_ids():
     out = compute_blast_radius(t.supply_chain_id, ["SINGAPORE"])
     assert out["status"] == "success" and out["content"][0]["json"]["downstream_node_ids"]
     assert find_reroutes(t.supply_chain_id, ["Atlantis"])["status"] == "error"
+
+
+def test_inline_twin_keeps_saved_flows(monkeypatch):
+    from tests.test_routing import twin as make_twin
+    from schemas import Flow
+    from tools import twin as tt
+
+    t = make_twin(); t.supply_chain_id = "saved-1"
+    monkeypatch.setattr(tt.db, "load_flows", lambda sid: [Flow(id="f", origin="shenzhen", destination="berlin", units_per_week=10, value_per_unit=5)])
+    monkeypatch.setattr(tt.db, "load_rate_card", lambda sid: {})
+    monkeypatch.setattr(tt.db, "load_quotes", lambda sid: [])
+    tt.twin_cache.put(t)  # canvas payload: no flows
+    assert len(tt.twin_cache.get("saved-1").flows) == 1
