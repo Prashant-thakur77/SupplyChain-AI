@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { getUserData } from "@/utils/functions/userUtils"
 import { cn } from "@/lib/utils"
 
-interface Ops { days: number; runs: number; sessions: number; fails: number; tokens: number; est_cost_usd: number; agents: { name: string; runs: number; avg_ms: number; p95_ms: number; fail: number; tokens: number }[]; stages: { stage: string; runs: number; avg_ms: number }[]; by_day: { day: string; runs: number }[]; recent: any[] }
+interface Ops { days: number; runs: number; sessions: number; fails: number; tokens: number; est_cost_usd: number; agents: { name: string; runs: number; avg_ms: number; p95_ms: number; fail: number; tokens: number }[]; stages: { stage: string; runs: number; avg_ms: number }[]; by_day: { day: string; runs: number }[]; recent: any[]; accuracy?: { outcomes: number; resolved_pct: number | null; cost_mape_pct: number | null; cost_bias_pct: number | null; days_mae: number | null; days_bias: number | null } }
 
 const STAGE_HINT: Record<string, string> = { incident: "incident graph", scan: "Sentinel background scan", chat: "copilot", analysis: "analysis graph", simulation: "simulation report", twin_draft: "text-to-twin", forecast_report: "forecast", strategy_report: "strategy", live_intel: "live intel", suggestions: "builder suggestions" }
 
@@ -48,6 +48,15 @@ export function AgentOps() {
             <div className="rounded-theme-lg border border-theme-border-subtle bg-theme-bg-surface p-4">
               <div className="text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">By workflow</div>
               <ul className="mt-2 space-y-1.5">{ops.stages.map((s) => <li key={s.stage} className="flex items-center justify-between text-sm"><span className="text-theme-text-primary">{STAGE_HINT[s.stage] ?? s.stage}</span><span className="text-xs text-theme-text-secondary">{s.runs} runs · {(s.avg_ms / 1000).toFixed(1)}s avg</span></li>)}</ul>
+              <div className="mt-4 border-t border-theme-border-subtle pt-3 text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">Estimate accuracy</div>
+              {ops.accuracy && ops.accuracy.outcomes > 0 ? (
+                <ul className="mt-2 space-y-1.5 text-sm">
+                  <li className="flex justify-between"><span className="text-theme-text-primary">Outcomes recorded</span><span className="text-xs text-theme-text-secondary">{ops.accuracy.outcomes} · {ops.accuracy.resolved_pct}% resolved</span></li>
+                  {ops.accuracy.cost_mape_pct != null && <li className="flex justify-between"><span className="text-theme-text-primary">Cost error (MAPE)</span><span className={cn("text-xs", ops.accuracy.cost_mape_pct > 25 ? "text-theme-amber" : "text-theme-green")}>{ops.accuracy.cost_mape_pct}% · bias {ops.accuracy.cost_bias_pct! >= 0 ? "+" : ""}{ops.accuracy.cost_bias_pct}%</span></li>}
+                  {ops.accuracy.days_mae != null && <li className="flex justify-between"><span className="text-theme-text-primary">Delay error (MAE)</span><span className={cn("text-xs", ops.accuracy.days_mae > 2 ? "text-theme-amber" : "text-theme-green")}>{ops.accuracy.days_mae}d · bias {ops.accuracy.days_bias! >= 0 ? "+" : ""}{ops.accuracy.days_bias}d</span></li>}
+                  <li className="text-[11px] text-theme-text-muted">Estimated lanes are calibrated by the observed bias on the next incident.</li>
+                </ul>
+              ) : <p className="mt-2 text-xs text-theme-text-muted">Record outcomes on approved decisions to see how close the estimates were.</p>}
               <div className="mt-4 border-t border-theme-border-subtle pt-3 text-[11px] font-semibold uppercase tracking-wide text-theme-text-muted">Export</div>
               <div className="mt-2 flex flex-wrap gap-2">{["decisions", "audit", "traces", "alerts"].map((w) => <a key={w} href={`/api/export?userId=${uid}&what=${w}`} className="inline-flex items-center gap-1.5 rounded-full border border-theme-border-subtle px-3 py-1 text-xs text-theme-text-secondary hover:border-theme-blue hover:text-theme-blue"><Download className="h-3 w-3" /> {w}.csv</a>)}</div>
             </div>

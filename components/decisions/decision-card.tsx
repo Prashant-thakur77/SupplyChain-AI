@@ -14,6 +14,7 @@ import { OptionRow } from "./option-row"
 import { SEVERITY_STYLES } from "./severity"
 import { TraceDrawer } from "./trace-drawer"
 import { TaskChecklist } from "./task-checklist"
+import { OutcomeForm } from "./outcome-form"
 
 function severityOf(d: DecisionRow): Severity {
   const risks = d.options.map((o) => o.risk)
@@ -104,6 +105,7 @@ export function DecisionCard({ decision, onChange, local, readOnly }: Props) {
         </div>
 
         {!local && decision.status === "approved" && <TaskChecklist decisionId={decision.id} decidedAt={decision.decided_at} />}
+        {!local && decision.status === "approved" && !readOnly && <OutcomeForm decisionId={decision.id} estimatedCost={chosen?.added_cost} estimatedDays={chosen?.added_days} />}
 
         <footer className="mt-4 flex flex-wrap items-center gap-2">
           {pending ? (

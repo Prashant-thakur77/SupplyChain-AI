@@ -4,6 +4,7 @@ from __future__ import annotations
 from strands import tool
 
 import db
+import calibration
 from enrich import enrich_twin
 from routing import blast_radius, reroute_plan
 from schemas import Twin
@@ -23,6 +24,7 @@ class _TwinCache:
         if supply_chain_id in self._m:
             return self._m[supply_chain_id]
         t = enrich_twin(db.load_twin(supply_chain_id))[0]
+        calibration.apply(t, calibration.factors(supply_chain_id))  # learn from recorded outcomes
         self._m[supply_chain_id] = t
         return t
 
