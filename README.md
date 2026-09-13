@@ -43,6 +43,16 @@ Operations and logistics managers at small and mid-size manufacturers and import
 
 Who it is for: the person who owns "keep the goods moving" at a company with 5–50 suppliers and no control tower. Why it matters: one avoided week of stock-out pays for years of this.
 
+## Built for a real network, not just a demo
+
+| Onboarding | Autonomy & operations |
+|---|---|
+| **Describe in words** — a Strands `twin_builder` agent drafts sites and lanes from plain English; **Import CSV/Excel**; **industry templates** (electronics, automotive, pharma cold chain, F&B). | **Autonomy policy** per twin — auto-approve reroutes ≤ $X / ≤ N days at ≥ confidence; never on `needs_review` or when a lane has no bypass. Every auto-approval is audited, remembered and notified. |
+| **Geocoding + lane estimation** — sites without coordinates are geocoded; lanes without cost/days are estimated from great-circle distance × a mode rate card and flagged *estimated*, so routing never sees a free lane. | **Slack / Teams / webhook** notifications with deep links; **decision SLA** — pending decisions expire per policy. |
+| **Geo view** — Leaflet + OpenStreetMap, great-circle lanes by mode, incident overlay (failed / downstream / candidate routes). | **Agent Ops** — every run traced (duration, tokens, failures, cost estimate) with CSV exports of decisions, audit, traces and alerts. |
+
+<p align="center"><img src="docs/img/demo-map.png" alt="Geo view with incident overlay" width="80%"></p>
+
 ## Architecture
 
 ![Architecture](docs/architecture.png)
