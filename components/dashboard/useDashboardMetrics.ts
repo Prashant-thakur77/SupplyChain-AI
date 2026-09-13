@@ -92,37 +92,33 @@ export function useDashboardMetrics(): DashboardMetrics {
         const totalNodes = allNodes.length
         const totalEdges = allEdges.length
 
-        // 4. Compute exposure: nodes with risk_level > 50
-        const exposedNodes = allNodes.filter(n => {
-          const risk = n.risk_level ?? n.data?.riskScore ?? 0
-          return Number(risk) > 50
-        })
+        // Node risk lives on two scales: risk_level 0–5 (agent risk scorer) and data.riskScore 0–1 (canvas). Normalise to 0–100.
+        const riskOf = (n: any): number => {
+          const rl = Number(n.risk_level ?? NaN), rs = Number(n.data?.riskScore ?? NaN)
+          if (!Number.isNaN(rl) && rl > 0) return rl <= 5 ? rl * 20 : rl
+          if (!Number.isNaN(rs)) return rs <= 1 ? rs * 100 : rs
+          const lvl = String(n.data?.riskLevel ?? "").toLowerCase()
+          return lvl === "critical" ? 90 : lvl === "high" ? 75 : lvl === "medium" ? 50 : 10
+        }
+        // 4. Exposure: nodes at medium risk or worse (≥ 50/100)
+        const exposedNodes = allNodes.filter(n => riskOf(n) >= 50)
         const nodeExposurePct = totalNodes > 0
           ? `${Math.round((exposedNodes.length / totalNodes) * 100)}%`
           : "0%"
 
         // Sidebar exposure index: weighted average risk
-        const avgRisk = totalNodes > 0
-          ? allNodes.reduce((sum, n) => sum + Number(n.risk_level ?? n.data?.riskScore ?? 0), 0) / totalNodes
-          : 0
+        const avgRisk = totalNodes > 0 ? allNodes.reduce((sum, n) => sum + riskOf(n), 0) / totalNodes : 0
         const exposureIndex = totalNodes > 0 ? avgRisk.toFixed(1) : "—"
 
-        // 5. Active faults: nodes with risk_level > 75
-        const activeFaults = allNodes.filter(n => {
-          const risk = n.risk_level ?? n.data?.riskScore ?? 0
-          return Number(risk) > 75
-        }).length
+        // 5. Active faults: high-risk nodes (≥ 70/100)
+        const activeFaults = allNodes.filter(n => riskOf(n) >= 70).length
 
-        // 6. Recovery window heuristic (based on avg lead time or days_of_supply)
-        const leadTimes = allNodes
-          .map(n => Number(n.lead_time ?? n.data?.leadTime ?? 0))
-          .filter(v => v > 0)
-        const meanRecoveryNum = leadTimes.length > 0
-          ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length
-          : 0
-        const recoveryWindow = meanRecoveryNum > 0
-          ? `${Math.round(meanRecoveryNum)}–${Math.round(meanRecoveryNum * 1.5)} days`
-          : "—"
+        // 6. Recovery window: node lead times when present, otherwise the lane transit range (how long a reroute takes to land)
+        const leadTimes = allNodes.map(n => Number(n.lead_time ?? n.data?.leadTime ?? 0)).filter(v => v > 0)
+        const transit = allEdges.map(e => Number(e.transit_days ?? e.data?.transitTime ?? e.data?.transit_days ?? 0)).filter(v => v > 0)
+        const meanRecoveryNum = leadTimes.length > 0 ? leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length : transit.length > 0 ? transit.reduce((a, b) => a + b, 0) / transit.length : 0
+        const maxRecovery = leadTimes.length > 0 ? Math.round(meanRecoveryNum * 1.5) : transit.length > 0 ? Math.max(...transit) : 0
+        const recoveryWindow = meanRecoveryNum > 0 ? `${Math.round(meanRecoveryNum)}–${Math.max(maxRecovery, Math.round(meanRecoveryNum))} days` : "—"
         const meanRecovery = meanRecoveryNum > 0 ? `${Math.round(meanRecoveryNum)} days` : "—"
 
         // 7. Estimated savings: simple heuristic — $1.2k per exposed node resolved

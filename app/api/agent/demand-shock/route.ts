@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
+import { guardSavedTwin } from "@/lib/auth-server"
 import { agentClient, agentErrorResponse } from "@/lib/agent-client"
 import { loadTwinForAgent } from "@/lib/server/twin"
 export const maxDuration = 30
 /** Deterministic demand-shock simulation on the saved twin (needs flows). Body: { supplyChainId, userId, multiplier, durationWeeks, destinationIds } */
 export async function POST(req: NextRequest) {
   const b = await req.json().catch(() => ({}))
+  const denied = await guardSavedTwin(b); if (denied) return NextResponse.json({ error: denied.error }, { status: denied.status })
   if (!b.supplyChainId) return NextResponse.json({ error: "supplyChainId is required" }, { status: 400 })
   try {
     const twin = await loadTwinForAgent(b.supplyChainId)

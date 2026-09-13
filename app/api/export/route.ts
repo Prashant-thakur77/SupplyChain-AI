@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabase/server"
+import { requireSelf } from "@/lib/auth-server"
 
 export const dynamic = "force-dynamic"
 
@@ -10,6 +11,7 @@ export async function GET(req: NextRequest) {
   const sp = new URL(req.url).searchParams
   const userId = sp.get("userId"), what = sp.get("what") ?? "decisions"
   if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 })
+  const self = await requireSelf(userId); if ("error" in self) return NextResponse.json({ error: self.error }, { status: self.status })
   let rows: any[] = [], cols: string[] = []
   if (what === "decisions") {
     const { data } = await supabaseServer.from("decisions").select("id, created_at, supply_chain_id, title, status, auto_approved, policy_reason, recommended_option_id, chosen_option_id, confidence, rationale, decided_at, trace_id").eq("user_id", userId).order("created_at", { ascending: false }).limit(5000)

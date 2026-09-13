@@ -602,7 +602,7 @@ def resilience_ep(inp: ResilienceIn):
     import benchmark
 
     real_nodes = [n for n in twin.nodes]
-    if inp.supply_chain_id and inp.supply_chain_id != "demo":
+    if inp.supply_chain_id and not inp.supply_chain_id.startswith("demo") and inp.supply_chain_id not in ("canvas", "default-chain"):
         benchmark.record(inp.supply_chain_id, len(real_nodes), len(twin.edges), rep["score"], len(rep["single_points_of_failure"]), len(rep.get("single_source_sites", [])))
     rep["benchmark"] = benchmark.percentile(inp.supply_chain_id, len(real_nodes), rep["score"])
     db.insert_audit(inp.user_id, "ResilienceAudit", f"Resilience audit: score {rep['score']} ({rep['grade']}) — better than {rep['benchmark']['percentile']}% of similar networks", {"supply_chain_id": inp.supply_chain_id})

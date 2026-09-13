@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { agentClient } from "@/lib/agent-client"
 import { supabaseServer } from "@/lib/supabase/server"
+import { requireSelf } from "@/lib/auth-server"
 
 export const dynamic = "force-dynamic"
 
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
     service = { ok: false, error: (e as Error).message, latency_ms: Date.now() - started }
   }
   if (!userId) return NextResponse.json({ service })
+  const self = await requireSelf(userId); if ("error" in self) return NextResponse.json({ service })  // service health is public; user stats are not
 
   const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
   try {

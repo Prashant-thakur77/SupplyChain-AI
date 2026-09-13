@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { guardSavedTwin } from "@/lib/auth-server"
 import { agentClient, agentErrorResponse } from "@/lib/agent-client"
 import { agentAudit } from "@/lib/audit-logger"
 import { loadTwinForAgent } from "@/lib/server/twin"
@@ -10,6 +11,7 @@ export const maxDuration = 240
  *  Keeps the legacy response keys used by the orchestrator UI (analysis, coordinationLogs, workflowEfficiency). */
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
+  const denied = await guardSavedTwin(body); if (denied) return NextResponse.json({ error: denied.error }, { status: denied.status })
   const { query, supplyChainId, userId } = body
   if (!query) return NextResponse.json({ error: "Query is required for orchestration" }, { status: 400 })
   if (!supplyChainId) return NextResponse.json({ error: "supplyChainId is required" }, { status: 400 })

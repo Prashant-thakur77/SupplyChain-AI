@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabase/server"
+import { requireSelf } from "@/lib/auth-server"
 
 export const dynamic = "force-dynamic"
 
@@ -8,6 +9,7 @@ export async function GET(req: NextRequest) {
   const sp = new URL(req.url).searchParams
   const userId = sp.get("userId"); const days = Math.min(90, Math.max(1, Number(sp.get("days") ?? 7)))
   if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 })
+  const self = await requireSelf(userId); if ("error" in self) return NextResponse.json({ error: self.error }, { status: self.status })
   const since = new Date(Date.now() - days * 86400000).toISOString()
   const { data, error } = await supabaseServer.from("agent_traces").select("session_id, agent_name, workflow_stage, started_at, duration_ms, success, input_tokens, output_tokens, supply_chain_id")
     .eq("user_id", userId).gte("started_at", since).order("started_at", { ascending: false }).limit(5000)

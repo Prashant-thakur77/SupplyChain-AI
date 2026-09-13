@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { logAudit } from "@/lib/audit-logger"
 import { supabaseServer } from "@/lib/supabase/server"
+import { requireChainAccess, requireSelf } from "@/lib/auth-server"
 
 /** Autonomy policies. GET ?userId → all policies for the user's twins. PUT { userId, supplyChainId, ...fields } → upsert. */
 export async function GET(req: NextRequest) {
   const userId = new URL(req.url).searchParams.get("userId")
   if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 })
+  const self = await requireSelf(userId); if ("error" in self) return NextResponse.json({ error: self.error }, { status: self.status })
   const [chains, policies] = await Promise.all([
     supabaseServer.from("supply_chains").select("supply_chain_id, name").eq("user_id", userId),
     supabaseServer.from("autonomy_policies").select("*").eq("user_id", userId),
@@ -19,6 +21,8 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const b = await req.json().catch(() => ({}))
   if (!b.userId || !b.supplyChainId) return NextResponse.json({ error: "userId and supplyChainId are required" }, { status: 400 })
+  const g = await requireChainAccess(b.supplyChainId, true); if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status })
+  if (g.role !== "owner" && g.role !== "approver") return NextResponse.json({ error: "owners/approvers set the autonomy policy" }, { status: 403 })
   const row = {
     supply_chain_id: b.supplyChainId, user_id: b.userId, auto_approve: !!b.auto_approve,
     max_added_cost: Math.max(0, Number(b.max_added_cost ?? 2000)), max_added_days: Math.max(0, Number(b.max_added_days ?? 5)),

@@ -108,7 +108,8 @@ def audit(twin: Twin) -> ResilienceReport:
         summary.append(f"Single-sourced: {', '.join(single_sites[:4])}{'…' if len(single_sites) > 4 else ''} — an outage there stops flow; the fix is a second site (dual sourcing / backup DC), not a route.")
     if cases:
         top = cases[0]
-        summary.append(f"Most fragile: {top.label} — {top.lanes_affected} lane{'s' if top.lanes_affected != 1 else ''} affected, best bypass +${top.best_added_cost:,.0f} / +{top.best_added_days:.0f}d.")
+        bypass = f"best bypass +${top.best_added_cost:,.0f} / +{top.best_added_days:.0f}d" if top.lanes_cut == 0 else f"{top.lanes_cut} lane{'s' if top.lanes_cut != 1 else ''} with no bypass at all"
+        summary.append(f"Most fragile: {top.label} — {top.lanes_affected} lane{'s' if top.lanes_affected != 1 else ''} affected, {bypass}.")
     cheap = [c for c in cases if c.kind == "node" and c.lanes_cut == 0 and c.best_added_cost <= 1500]
     if cheap:
         summary.append(f"{len(cheap)} site{'s' if len(cheap) != 1 else ''} can fail with a bypass under $1,500 — good redundancy there.")

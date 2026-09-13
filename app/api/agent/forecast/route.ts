@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { guardSavedTwin } from "@/lib/auth-server"
 import { agentClient, agentErrorResponse } from "@/lib/agent-client"
 import { agentAudit } from "@/lib/audit-logger"
 import { loadTwinForAgent } from "@/lib/server/twin"
@@ -9,6 +10,7 @@ export const maxDuration = 120
 /** Forecast scenarios (Strands `forecast_report` agent). Persists to `forecasts`; response contract unchanged. */
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}))
+  const denied = await guardSavedTwin(body); if (denied) return NextResponse.json({ error: denied.error }, { status: denied.status })
   const supplyChainId: string | undefined = body.supplyChainId
   const forecastHorizon: number = Number(body.forecastHorizon ?? 30)
   if (!supplyChainId) return NextResponse.json({ error: "supplyChainId is required" }, { status: 400 })

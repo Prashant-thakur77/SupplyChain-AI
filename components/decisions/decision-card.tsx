@@ -74,6 +74,14 @@ export function DecisionCard({ decision, onChange, local, readOnly }: Props) {
             </div>
             <h3 className="mt-2 font-display text-lg font-semibold leading-snug text-theme-text-primary sm:text-xl">{decision.title}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-theme-text-secondary">{decision.summary}</p>
+            {decision.impact && (
+              <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                <div><dt className="inline text-theme-text-muted">Revenue at risk </dt><dd className="inline font-semibold text-theme-red">${Math.round(decision.impact.revenue_at_risk_usd).toLocaleString("en-US")}</dd></div>
+                <div><dt className="inline text-theme-text-muted">Delay </dt><dd className="inline font-semibold text-theme-text-primary">{Math.round(decision.impact.delay_days)}d</dd></div>
+                {!!decision.impact.contract_penalties_usd && <div title={(decision.impact.contract_lines ?? []).map((l) => `${l.counterparty}: $${Math.round(l.penalty_usd).toLocaleString("en-US")}`).join(" · ")}><dt className="inline text-theme-text-muted">SLA penalties </dt><dd className="inline font-semibold text-theme-amber">${Math.round(decision.impact.contract_penalties_usd).toLocaleString("en-US")}</dd></div>}
+                {decision.impact.orders_affected_pct > 0 && <div><dt className="inline text-theme-text-muted">Orders affected </dt><dd className="inline font-semibold text-theme-text-primary">{Math.round(decision.impact.orders_affected_pct)}%</dd></div>}
+              </dl>
+            )}
           </div>
           <GroundingBadge grounding={{ hasGrounding: true, confidence: decision.confidence, level: decision.confidence >= 0.75 ? "high" : decision.confidence >= 0.5 ? "medium" : "low", needsReview: decision.confidence < 0.6 || (decision.sources?.length ?? 0) === 0, sourceCount: decision.sources?.length ?? 0, avgCredibility: null }} compact />
         </header>

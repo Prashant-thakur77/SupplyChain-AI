@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { guardSavedTwin } from "@/lib/auth-server"
 import { agentClient, agentErrorResponse } from "@/lib/agent-client"
 import { loadTwinForAgent, rfToTwin } from "@/lib/server/twin"
 
@@ -7,6 +8,7 @@ export const maxDuration = 90
 /** Streams the Strands copilot (SSE: token / tool / final). Body: { supplyChainId, userId, message, nodes?, edges? } */
 export async function POST(req: NextRequest) {
   const body = await req.json()
+  const denied = await guardSavedTwin(body); if (denied) return NextResponse.json({ error: denied.error }, { status: denied.status })
   if (!body.message) return NextResponse.json({ error: "message is required" }, { status: 400 })
   try {
     const id = body.supplyChainId ?? "canvas"

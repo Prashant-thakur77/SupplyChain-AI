@@ -181,7 +181,7 @@ def load_policy(supply_chain_id: str) -> Optional[dict]:
 
 
 def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate], auto_approved: bool = False, policy_reason: Optional[str] = None,
-                    mitigation: Optional[MitigationPlan] = None) -> str:
+                    mitigation: Optional[MitigationPlan] = None, impact: Optional[dict] = None) -> str:
     sb = client()
     row = {
         "user_id": user_id,
@@ -201,7 +201,13 @@ def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate],
         "auto_approved": auto_approved,
         "policy_reason": policy_reason,
     }
-    did = sb.table("decisions").insert(row).execute().data[0]["id"]
+    if impact:
+        row["impact"] = impact
+    try:
+        did = sb.table("decisions").insert(row).execute().data[0]["id"]
+    except Exception:  # older databases without the impact column
+        row.pop("impact", None)
+        did = sb.table("decisions").insert(row).execute().data[0]["id"]
     if candidates:
         sb.table("route_plans").insert(
             [
