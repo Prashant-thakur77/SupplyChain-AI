@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { compactUsd } from "@/lib/format"
 import { ChevronDown, ChevronUp, X } from "lucide-react"
 import { AgentActivityPanel } from "@/components/agent-activity/AgentActivityPanel"
 import { DecisionCard } from "@/components/decisions/decision-card"
@@ -64,8 +65,8 @@ export function IncidentOverlay({ onClose, local, className }: Props) {
             <div className="grid grid-cols-3 gap-2">
               <Stat label="Downstream" value={String(incident.assessment.affected_node_ids.length)} tone="amber" />
               <Stat label="Lanes reroutable" value={`${incident.plan?.feasible_count ?? 0}/${(incident.plan?.feasible_count ?? 0) + (incident.plan?.infeasible_count ?? 0)}`} tone="green" />
-              <Stat label="Revenue at risk" value={incident.impact ? `$${Math.round(incident.impact.revenue_at_risk_usd / 1000)}k` : "—"} tone="red" />
-              {!!incident.impact?.contract_penalties_usd && <Stat label="SLA penalties" value={`$${Math.round(incident.impact.contract_penalties_usd / 1000)}k`} tone="amber" />}
+              <Stat label="Revenue at risk" value={incident.impact ? compactUsd(incident.impact.revenue_at_risk_usd) : "—"} tone="red" />
+              {!!incident.impact?.contract_penalties_usd && <Stat label="SLA penalties" value={compactUsd(incident.impact.contract_penalties_usd)} tone="amber" />}
             </div>
           )}
           <AgentActivityPanel events={events} status={status} error={error} compact />

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseServer } from "@/lib/supabase/server"
 import { getProvider } from "@/lib/tracking/providers"
+import { pollShipments } from "@/lib/tracking/poll"
 import { requireChainAccess, requireRowAccess } from "@/lib/auth-server"
 
 /** GET ?supplyChainId[&poll=1] · POST { userId, supplyChainId, shipments:[{reference, origin_node_id, destination_node_id, mode, carrier, etd, planned_eta, value_usd}] } (upsert by reference) */
@@ -8,15 +9,7 @@ export async function GET(req: NextRequest) {
   const sp = new URL(req.url).searchParams
   const sc = sp.get("supplyChainId")
   const g = await requireChainAccess(sc); if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status })
-  if (sp.get("poll") === "1") {
-    const { data } = await supabaseServer.from("shipments").select("id, reference, etd, planned_eta, status").eq("supply_chain_id", sc)
-    const updates = await getProvider().poll(data ?? [])
-    for (const u of updates) {
-      const row = (data ?? []).find((s) => s.reference === u.reference); if (!row) continue
-      await supabaseServer.from("shipments").update({ status: u.status, progress: u.progress, current_eta: u.current_eta, last_event: u.last_event, last_event_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", row.id)
-      if (u.status === "delayed" && row.status !== "delayed") await supabaseServer.from("shipment_events").insert({ shipment_id: row.id, event: "delayed", eta: u.current_eta, progress: u.progress, raw: { provider: getProvider().name } })
-    }
-  }
+  if (sp.get("poll") === "1") await pollShipments(sc!)
   const { data, error } = await supabaseServer.from("shipments").select("*").eq("supply_chain_id", sc).order("planned_eta")
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ shipments: data ?? [], provider: getProvider().name })

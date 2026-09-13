@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { pollShipments } from "@/lib/tracking/poll"
 import { agentClient } from "@/lib/agent-client"
 import { supabaseServer } from "@/lib/supabase/server"
 
@@ -37,6 +38,10 @@ export async function GET(req: NextRequest) {
   }
 
   const due = (chains ?? []).filter((c) => !recentlyScanned.has(c.supply_chain_id))
+  // Shipment tracking: refresh every open shipment before Sentinel looks (delays become events).
+  let shipmentsPolled = 0
+  for (const c of chains ?? []) { try { shipmentsPolled += (await pollShipments(c.supply_chain_id)).polled } catch (e) { console.warn("[cron] tracking poll failed:", (e as Error).message) } }
+
   const results: any[] = []
   for (let i = 0; i < due.length; i += CONCURRENCY) {
     const batch = due.slice(i, i + CONCURRENCY)
@@ -50,5 +55,5 @@ export async function GET(req: NextRequest) {
     }))
     results.push(...out)
   }
-  return NextResponse.json({ ok: true, total: chains?.length ?? 0, skipped: recentlyScanned.size, scanned: results.length, expired: toExpire.length, riskRecomputed, results, at: new Date().toISOString() })
+  return NextResponse.json({ ok: true, total: chains?.length ?? 0, skipped: recentlyScanned.size, scanned: results.length, expired: toExpire.length, riskRecomputed, shipmentsPolled, results, at: new Date().toISOString() })
 }

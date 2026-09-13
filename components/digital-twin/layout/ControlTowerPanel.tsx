@@ -116,7 +116,7 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
             <div className="rounded-theme-md border border-theme-green/30 bg-theme-green-soft p-3"><div className="text-2xl font-bold text-theme-green">{incident?.plan?.feasible_count ?? (isAnalyzingDisruption ? '…' : 0)}</div><div className="text-xs text-theme-text-secondary">Lanes reroutable</div></div>
           </div>
           {isAnalyzingDisruption && <div className="flex items-center gap-2 text-xs text-theme-text-secondary"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Incident graph running — see the panel on the right.</div>}
-          {incident?.impact && <div className="text-xs text-theme-text-secondary">Revenue at risk ≈ <strong className="text-theme-text-primary">${Math.round(incident.impact.revenue_at_risk_usd).toLocaleString()}</strong> · {Math.round(incident.impact.delay_days)} day delay</div>}
+          {incident?.impact && <div className="text-xs text-theme-text-secondary">Revenue at risk ≈ <strong className="text-theme-text-primary">${Math.round(incident.impact.revenue_at_risk_usd).toLocaleString("en-US")}</strong>{incident.impact.contract_penalties_usd ? <> · SLA penalties <strong className="text-theme-amber">${Math.round(incident.impact.contract_penalties_usd).toLocaleString("en-US")}</strong></> : null} · {Math.round(incident.impact.delay_days)} day delay</div>}
           <button onClick={scan} disabled={isScanning} className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-border-subtle py-1.5 text-xs text-theme-text-secondary hover:text-theme-text-primary"><Search className="h-3.5 w-3.5" /> {isScanning ? 'Scanning…' : 'Re-scan live feeds'}</button>
         </div>
       )}
