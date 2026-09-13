@@ -1,7 +1,7 @@
 'use client';
 
 import { FC, useState } from 'react';
-import { AlertCircle, FileSignature, FileText, Loader2, Radar, ShieldAlert, Plug, Search, Ship, Truck } from 'lucide-react';
+import { AlertCircle, FileSignature, FileText, Loader2, Radar, ShieldAlert, Plug, Search, Ship, TrendingUp, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
 import type { IncidentEvent } from '@/types/agent';
@@ -12,6 +12,7 @@ import { QuotesDialog } from '@/components/digital-twin/forms/QuotesDialog';
 import { ShipmentsDialog } from '@/components/digital-twin/forms/ShipmentsDialog';
 import { ConnectorsDialog } from '@/components/digital-twin/forms/ConnectorsDialog';
 import { ContractsDialog } from '@/components/digital-twin/forms/ContractsDialog';
+import { DemandShockDialog } from '@/components/digital-twin/forms/DemandShockDialog';
 import { useUser } from '@/lib/stores/user';
 
 interface Props {
@@ -29,6 +30,7 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
   const [shipmentsOpen, setShipmentsOpen] = useState(false);
   const [connectorsOpen, setConnectorsOpen] = useState(false);
   const [contractsOpen, setContractsOpen] = useState(false);
+  const [demandOpen, setDemandOpen] = useState(false);
   const { userData } = useUser();
   const selectedSupplyChain = useDigitalTwinStore((s) => s.selectedSupplyChain);
 
@@ -95,6 +97,8 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
               <ConnectorsDialog isOpen={connectorsOpen} onClose={() => setConnectorsOpen(false)} supplyChainId={selectedSupplyChain} userId={userData.id} />
               <button onClick={() => setContractsOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-border-subtle bg-theme-bg-surface px-3 py-2 text-sm font-medium text-theme-text-primary hover:border-theme-blue hover:text-theme-blue"><FileSignature className="h-4 w-4" /> Contracts & SLAs</button>
               <ContractsDialog isOpen={contractsOpen} onClose={() => setContractsOpen(false)} supplyChainId={selectedSupplyChain} userId={userData.id} />
+              <button onClick={() => setDemandOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-theme-md border border-theme-border-subtle bg-theme-bg-surface px-3 py-2 text-sm font-medium text-theme-text-primary hover:border-theme-blue hover:text-theme-blue"><TrendingUp className="h-4 w-4" /> Demand shock</button>
+              <DemandShockDialog isOpen={demandOpen} onClose={() => setDemandOpen(false)} supplyChainId={selectedSupplyChain} userId={userData.id} />
             </>
           )}
           <WarRoomDialog endpoint="/api/agent/warroom" onFail={onIncident} />

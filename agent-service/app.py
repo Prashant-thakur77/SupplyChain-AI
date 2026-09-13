@@ -371,6 +371,10 @@ def invocations(payload: dict):
         return report_forecast(ForecastReportIn(**payload))
     if action == "warroom":
         return warroom_ep(WarRoomIn(**payload))
+    if action == "demand_shock":
+        return demand_shock(DemandShockIn(**payload))
+    if action == "contracts_parse":
+        return contracts_parse(ContractParseIn(**payload))
     if action == "risk_recompute":
         return risk_recompute(RiskIn(**payload))
     if action == "resilience":
@@ -492,6 +496,25 @@ class WarRoomIn(BaseModel):
     twin: Optional[Twin] = None
     scenarios: list[dict] = []
     use_presets: bool = False
+
+
+class DemandShockIn(BaseModel):
+    supply_chain_id: str
+    user_id: str = "system"
+    twin: Optional[Twin] = None
+    multiplier: float = 1.5
+    duration_weeks: int = 4
+    destination_ids: list[str] = []
+
+
+@app.post("/demand-shock", dependencies=[Depends(auth)])
+def demand_shock(inp: DemandShockIn):
+    """Deterministic demand-shock simulation coupled to flows: capacity saturation, cost to serve, stock-out timing."""
+    import demand
+
+    rep = demand.simulate(_twin(inp), inp.multiplier, inp.duration_weeks, inp.destination_ids or None)
+    db.insert_audit(inp.user_id, "DemandShock", f"Demand shock ×{inp.multiplier} for {inp.duration_weeks}w: {rep.summary[1] if len(rep.summary) > 1 else ''}", {"supply_chain_id": inp.supply_chain_id})
+    return demand.to_dict(rep)
 
 
 @app.post("/warroom", dependencies=[Depends(auth)])
