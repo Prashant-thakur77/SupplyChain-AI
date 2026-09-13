@@ -167,9 +167,9 @@ export default function DashboardPage() {
             </div>
             {/* Card 3 */}
             <div className="stat-card">
-              <div className="stat-card-label">Fault Signals</div>
+              <div className="stat-card-label">High-risk sites</div>
               <div className="stat-card-val">{m.isLoading ? "…" : String(m.activeFaults)}</div>
-              <div className="stat-card-meta">nodes risk &gt; 75</div>
+              <div className="stat-card-meta">risk ≥ 70 / 100</div>
               <div className="stat-card-indicator">
                 <div className="ind-dot" style={{ background: '#2748E8' }}></div>
                 <span className="text-theme-blue font-semibold text-[0.62rem]">active faults</span>

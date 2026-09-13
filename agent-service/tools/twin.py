@@ -35,6 +35,27 @@ class _TwinCache:
 twin_cache = _TwinCache()
 
 
+def resolve_nodes(t, refs: list[str]) -> list[str]:
+    """Accept node ids *or* labels (models often pass 'Suez Canal' rather than the uuid). Unknown refs are dropped."""
+    by_id = {n.id: n.id for n in t.nodes}
+    by_label = {n.label.strip().lower(): n.id for n in t.nodes}
+    out: list[str] = []
+    for r in refs or []:
+        key = str(r).strip()
+        nid = by_id.get(key) or by_label.get(key.lower())
+        if nid is None:  # loose match: 'Suez' → 'Suez Canal'
+            cands = [i for l, i in by_label.items() if key.lower() in l or l in key.lower()]
+            nid = cands[0] if len(cands) == 1 else None
+        if nid and nid not in out:
+            out.append(nid)
+    return out
+
+
+def resolve_edges(t, refs: list[str]) -> list[str]:
+    ids = {e.id for e in t.edges}
+    return [r for r in (refs or []) if r in ids]
+
+
 @tool
 def load_twin(supply_chain_id: str) -> dict:
     """Load the supply chain digital twin (nodes with type/location/capacity/risk and edges with mode, cost, transit days) for a supply chain id."""
@@ -50,6 +71,9 @@ def compute_blast_radius(supply_chain_id: str, failed_node_ids: list[str], faile
     """Deterministically compute which downstream nodes and edges are cut off when the given nodes/edges fail."""
     try:
         t = twin_cache.get(supply_chain_id)
+        failed_node_ids, failed_edge_ids = resolve_nodes(t, failed_node_ids), resolve_edges(t, failed_edge_ids)
+        if not failed_node_ids and not failed_edge_ids:
+            return err("no matching sites/lanes — use the exact ids or labels from load_twin")
         br = blast_radius(t, failed_node_ids, failed_edge_ids)
         labels = {n.id: n.label for n in t.nodes}
         return ok({
@@ -57,6 +81,7 @@ def compute_blast_radius(supply_chain_id: str, failed_node_ids: list[str], faile
             "downstream_labels": [labels.get(i, i) for i in br.downstream_node_ids],
             "broken_edge_ids": br.broken_edge_ids,
             "severed_pairs": br.severed_pairs,
+            "severed_lanes": [f"{labels.get(a, a)} → {labels.get(b, b)}" for a, b in br.severed_pairs],
         })
     except Exception as e:
         return err(f"compute_blast_radius failed: {e}")
@@ -66,13 +91,17 @@ def compute_blast_radius(supply_chain_id: str, failed_node_ids: list[str], faile
 def find_reroutes(supply_chain_id: str, failed_node_ids: list[str], failed_edge_ids: list[str] = [], k: int = 3) -> dict:
     """Compute the k cheapest feasible alternate routes around failed nodes/edges with weighted Dijkstra. Returns exact added cost and days per candidate."""
     try:
-        plan = reroute_plan(twin_cache.get(supply_chain_id), failed_node_ids, failed_edge_ids, k)
+        t = twin_cache.get(supply_chain_id)
+        failed_node_ids, failed_edge_ids = resolve_nodes(t, failed_node_ids), resolve_edges(t, failed_edge_ids)
+        if not failed_node_ids and not failed_edge_ids:
+            return err("no matching sites/lanes — use the exact ids or labels from load_twin")
+        plan = reroute_plan(t, failed_node_ids, failed_edge_ids, k)
         return ok({
             "severity": plan.severity,
             "feasible_count": plan.feasible_count,
             "infeasible_count": plan.infeasible_count,
             "severed_pairs": plan.severed_pairs,
-            "candidates": [c.model_dump() for c in plan.candidates],
+            "candidates": [c.model_dump(exclude={"path"}) for c in plan.candidates],  # labels carry the route; ids only confuse the reader
         })
     except Exception as e:
         return err(f"find_reroutes failed: {e}")
@@ -83,6 +112,9 @@ def estimate_impact_numbers(supply_chain_id: str, failed_node_ids: list[str], de
     """Deterministic impact baseline: downstream node count, share of network cut off, and revenue-at-risk using node capacity and lane cost as proxies."""
     try:
         t = twin_cache.get(supply_chain_id)
+        failed_node_ids = resolve_nodes(t, failed_node_ids)
+        if not failed_node_ids:
+            return err("no matching sites — use the exact ids or labels from load_twin")
         br = blast_radius(t, failed_node_ids, [])
         cap = {n.id: n.capacity for n in t.nodes}
         total = sum(cap.values()) or 1.0

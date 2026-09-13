@@ -19,5 +19,6 @@ export const TOUR_STEPS: TourStep[] = [
   { id: "simulation", route: "/simulation", target: "nav-simulation", title: "Simulation", body: "Design what-if scenarios step by step and run Monte Carlo cascades across the twin." },
   { id: "header-agent", route: "/simulation", target: "header-agent", title: "Agent health, inbox, alerts", body: "Header at a glance: green means the agent is up; the badges count pending decisions and unread alerts.", placement: "bottom" },
   { id: "team", route: "/team", target: "header-team", title: "Team & organisation", body: "Owners approve, planners build and simulate, viewers read. Set the rate card, data region and API keys for other agents (A2A) here.", placement: "bottom" },
+  { id: "copilot", route: "/team", target: "copilot", title: "Ask the copilot anything", body: "A Strands agent with the same deterministic tools the incident graph uses: \"what if Suez is blocked?\", \"where is our single point of failure?\", \"any delayed shipments?\" — exact numbers, not guesses.", placement: "top" },
   { id: "done", route: "/team", target: "header-profile", title: "That's the tour", body: "Replay it any time from Profile → Take the tour. Start by building a twin — or open the live demo to break a port and watch the agent decide.", placement: "bottom" },
 ]

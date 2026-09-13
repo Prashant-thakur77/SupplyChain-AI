@@ -15,3 +15,15 @@ def test_blast_radius_tool_labels():
     twin_cache.put(twin())
     out = compute_blast_radius(supply_chain_id="t", failed_node_ids=["singapore"])
     assert "ROTTERDAM" in out["content"][0]["json"]["downstream_labels"]
+
+
+def test_tools_accept_labels_not_just_ids():
+    from tests.test_routing import twin as make_twin
+    from tools.twin import compute_blast_radius, find_reroutes, resolve_nodes, twin_cache
+
+    t = make_twin(); twin_cache.put(t)
+    assert resolve_nodes(t, ["SINGAPORE", "singapore", "nope"]) == ["singapore"]
+    assert resolve_nodes(t, ["rotter"]) == ["rotterdam"]  # unique loose match
+    out = compute_blast_radius(t.supply_chain_id, ["SINGAPORE"])
+    assert out["status"] == "success" and out["content"][0]["json"]["downstream_node_ids"]
+    assert find_reroutes(t.supply_chain_id, ["Atlantis"])["status"] == "error"

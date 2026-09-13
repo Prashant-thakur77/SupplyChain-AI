@@ -6,7 +6,7 @@ import "@copilotkit/react-ui/styles.css"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
-import { ISCAChat } from "@/components/copilot/ISCA/ISCAChat"
+import { FloatingCopilot } from "@/components/copilot/FloatingCopilot"
 import { CopilotProvider } from "@/components/copilot/copilot-provider"
 import { ProductTour } from "@/components/onboarding/ProductTour"
 import { supabaseClient } from "@/lib/supabase/client"
@@ -106,8 +106,8 @@ export default function MainLayout({
         </SidebarProvider>
 
         
-        {/* Add ISCA Chat Assistant */}
-        <ISCAChat />
+        {/* App-wide Strands copilot */}
+        <FloatingCopilot />
         <ProductTour />
       </div>
   )
