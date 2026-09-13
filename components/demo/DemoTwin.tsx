@@ -11,11 +11,15 @@ import { useDigitalTwinStore } from "@/lib/digitalTwinStore"
 import { DEMO_SCENARIOS, DEMO_SUPPLY_CHAIN_ID, demoArch } from "@/lib/demo-twin"
 import { cn } from "@/lib/utils"
 import { StrandsChat } from "@/components/copilot/StrandsChat"
+import dynamic from "next/dynamic"
+import { Map as MapIcon, Waypoints } from "lucide-react"
+const GeoMap = dynamic(() => import("@/components/geo/GeoMap"), { ssr: false })
 
 function DemoInner() {
   const setControlTowerMode = useDigitalTwinStore((s) => s.setControlTowerMode)
   const incident = useIncident({ endpoint: "/api/demo/incident", supplyChainId: DEMO_SUPPLY_CHAIN_ID, userId: "demo", persist: false })
   const [active, setActive] = useState<string | null>(null)
+  const [view, setView] = useState<"graph" | "map">("graph")
   const [scanning, setScanning] = useState(false)
   const [found, setFound] = useState<(IncidentEvent & { failed_labels?: string[] })[] | null>(null)
   const [scanError, setScanError] = useState<string | null>(null)
@@ -126,7 +130,14 @@ function DemoInner() {
         )}
       </aside>
       <div className="relative h-[70vh] min-h-[480px] flex-1 lg:h-auto">
+        <div className="absolute left-1/2 top-3 z-[45] flex -translate-x-1/2 items-center rounded-full border border-theme-border-subtle bg-theme-bg-surface/95 p-1 text-xs shadow-sm backdrop-blur">
+          {(["graph", "map"] as const).map((v) => (
+            <button key={v} type="button" onClick={() => setView(v)} className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-semibold capitalize transition-colors", view === v ? "bg-theme-blue text-white" : "text-theme-text-secondary hover:text-theme-text-primary")}>{v === "graph" ? <Waypoints className="h-3.5 w-3.5" /> : <MapIcon className="h-3.5 w-3.5" />} {v === "graph" ? "Network" : "Map"}</button>
+          ))}
+        </div>
+        {/* The canvas stays mounted (it owns the twin state); the map is an overlay reading the same store. */}
         <DigitalTwinCanvas initialNodes={demoArch.nodes} initialEdges={demoArch.edges} viewOnly userId="demo" incidentEndpoint="/api/demo/incident" hideControlTower />
+        {view === "map" && <div className="absolute inset-0 z-[30]"><GeoMap padRight={incident.status !== "idle" || incident.incident ? 440 : 0} /></div>}
       </div>
     </div>
   )

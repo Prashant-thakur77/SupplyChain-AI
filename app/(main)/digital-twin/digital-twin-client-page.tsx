@@ -24,6 +24,7 @@ import DigitalTwinEditSkeleton from '@/components/digital-twin/display/DigitalTw
 import { supabaseClient } from '@/lib/supabase/client';
 import dynamic from "next/dynamic";
 const SupplyChainGlobe = dynamic(() => import("@/components/supply-chain"), { ssr: false });
+const GeoMap = dynamic(() => import("@/components/geo/GeoMap"), { ssr: false });
 
 export default function DigitalTwinClientPage() {
   const [twinId, setTwinId] = useQueryState('twinId', parseAsString);
@@ -351,7 +352,12 @@ export default function DigitalTwinClientPage() {
             )
           )}
           
-          {(viewMode === "globe" || viewMode === "map") && (
+          {viewMode === "map" && (
+            <div className="absolute inset-0 z-0 overflow-hidden rounded-xl">
+              <GeoMap nodes={activeTwinData.nodes} edges={activeTwinData.edges} />
+            </div>
+          )}
+          {viewMode === "globe" && (
             <div className="absolute inset-0 z-0 bg-[#060a18] rounded-xl overflow-hidden"
               style={{ top: 0, left: 0, right: 0, bottom: 0, display: "flex", flexDirection: "column" }}
             >
