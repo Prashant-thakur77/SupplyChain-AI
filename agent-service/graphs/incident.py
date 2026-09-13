@@ -20,7 +20,9 @@ from routing import ReroutePlan, reroute_plan
 from schemas import (
     Assessment, Decision, DecisionOption, Event, GraphEvent, ImpactEstimate, MitigationPlan, RouteRanking, Severity, Twin,
 )
-from tools.memory import recall_memory
+from notify import decision_message, post_webhook
+from policy import Policy, evaluate
+from tools.memory import recall_memory, store_memory
 from tools.twin import twin_cache
 from tracing import TraceHooks, new_session_id
 
@@ -46,6 +48,8 @@ class IncidentResult:
     status: str  # decision | notified | partial
     execution_order: list[str]
     memories: list[str] = field(default_factory=list)
+    auto_approved: bool = False
+    policy_reason: Optional[str] = None
 
 
 def _risk_of(c) -> Severity:
@@ -214,12 +218,24 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
     decision = build_decision(twin, a, plan, ranking, imp, mit, trace_id)
     if status == "partial":
         decision.confidence = min(decision.confidence, 0.5)
-    decision_id = db.insert_decision(user_id, decision, plan.candidates) if persist else None
+
+    # Autonomy policy: act alone inside the guardrails, otherwise ask once.
+    t = stage("policy")
+    policy = Policy.from_row(db.load_policy(supply_chain_id)) if persist else Policy()
+    auto, reason = evaluate(policy, decision, plan.infeasible_count, a.needs_review or status == "partial")
+    done("policy", t, {"auto_approved": auto, "reason": reason})
+
+    decision_id = db.insert_decision(user_id, decision, plan.candidates, auto_approved=auto, policy_reason=reason) if persist else None
     if persist:
-        db.insert_audit(user_id, "IncidentGraph", f"Decision created: {decision.title}",
-                        {"decision_id": decision_id, "trace_id": trace_id, "elapsed_ms": int((time.time() - t0) * 1000), "order": order})
-    emit(GraphEvent(type="result", payload={"status": status, "decision_id": decision_id}))
-    return IncidentResult(a, plan, ranking, imp, mit, decision, decision_id, notification_id, trace_id, status, order, memories)
+        rec = next((o for o in decision.options if o.id == decision.recommended_option_id), None)
+        db.insert_audit(user_id, "IncidentGraph", ("Auto-approved by policy: " if auto else "Decision created: ") + decision.title,
+                        {"decision_id": decision_id, "trace_id": trace_id, "elapsed_ms": int((time.time() - t0) * 1000), "order": order, "policy": reason})
+        if auto and rec:
+            store_memory(supply_chain_id=supply_chain_id, text=f"{__import__('datetime').date.today().isoformat()}: {decision.title} → auto-approved by policy: {rec.label} (+${rec.added_cost:,.0f}, +{rec.added_days:.0f} days).")
+        text, blocks = decision_message("auto" if auto else "pending", decision.title, rec.label if rec else None, rec.added_cost if rec else None, rec.added_days if rec else None, reason if auto else None, decision_id)
+        post_webhook(policy.webhook_url, text, blocks)
+    emit(GraphEvent(type="result", payload={"status": status, "decision_id": decision_id, "auto_approved": auto, "policy_reason": reason}))
+    return IncidentResult(a, plan, ranking, imp, mit, decision, decision_id, notification_id, trace_id, status, order, memories, auto, reason)
 
 
 def _sanitise(r: RouteRanking, plan: ReroutePlan) -> RouteRanking:

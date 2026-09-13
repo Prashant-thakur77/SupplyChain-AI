@@ -47,7 +47,7 @@ export interface Decision { supply_chain_id: string; event_id?: string | null; t
 export type DecisionStatus = "pending" | "approved" | "rejected" | "snoozed" | "expired"
 export interface RoutePlanRow { id: string; decision_id: string; candidate_id: string; path: string[]; labels: string[]; modes: string[]; cost: number; transit_days: number; added_cost: number; added_days: number; max_risk: number; feasible: boolean }
 export interface DecisionRow extends Decision {
-  memories?: string[]; id: string; user_id: string | null; chosen_option_id: string | null; status: DecisionStatus; created_at: string; decided_at: string | null; snoozed_until?: string | null; route_plans?: RoutePlanRow[] }
+  memories?: string[]; auto_approved?: boolean; policy_reason?: string | null; id: string; user_id: string | null; chosen_option_id: string | null; status: DecisionStatus; created_at: string; decided_at: string | null; snoozed_until?: string | null; route_plans?: RoutePlanRow[] }
 
 export interface GraphEvent { type: "node_start" | "node_end" | "tool" | "result" | "error"; node?: string | null; elapsed_ms?: number | null; payload?: Record<string, any> | null }
 

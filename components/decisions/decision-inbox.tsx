@@ -11,6 +11,7 @@ import { getUserData } from "@/utils/functions/userUtils"
 import type { DecisionRow } from "@/types/agent"
 import { cn } from "@/lib/utils"
 import { DecisionCard } from "./decision-card"
+import { AutonomyPolicyCard } from "./autonomy-policy-card"
 
 type Tab = "pending" | "decided"
 
@@ -74,6 +75,8 @@ export function DecisionInbox() {
           </Button>
         }
       />
+
+      {user?.id && <AutonomyPolicyCard userId={user.id} />}
 
       {serviceDown && (
         <div className="mt-4 rounded-theme-md border border-theme-amber/30 bg-theme-amber-soft px-3 py-2 text-sm text-theme-amber">

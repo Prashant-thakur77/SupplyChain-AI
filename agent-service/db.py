@@ -115,7 +115,16 @@ def insert_notification(user_id: str, supply_chain_id: str, a: Assessment, kind:
     return client().table("notifications").insert(row).execute().data[0]["notification_id"]
 
 
-def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate]) -> str:
+def load_policy(supply_chain_id: str) -> Optional[dict]:
+    try:
+        rows = client().table("autonomy_policies").select("*").eq("supply_chain_id", supply_chain_id).limit(1).execute().data
+        return rows[0] if rows else None
+    except Exception as e:  # table may not exist on older databases
+        print(f"[policy] load failed: {e}")
+        return None
+
+
+def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate], auto_approved: bool = False, policy_reason: Optional[str] = None) -> str:
     sb = client()
     row = {
         "user_id": user_id,
@@ -129,7 +138,11 @@ def insert_decision(user_id: str, d: Decision, candidates: list[RouteCandidate])
         "confidence": d.confidence,
         "sources": [s.model_dump() for s in d.sources],
         "trace_id": d.trace_id,
-        "status": "pending",
+        "status": "approved" if auto_approved else "pending",
+        "chosen_option_id": d.recommended_option_id if auto_approved else None,
+        "decided_at": datetime.now(timezone.utc).isoformat() if auto_approved else None,
+        "auto_approved": auto_approved,
+        "policy_reason": policy_reason,
     }
     did = sb.table("decisions").insert(row).execute().data[0]["id"]
     if candidates:

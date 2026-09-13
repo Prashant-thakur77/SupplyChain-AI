@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     mem0_api_key: str = ""
 
     agent_service_secret: str = ""  # shared secret with the Next.js proxies
+    app_url: str = ""  # public web URL for deep links in notifications
+    decision_webhook_url: str = ""  # default Slack-compatible webhook (per-twin policy can override)
     port: int = 8080
 
     def gemini_key(self, role: str) -> str:

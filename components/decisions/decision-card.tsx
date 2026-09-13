@@ -66,6 +66,7 @@ export function DecisionCard({ decision, onChange, local }: Props) {
               <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", sev.chip)}>{sev.label}</span>
               <span className="text-xs text-theme-text-muted">{formatDistanceToNow(new Date(decision.created_at), { addSuffix: true })}</span>
               {decision.status !== "pending" && <span className="rounded-full border border-theme-border-default px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-theme-text-secondary">{decision.status}</span>}
+              {decision.auto_approved && <span title={decision.policy_reason ?? ""} className="rounded-full border border-theme-green/30 bg-theme-green-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-theme-green">Auto-approved by policy</span>}
             </div>
             <h3 className="mt-2 font-display text-lg font-semibold leading-snug text-theme-text-primary sm:text-xl">{decision.title}</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-theme-text-secondary">{decision.summary}</p>

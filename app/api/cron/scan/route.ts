@@ -19,6 +19,13 @@ export async function GET(req: NextRequest) {
   const { data: recent } = await supabaseServer.from("agent_traces").select("supply_chain_id").eq("workflow_stage", "scan").gte("started_at", since)
   const recentlyScanned = new Set((recent ?? []).map((r) => r.supply_chain_id))
 
+  // Decision SLA: expire pending decisions older than the twin's policy (default 48h).
+  const { data: policies } = await supabaseServer.from("autonomy_policies").select("supply_chain_id, expire_hours")
+  const expireHours = new Map((policies ?? []).map((p) => [p.supply_chain_id, Number(p.expire_hours) || 48]))
+  const { data: pending } = await supabaseServer.from("decisions").select("id, supply_chain_id, created_at").eq("status", "pending")
+  const toExpire = (pending ?? []).filter((d) => Date.now() - new Date(d.created_at).getTime() > (expireHours.get(d.supply_chain_id) ?? 48) * 3600 * 1000).map((d) => d.id)
+  if (toExpire.length) await supabaseServer.from("decisions").update({ status: "expired", decided_at: new Date().toISOString() }).in("id", toExpire)
+
   const due = (chains ?? []).filter((c) => !recentlyScanned.has(c.supply_chain_id))
   const results: any[] = []
   for (let i = 0; i < due.length; i += CONCURRENCY) {
@@ -33,5 +40,5 @@ export async function GET(req: NextRequest) {
     }))
     results.push(...out)
   }
-  return NextResponse.json({ ok: true, total: chains?.length ?? 0, skipped: recentlyScanned.size, scanned: results.length, results, at: new Date().toISOString() })
+  return NextResponse.json({ ok: true, total: chains?.length ?? 0, skipped: recentlyScanned.size, scanned: results.length, expired: toExpire.length, results, at: new Date().toISOString() })
 }
