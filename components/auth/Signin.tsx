@@ -154,14 +154,22 @@ const SigninPage = () => {
   return (
     <>
       <AuthHeader />
-      <div className="relative min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-slate-900 flex items-center justify-center overflow-hidden pt-16">
-        {/* Background blurred elements */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-purple-300 dark:bg-purple-900 opacity-20 blur-3xl"></div>
-        <div className="absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-blue-300 dark:bg-blue-900 opacity-20 blur-3xl"></div>
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-theme-bg-primary px-4 pt-16">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_70%_55%_at_50%_-8%,rgba(39,72,232,0.12),transparent_65%)]" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(24,22,15,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(24,22,15,0.035)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_55%_55%_at_50%_45%,#000_30%,transparent_75%)]" />
+        <div className="relative w-full max-w-[880px] grid gap-8 lg:grid-cols-[1fr_400px] items-center">
+        <div className="hidden lg:block">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-theme-blue">SupplyChain AI</div>
+          <h1 className="mt-3 font-display text-[2.6rem] font-semibold leading-[1.05] tracking-[-0.025em] text-theme-text-primary">Your supply chain, watched 24/7.</h1>
+          <p className="mt-4 max-w-[40ch] text-[15px] leading-relaxed text-theme-text-secondary">Sign in to see your twins, the Decision Inbox and what the agent has done while you were away.</p>
+          <ul className="mt-6 space-y-2 text-sm text-theme-text-secondary">
+            <li>· Sentinel scans every 15 minutes</li><li>· Exact reroutes, one decision card</li><li>· Every agent run traced and auditable</li>
+          </ul>
+        </div>
 
-      <Card className="w-[400px] bg-secondary/50 backdrop-blur-md shadow-lg border border-gray-800 dark:border-slate-300">
+      <Card className="w-full max-w-[400px] justify-self-center rounded-theme-lg border-theme-border-subtle bg-theme-bg-surface/90 shadow-[0_30px_80px_-40px_rgba(24,22,15,0.4)] backdrop-blur">
         <CardHeader>
-          <CardTitle className="text-2xl text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+          <CardTitle className="font-display text-2xl text-center text-theme-text-primary">
             {isSignUpMode ? 'Create Account' : 'Welcome Back'}
           </CardTitle>
           <CardDescription className="text-center">
@@ -223,7 +231,7 @@ const SigninPage = () => {
                   />
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" 
+                    className="w-full rounded-full bg-theme-blue text-white hover:opacity-90" 
                     disabled={isLoading}
                   >
                     {isLoading 
@@ -298,7 +306,7 @@ const SigninPage = () => {
                   />
                   <Button
                     type="button"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    className="w-full rounded-full bg-theme-blue text-white hover:opacity-90"
                     onClick={handleMagicLink}
                     disabled={isLoading}
                   >
@@ -314,6 +322,7 @@ const SigninPage = () => {
           </Tabs>
         </CardContent>
       </Card>
+        </div>
       </div>
     </>
   );
