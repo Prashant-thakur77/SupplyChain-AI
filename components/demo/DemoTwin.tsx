@@ -11,6 +11,7 @@ import { useDigitalTwinStore } from "@/lib/digitalTwinStore"
 import { DEMO_SCENARIOS, DEMO_SUPPLY_CHAIN_ID, demoArch } from "@/lib/demo-twin"
 import { cn } from "@/lib/utils"
 import { StrandsChat } from "@/components/copilot/StrandsChat"
+import { ResilienceDialog } from "@/components/resilience/ResilienceDialog"
 import dynamic from "next/dynamic"
 import { Map as MapIcon, Waypoints } from "lucide-react"
 const GeoMap = dynamic(() => import("@/components/geo/GeoMap"), { ssr: false })
@@ -121,6 +122,7 @@ function DemoInner() {
             </ul>
           )}
         </div>
+        <ResilienceDialog label="Where is this network fragile?" fetchReport={async () => { const r = await fetch("/api/demo/resilience", { method: "POST" }); const j = await r.json(); if (!r.ok) throw new Error(j.detail ?? j.error); return j }} onFail={(ev) => runFound(ev)} />
         <div>
           <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-theme-text-muted">Ask the copilot</p>
           <StrandsChat endpoint="/api/demo/chat" compact suggestions={["What if Suez is blocked?", "Which node is our single point of failure?", "Cheapest route Shenzhen → Berlin?"]} placeholder="Ask about this twin…" />

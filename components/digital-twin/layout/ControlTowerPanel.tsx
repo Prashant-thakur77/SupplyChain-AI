@@ -5,6 +5,7 @@ import { AlertCircle, Loader2, Radar, ShieldAlert, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDigitalTwinStore } from '@/lib/digitalTwinStore';
 import type { IncidentEvent } from '@/types/agent';
+import { ResilienceDialog } from '@/components/resilience/ResilienceDialog';
 
 interface Props {
   /** Starts the Strands incident graph for a live-detected event. */
@@ -68,6 +69,7 @@ const ControlTowerPanel: FC<Props> = ({ onIncident }) => {
             {nodes.length === 0 ? 'Add nodes to scan' : isScanning ? 'Scanning global feeds…' : 'Scan live intelligence'}
           </button>
           {lastScan && <p className="text-xs leading-relaxed text-theme-text-muted">{lastScan.description}</p>}
+          <ResilienceDialog fetchReport={async () => { const st = useDigitalTwinStore.getState(); const r = await fetch("/api/agent/resilience", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ supplyChainId: st.selectedSupplyChain, nodes: st.nodes, edges: st.edges }) }); const j = await r.json(); if (!r.ok) throw new Error(j.detail ?? j.error); return j }} onFail={onIncident} />
         </div>
       ) : (
         <div className="space-y-3">
