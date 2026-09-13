@@ -326,6 +326,8 @@ def invocations(payload: dict):
         return report_strategy(SimulationIn(**payload))
     if action == "report_forecast":
         return report_forecast(ForecastReportIn(**payload))
+    if action == "twin_draft":
+        return twin_draft(TwinDraftIn(**payload))
     if action == "sentinel":
         return sentinel_ep(SentinelIn(**payload))
     if action == "memory":
@@ -401,6 +403,25 @@ def memory_ep(inp: MemoryIn):
     out = store_memory(supply_chain_id=inp.supply_chain_id, text=text)
     db.insert_audit(inp.user_id, "Memory", f"Stored: {text}", {"supply_chain_id": inp.supply_chain_id})
     return {"stored": out.get("status") == "success" and (out["content"][0].get("json") or {}).get("stored", False), "text": text}
+
+
+class TwinDraftIn(BaseModel):
+    description: str
+    user_id: str = "system"
+
+
+@app.post("/twin/draft", dependencies=[Depends(auth)])
+def twin_draft(inp: TwinDraftIn):
+    """Text-to-twin: draft nodes and lanes from a description. The web app geocodes and estimates lanes afterwards."""
+    from agents import twin_builder
+
+    if len(inp.description.strip()) < 20:
+        raise HTTPException(400, "describe the supply chain in at least a sentence")
+    hooks = [TraceHooks(new_session_id("twin_draft"), inp.user_id, None, "twin_draft")]
+    draft = twin_builder.run_twin_builder(twin_builder.build(hooks), inp.description[:6000])
+    ids = {n.id for n in draft.nodes}
+    draft.edges = [e for e in draft.edges if e.source in ids and e.target in ids and e.source != e.target]
+    return draft.model_dump()
 
 
 class SuggestionsIn(BaseModel):

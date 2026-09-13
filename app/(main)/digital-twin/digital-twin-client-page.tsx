@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useQueryState, parseAsString, parseAsInteger, parseAsArrayOf } from 'nuqs';
 import { ImportTwinDialog, type ImportPayload } from '@/components/digital-twin/forms/ImportTwinDialog';
+import { DescribeTwinDialog } from '@/components/digital-twin/forms/DescribeTwinDialog';
 import { saveSupplyChainToDatabase } from '@/lib/api/supply-chain';
 import { useUser } from '@/lib/stores/user';
 import { toast } from 'sonner';
@@ -384,7 +385,7 @@ export default function DigitalTwinClientPage() {
     try {
       const saved = await saveSupplyChainToDatabase({
         name: payload.name,
-        description: 'Imported from CSV/Excel',
+        description: payload.name ? 'Created via import / twin builder' : 'Imported',
         timestamp: new Date().toISOString(),
         organisation: { id: userData.id, name: userData.organisation_name, industry: userData.industry, sub_industry: userData.sub_industry, location: userData.location },
         nodes: payload.nodes,
@@ -429,6 +430,7 @@ export default function DigitalTwinClientPage() {
       </Dialog>
 
       <ImportTwinDialog isOpen={view === 'import'} onClose={() => setView(null, { scroll: false })} onImport={handleImportSuccess} />
+      <DescribeTwinDialog isOpen={view === 'describe'} onClose={() => setView(null, { scroll: false })} onImport={handleImportSuccess} />
     </>
   );
 } 

@@ -1,6 +1,6 @@
 "use client";
 
-import { FileSpreadsheet } from 'lucide-react';
+import { FileSpreadsheet, Wand2 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -217,6 +217,13 @@ export default function DigitalTwinDashboard() {
           >
             <RefreshCWIcon className={`${refreshing ? 'animate-spin' : ''}`} size={12} />
             Sync
+          </button>
+          <button
+            onClick={() => setView('describe')}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs border border-theme-blue/30 bg-theme-blue-soft text-theme-blue hover:bg-theme-blue/15 transition-colors rounded-theme-md"
+          >
+            <Wand2 size={13} />
+            <span className="whitespace-nowrap">Describe in words</span>
           </button>
           <button
             onClick={() => setView('import')}

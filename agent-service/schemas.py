@@ -343,3 +343,34 @@ class Suggestion(BaseModel):
 
 class SuggestionList(BaseModel):
     suggestions: list[Suggestion]
+
+
+# ---- Text-to-twin drafts -----------------------------------------------------------------------------------------------
+class DraftNode(BaseModel):
+    id: str = Field(description="short slug, e.g. shenzhen-plant")
+    label: str
+    type: Literal["supplier", "factory", "port", "warehouse", "distribution", "retailer", "customer"]
+    city: Optional[str] = None
+    country: Optional[str] = Field(default=None, description="ISO-2 country code")
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    capacity: Optional[float] = Field(default=None, description="relative capacity 0-100")
+    risk_level: float = Field(default=2, ge=0, le=5, description="0 calm … 5 fragile (single source, unstable region)")
+    note: Optional[str] = None
+
+
+class DraftEdge(BaseModel):
+    source: str
+    target: str
+    mode: Literal["sea", "air", "rail", "road"]
+    cost: Optional[float] = Field(default=None, description="USD per container/truck; leave null if unknown")
+    transit_days: Optional[float] = None
+
+
+class TwinDraft(BaseModel):
+    name: str
+    summary: str
+    nodes: list[DraftNode]
+    edges: list[DraftEdge]
+    assumptions: list[str] = Field(default_factory=list, description="what you inferred that the user should confirm")
+    questions: list[str] = Field(default_factory=list, description="up to 3 questions that would most improve the twin")

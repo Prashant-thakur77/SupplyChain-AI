@@ -39,3 +39,14 @@ def test_sentinel_endpoint_uses_agent(monkeypatch):
     twin_cache.put(twin())
     r = TestClient(app).post("/sentinel", json={"supply_chain_id": "t"})
     assert r.status_code == 200 and r.json()["events"][0]["failed_labels"] == ["SINGAPORE"]
+
+
+def test_twin_draft_filters_dangling_edges(monkeypatch):
+    from schemas import DraftEdge, DraftNode, TwinDraft
+    monkeypatch.setattr("app.settings.agent_service_secret", "")
+    import agents.twin_builder as tb
+    monkeypatch.setattr(tb, "build", lambda hooks, model=None: object())
+    monkeypatch.setattr(tb, "run_twin_builder", lambda agent, d: TwinDraft(name="n", summary="s", nodes=[DraftNode(id="a", label="A", type="factory"), DraftNode(id="b", label="B", type="port")],
+                                                                          edges=[DraftEdge(source="a", target="b", mode="sea"), DraftEdge(source="a", target="zzz", mode="sea")]))
+    r = TestClient(app).post("/twin/draft", json={"description": "A factory in Shenzhen ships by sea to Singapore and on to Berlin."})
+    assert r.status_code == 200 and len(r.json()["edges"]) == 1
