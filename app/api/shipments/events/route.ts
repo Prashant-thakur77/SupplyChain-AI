@@ -5,6 +5,7 @@ import { supabaseServer } from "@/lib/supabase/server"
  *  Body: { supplyChainId, reference, event, at?, location?, eta?, progress?, status? } */
 export async function POST(req: NextRequest) {
   const secret = process.env.TRACKING_WEBHOOK_SECRET
+  if (!secret && process.env.NODE_ENV === "production") return NextResponse.json({ error: "set TRACKING_WEBHOOK_SECRET to accept carrier webhooks" }, { status: 503 })
   if (secret && req.headers.get("x-tracking-secret") !== secret) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
   const b = await req.json().catch(() => ({}))
   if (!b.supplyChainId || !b.reference || !b.event) return NextResponse.json({ error: "supplyChainId, reference and event are required" }, { status: 400 })

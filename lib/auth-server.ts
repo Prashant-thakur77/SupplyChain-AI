@@ -67,3 +67,10 @@ export async function guardSavedTwin(body: any): Promise<{ error: string; status
   const g = await requireChainAccess(String(id))
   return "error" in g ? g : null
 }
+
+/** Guard for decision sub-resources (tasks, outcome, trace): the session user needs access to the decision's chain. */
+export async function requireDecisionAccess(decisionId: string, write = false) {
+  const { data } = await supabaseServer.from("decisions").select("supply_chain_id").eq("id", decisionId).maybeSingle()
+  if (!data) return { error: "decision not found", status: 404 } as const
+  return requireChainAccess(data.supply_chain_id, write)
+}

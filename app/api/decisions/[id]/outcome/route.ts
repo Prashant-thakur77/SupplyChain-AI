@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { canApprove, getSessionUser, roleForChain } from "@/lib/auth-server"
+import { canApprove, getSessionUser, requireDecisionAccess, roleForChain } from "@/lib/auth-server"
 import { agentClient } from "@/lib/agent-client"
 import { supabaseServer } from "@/lib/supabase/server"
 
 /** GET → { outcome } · POST { actualAddedCost, actualAddedDays, outcome, notes } — records what really happened (owner/approver). */
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params
+  const g = await requireDecisionAccess(id); if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status })
   const { data } = await supabaseServer.from("decision_outcomes").select("*").eq("decision_id", id).maybeSingle()
   return NextResponse.json({ outcome: data ?? null })
 }
