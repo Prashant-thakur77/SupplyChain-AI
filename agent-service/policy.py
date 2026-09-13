@@ -15,13 +15,16 @@ class Policy:
     min_confidence: float = 0.8
     expire_hours: int = 48
     webhook_url: Optional[str] = None
+    carbon_weight: float = 0.0   # 0 = cost only … 1 = every tonne priced at carbon_price in the ranking
+    carbon_price: float = 100.0  # USD per tCO2e
 
     @classmethod
     def from_row(cls, row: Optional[dict]) -> "Policy":
         if not row:
             return cls()
         return cls(auto_approve=bool(row.get("auto_approve")), max_added_cost=float(row.get("max_added_cost") or 2000), max_added_days=float(row.get("max_added_days") or 5),
-                   min_confidence=float(row.get("min_confidence") or 0.8), expire_hours=int(row.get("expire_hours") or 48), webhook_url=row.get("webhook_url") or None)
+                   min_confidence=float(row.get("min_confidence") or 0.8), expire_hours=int(row.get("expire_hours") or 48), webhook_url=row.get("webhook_url") or None,
+                   carbon_weight=float(row.get("carbon_weight") or 0), carbon_price=float(row.get("carbon_price") or 100))
 
 
 def evaluate(policy: Policy, decision: Decision, infeasible_lanes: int, needs_review: bool) -> tuple[bool, str]:

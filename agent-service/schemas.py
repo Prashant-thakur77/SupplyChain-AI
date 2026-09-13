@@ -37,6 +37,8 @@ class TwinEdge(BaseModel):
     capacity: Optional[float] = None
     provenance: Literal["user", "estimate", "quote"] = "user"
     carrier: Optional[str] = None
+    distance_km: Optional[float] = None
+    co2_kg: float = 0  # per container-equivalent shipment (10 t payload) — see enrich.CO2_G_PER_TKM
 
 
 class Flow(BaseModel):
@@ -119,6 +121,9 @@ class RouteCandidate(BaseModel):
     added_cost: float
     added_days: float
     feasible: bool = True
+    co2_kg: float = 0
+    baseline_co2_kg: float = 0
+    added_co2_kg: float = 0
     # Flow-weighted (filled when the twin has flows on this lane)
     weekly_value: float = 0
     added_cost_per_week: float = 0  # added_cost × containers/trucks per week ≈ added_cost × units_per_week / 100
@@ -167,6 +172,7 @@ class DecisionOption(BaseModel):
     kind: Literal["reroute", "wait", "mitigate", "escalate"]
     added_cost: float = 0
     added_days: float = 0
+    added_co2_kg: float = 0
     risk: Severity = Severity.LOW
     route_candidate_id: Optional[str] = None
     detail: str = ""

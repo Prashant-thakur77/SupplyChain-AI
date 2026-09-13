@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   ])
   const byId = new Map((policies.data ?? []).map((p) => [p.supply_chain_id, p]))
   return NextResponse.json({
-    twins: (chains.data ?? []).map((c) => ({ id: c.supply_chain_id, name: c.name, policy: byId.get(c.supply_chain_id) ?? { supply_chain_id: c.supply_chain_id, auto_approve: false, max_added_cost: 2000, max_added_days: 5, min_confidence: 0.8, expire_hours: 48, webhook_url: null } })),
+    twins: (chains.data ?? []).map((c) => ({ id: c.supply_chain_id, name: c.name, policy: byId.get(c.supply_chain_id) ?? { supply_chain_id: c.supply_chain_id, auto_approve: false, max_added_cost: 2000, max_added_days: 5, min_confidence: 0.8, expire_hours: 48, webhook_url: null, carbon_weight: 0, carbon_price: 100 } })),
   })
 }
 
@@ -23,6 +23,7 @@ export async function PUT(req: NextRequest) {
     supply_chain_id: b.supplyChainId, user_id: b.userId, auto_approve: !!b.auto_approve,
     max_added_cost: Math.max(0, Number(b.max_added_cost ?? 2000)), max_added_days: Math.max(0, Number(b.max_added_days ?? 5)),
     min_confidence: Math.min(1, Math.max(0, Number(b.min_confidence ?? 0.8))), expire_hours: Math.max(1, Math.min(720, Number(b.expire_hours ?? 48))),
+    carbon_weight: Math.min(1, Math.max(0, Number(b.carbon_weight ?? 0))), carbon_price: Math.max(0, Number(b.carbon_price ?? 100)),
     webhook_url: b.webhook_url ? String(b.webhook_url).slice(0, 500) : null, updated_at: new Date().toISOString(),
   }
   const { data, error } = await supabaseServer.from("autonomy_policies").upsert(row, { onConflict: "supply_chain_id" }).select().single()

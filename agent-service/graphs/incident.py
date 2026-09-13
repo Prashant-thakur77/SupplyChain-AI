@@ -72,9 +72,9 @@ def build_decision(
         c = by_id[cid]
         opts.append(
             DecisionOption(
-                id=cid, label=" → ".join(c.labels), kind="reroute", added_cost=c.added_cost, added_days=c.added_days,
+                id=cid, label=" → ".join(c.labels), kind="reroute", added_cost=c.added_cost, added_days=c.added_days, added_co2_kg=c.added_co2_kg,
                 risk=_risk_of(c), route_candidate_id=cid,
-                detail=f"{'/'.join(sorted(set(c.modes)))} · ${c.cost:,.0f} total · {c.transit_days:.0f} days",
+                detail=f"{'/'.join(sorted(set(c.modes)))} · ${c.cost:,.0f} total · {c.transit_days:.0f} days" + (f" · {c.co2_kg / 1000:.1f} tCO₂e ({'+' if c.added_co2_kg >= 0 else ''}{c.added_co2_kg / 1000:.1f} t)" if c.co2_kg else ""),
             )
         )
     opts.append(
@@ -97,9 +97,10 @@ def _candidates_block(twin: Twin, plan: ReroutePlan) -> str:
     risk = {n.id: n.risk_level for n in twin.nodes}
     return "\n".join(
         f"- {c.id}: {' -> '.join(c.labels)} | modes={c.modes} | cost=${c.cost:.0f} (+{c.added_cost:.0f}) | days={c.transit_days:.0f} "
-        f"(+{c.added_days:.0f}) | max_risk={c.max_risk} | node_risks={[risk.get(n, 0) for n in c.path]} | feasible={c.feasible}"
+        f"(+{c.added_days:.0f}) | co2={c.co2_kg:.0f}kg (+{c.added_co2_kg:.0f}) | max_risk={c.max_risk} | node_risks={[risk.get(n, 0) for n in c.path]} | feasible={c.feasible}"
         for c in plan.candidates
-    )
+    ) + (f"\nCarbon objective: the organisation weights carbon at {plan.carbon_weight:.2f} (0 = cost only, 1 = full carbon price); candidates are pre-sorted on that weighted objective — keep that order unless risk or days justify a change."
+         if plan.carbon_weight > 0 else "")
 
 
 def _structured(gres, node_id: str, model):
@@ -140,9 +141,10 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
 
     # 2. Deterministic routing — never the LLM
     t = stage("routing_engine")
-    plan = reroute_plan(twin, a.failed_node_ids, a.failed_edge_ids, k=3)
+    policy = Policy.from_row(db.load_policy(supply_chain_id)) if persist else Policy()
+    plan = reroute_plan(twin, a.failed_node_ids, a.failed_edge_ids, k=3, carbon_weight=policy.carbon_weight, carbon_price=policy.carbon_price)
     done("routing_engine", t, {"feasible": plan.feasible_count, "infeasible": plan.infeasible_count, "candidates": len(plan.candidates),
-                               "severity": plan.severity})
+                               "severity": plan.severity, "carbon_weight": policy.carbon_weight})
 
     # 3. Strands Graph: router ∥ impact → strategist (typed outputs on every node)
     ranking: Optional[RouteRanking] = None
@@ -247,7 +249,6 @@ def run_incident(supply_chain_id: str, user_id: str, event: Event, emit: Emit = 
 
     # Autonomy policy: act alone inside the guardrails, otherwise ask once.
     t = stage("policy")
-    policy = Policy.from_row(db.load_policy(supply_chain_id)) if persist else Policy()
     auto, reason = evaluate(policy, decision, plan.infeasible_count, a.needs_review or status == "partial")
     done("policy", t, {"auto_approved": auto, "reason": reason})
 

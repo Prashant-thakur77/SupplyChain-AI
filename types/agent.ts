@@ -31,9 +31,10 @@ export interface RouteCandidate {
   id: string; origin: string; destination: string; path: string[]; labels: string[]; modes: string[]
   cost: number; transit_days: number; max_risk: number; baseline_cost: number; baseline_days: number
   added_cost: number; added_days: number; feasible: boolean
+  co2_kg?: number; baseline_co2_kg?: number; added_co2_kg?: number
 }
 
-export interface ReroutePlan { severity: Severity; feasible_count: number; infeasible_count: number; severed_pairs: [string, string][]; baseline?: Record<string, number>; candidates: RouteCandidate[] }
+export interface ReroutePlan { severity: Severity; feasible_count: number; infeasible_count: number; severed_pairs: [string, string][]; baseline?: Record<string, number>; carbon_weight?: number; candidates: RouteCandidate[] }
 
 export interface RouteRanking { ranked_candidate_ids: string[]; recommended_candidate_id: string | null; rationale: string; tradeoffs: string[]; wait_is_viable: boolean; wait_rationale: string }
 export interface ImpactEstimate { revenue_at_risk_usd: number; delay_days: number; nodes_affected: number; orders_affected_pct: number; summary: string; assumptions: string[]; contract_penalties_usd?: number; contract_lines?: { counterparty: string; kind: string; site: string; penalty_usd: number; capped?: boolean }[] }
@@ -41,7 +42,7 @@ export interface MitigationStep { title: string; owner: string; due_in_days: num
 export interface MitigationPlan { title: string; summary: string; steps: MitigationStep[]; estimated_cost_usd: number; risk_after: Severity }
 
 export type OptionKind = "reroute" | "wait" | "mitigate" | "escalate"
-export interface DecisionOption { id: string; label: string; kind: OptionKind; added_cost: number; added_days: number; risk: Severity; route_candidate_id?: string | null; detail: string }
+export interface DecisionOption { id: string; label: string; kind: OptionKind; added_cost: number; added_days: number; added_co2_kg?: number; risk: Severity; route_candidate_id?: string | null; detail: string }
 export interface Decision { supply_chain_id: string; event_id?: string | null; title: string; summary: string; options: DecisionOption[]; recommended_option_id: string; rationale: string; confidence: number; sources: Source[]; trace_id?: string | null }
 
 export type DecisionStatus = "pending" | "approved" | "rejected" | "snoozed" | "expired"

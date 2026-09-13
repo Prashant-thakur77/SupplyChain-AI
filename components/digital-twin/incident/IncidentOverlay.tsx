@@ -82,7 +82,7 @@ export function IncidentOverlay({ onClose, local, className }: Props) {
                       <button type="button" onClick={() => setSelectedRouteId(cid)} className={cn("flex w-full items-center gap-2 rounded px-2 py-1 text-left text-xs transition-colors", active ? "bg-theme-bg-secondary text-theme-text-primary" : "text-theme-text-secondary hover:bg-theme-bg-secondary/60")}>
                         <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: routeColor(i) }} />
                         <span className="truncate">{c.labels.join(" → ")}</span>
-                        <span className="ml-auto shrink-0 font-mono">+${Math.round(c.added_cost).toLocaleString()} · +{Math.round(c.added_days)}d</span>
+                        <span className="ml-auto shrink-0 font-mono">+${Math.round(c.added_cost).toLocaleString()} · +{Math.round(c.added_days)}d{c.added_co2_kg != null && c.co2_kg ? <span className={c.added_co2_kg > 0 ? " text-theme-amber" : " text-theme-green"}> · {c.added_co2_kg >= 0 ? "+" : ""}{(c.added_co2_kg / 1000).toFixed(1)}t CO₂</span> : null}</span>
                       </button>
                     </li>
                   )

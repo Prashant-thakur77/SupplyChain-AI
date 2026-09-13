@@ -12,6 +12,19 @@ from typing import Optional
 from schemas import Twin, TwinEdge
 
 # USD per km (roughly one FEU container), days per km, fixed handling days. Illustrative, tuned for planning not invoicing.
+# Well-to-wheel CO2e per tonne-km (GLEC-style defaults); an org's rate card can override via co2_g_per_tkm.
+CO2_G_PER_TKM: dict[str, float] = {"sea": 16.0, "rail": 28.0, "road": 62.0, "air": 602.0}
+PAYLOAD_TONNES = 10.0  # one container-equivalent shipment
+
+
+def lane_co2_kg(mode: str, distance_km: float, rate_card: dict[str, dict[str, float]] | None = None) -> float:
+    """kg CO2e for one shipment unit on a lane (routed distance, i.e. with the mode's detour factor)."""
+    card = (rate_card or {}).get(mode) or {}
+    g = float(card.get("co2_g_per_tkm") or 0) or CO2_G_PER_TKM.get(mode, CO2_G_PER_TKM["road"])
+    detour = 1.35 if mode == "sea" else 1.2 if mode in ("rail", "road") else 1.05
+    return round(distance_km * detour * g * PAYLOAD_TONNES / 1000.0, 1)
+
+
 RATE_CARD: dict[str, dict[str, float]] = {
     "sea": {"usd_per_km": 0.35, "km_per_day": 650.0, "fixed_days": 2.0, "min_usd": 400.0},
     "rail": {"usd_per_km": 0.90, "km_per_day": 500.0, "fixed_days": 1.0, "min_usd": 250.0},
@@ -44,9 +57,12 @@ def enrich_twin(twin: Twin) -> tuple[Twin, list[str]]:
     notes: list[str] = []
     for e in twin.edges:
         needs_cost, needs_days = (e.cost or 0) <= 0, (e.transit_days or 0) <= 0
+        a, b = coords.get(e.source), coords.get(e.target)
+        if a and b and not e.co2_kg:
+            e.distance_km = round(haversine_km(a[0], a[1], b[0], b[1]))
+            e.co2_kg = lane_co2_kg(e.mode, e.distance_km, twin.rate_card)
         if not (needs_cost or needs_days):
             continue
-        a, b = coords.get(e.source), coords.get(e.target)
         if not a or not b:
             notes.append(f"lane {e.id}: no coordinates on both ends — cannot estimate {'cost' if needs_cost else 'days'}")
             continue

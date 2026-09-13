@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-interface Policy { supply_chain_id: string; auto_approve: boolean; max_added_cost: number; max_added_days: number; min_confidence: number; expire_hours: number; webhook_url: string | null }
+interface Policy { supply_chain_id: string; auto_approve: boolean; max_added_cost: number; max_added_days: number; min_confidence: number; expire_hours: number; webhook_url: string | null; carbon_weight?: number; carbon_price?: number }
 interface TwinPolicy { id: string; name: string; policy: Policy }
 
 /** Per-twin autonomy guardrails: when the agent may approve a reroute on its own, decision expiry, and where to notify. */
@@ -60,6 +60,12 @@ export function AutonomyPolicyCard({ userId }: { userId: string }) {
           ))}
           <label className="text-xs text-theme-text-secondary">Min confidence ({Math.round(Number(f.min_confidence) * 100)}%)
             <input type="range" min={0.5} max={1} step={0.05} value={f.min_confidence} onChange={(e) => setForm({ ...f, min_confidence: Number(e.target.value) })} className="mt-2 w-full accent-[#2748E8]" />
+          </label>
+          <label className="text-xs text-theme-text-secondary">Carbon weight ({Math.round(Number(f.carbon_weight ?? 0) * 100)}%)<span className="block text-[10px] text-theme-text-muted">0 = rank on cost only · 100 = every tonne CO₂e priced at the carbon price</span>
+            <input type="range" min={0} max={1} step={0.05} value={f.carbon_weight ?? 0} onChange={(e) => setForm({ ...f, carbon_weight: Number(e.target.value) })} className="mt-2 w-full accent-[#2748E8]" />
+          </label>
+          <label className="text-xs text-theme-text-secondary">Carbon price (USD / tCO₂e)
+            <input type="number" step={5} value={f.carbon_price ?? 100} onChange={(e) => setForm({ ...f, carbon_price: Number(e.target.value) })} className="mt-1 w-full rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-3 py-2 text-sm text-theme-text-primary" />
           </label>
           <label className="text-xs text-theme-text-secondary sm:col-span-2"><span className="inline-flex items-center gap-1"><Webhook className="h-3 w-3" /> Slack / Teams / webhook URL (optional)</span>
             <input type="url" placeholder="https://hooks.slack.com/services/…" value={f.webhook_url ?? ""} onChange={(e) => setForm({ ...f, webhook_url: e.target.value || null })} className="mt-1 w-full rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-3 py-2 text-sm text-theme-text-primary" />

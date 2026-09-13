@@ -45,6 +45,7 @@ class ReroutePlan:
     infeasible_count: int
     severity: str
     baseline: dict[str, float] = field(default_factory=dict)
+    carbon_weight: float = 0.0
 
 
 def build_graph(twin: Twin) -> Graph:
@@ -145,6 +146,8 @@ def blast_radius(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[s
 def _to_candidate(g: Graph, p: Path, idx: int, origin: str, destination: str, base: Optional[Path]) -> RouteCandidate:
     bc = base.cost if base else p.cost
     bd = base.days if base else p.days
+    co2 = round(sum(g.edges[i].co2_kg for i in p.edge_ids if i in g.edges), 1)
+    bco2 = round(sum(g.edges[i].co2_kg for i in base.edge_ids if i in g.edges), 1) if base else co2
     return RouteCandidate(
         id=f"r{idx}",
         origin=origin,
@@ -152,6 +155,7 @@ def _to_candidate(g: Graph, p: Path, idx: int, origin: str, destination: str, ba
         path=p.path,
         labels=[g.labels.get(n, n) for n in p.path],
         modes=[g.edges[i].mode for i in p.edge_ids],
+        co2_kg=co2, baseline_co2_kg=bco2, added_co2_kg=round(co2 - bco2, 1),
         cost=p.cost,
         transit_days=p.days,
         max_risk=p.max_risk,
@@ -266,7 +270,15 @@ def _apply_flows(twin: Twin, candidates: list[RouteCandidate]) -> None:
         c.days_of_cover = min(cover) if cover else None
 
 
-def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str], k: int = 3) -> ReroutePlan:
+DEFAULT_CARBON_PRICE = 100.0  # USD per tonne CO2e used to fold carbon into the ranking objective
+
+
+def objective(c: RouteCandidate, carbon_weight: float = 0.0, carbon_price: float = DEFAULT_CARBON_PRICE) -> float:
+    """Weighted cost the engine ranks on: added USD + carbon_weight × added tCO2e × carbon price."""
+    return c.added_cost + carbon_weight * (c.added_co2_kg / 1000.0) * carbon_price
+
+
+def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[str], k: int = 3, carbon_weight: float = 0.0, carbon_price: float = DEFAULT_CARBON_PRICE) -> ReroutePlan:
     g = build_graph(twin)
     lanes = lanes_through(twin, failed_node_ids, failed_edge_ids)
     candidates: list[RouteCandidate] = []
@@ -290,7 +302,7 @@ def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[s
                 )
             )
     _apply_flows(twin, candidates)
-    candidates.sort(key=lambda c: (not c.feasible, c.added_cost, c.added_days))
+    candidates.sort(key=lambda c: (not c.feasible, objective(c, carbon_weight, carbon_price), c.added_days))
 
     if infeasible:
         sev = "CRITICAL"
@@ -302,7 +314,7 @@ def reroute_plan(twin: Twin, failed_node_ids: list[str], failed_edge_ids: list[s
     if candidates and candidates[0].feasible:
         baseline = {"cost": candidates[0].baseline_cost, "days": candidates[0].baseline_days}
     return ReroutePlan(candidates=candidates, severed_pairs=lanes, feasible_count=feasible,
-                       infeasible_count=infeasible, severity=sev, baseline=baseline)
+                       infeasible_count=infeasible, severity=sev, baseline=baseline, carbon_weight=carbon_weight)
 
 
 # ---- Network statistics & Monte Carlo cascade (deterministic, used by the simulation report) --------------------------

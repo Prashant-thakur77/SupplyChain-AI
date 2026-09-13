@@ -602,3 +602,6 @@ drop policy if exists contracts_owner on public.contracts;
 create policy contracts_owner on public.contracts for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 drop policy if exists contracts_org_read on public.contracts;
 create policy contracts_org_read on public.contracts for select using (public.chain_org(supply_chain_id) is not null and public.is_org_member(public.chain_org(supply_chain_id)));
+-- Carbon & cost co-optimisation: how much the org weighs CO2e when ranking reroutes, and the price per tonne used.
+alter table public.autonomy_policies add column if not exists carbon_weight numeric not null default 0;
+alter table public.autonomy_policies add column if not exists carbon_price numeric not null default 100;
