@@ -52,12 +52,12 @@ export async function buildDigest(userId: string, days = 7): Promise<Digest> {
 }
 
 export function digestText(d: Digest, appUrl = process.env.APP_URL ?? ""): string {
-  const money = (n: number) => `$${Math.round(n).toLocaleString()}`
+  const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`
   const lines = [
     `:newspaper: *SupplyChain AI — last ${d.period_days} days*`,
     `Incidents assessed: *${d.incidents}* · decisions: ${d.approved} approved (${d.auto_approved} by policy), ${d.rejected} rejected, ${d.expired} expired, ${d.pending} pending`,
     `Estimated cost of inaction avoided: *${money(d.avoided_usd)}* · spent on reroutes: ${money(d.spent_on_reroutes_usd)}`,
-    `Agent: ${d.agent_runs} runs (${d.scans} background scans), ${d.tokens.toLocaleString()} tokens ≈ ${money(d.est_model_cost_usd)} model cost`,
+    `Agent: ${d.agent_runs} runs (${d.scans} background scans), ${d.tokens.toLocaleString("en-US")} tokens ≈ ${money(d.est_model_cost_usd)} model cost`,
   ]
   if (d.top.length) lines.push("Top decisions:", ...d.top.map((t) => `• ${t.title} → ${t.chosen} (avoided ≈ ${money(t.avoided_usd)}, cost ${money(t.added_cost)})`))
   if (appUrl) lines.push(`${appUrl.replace(/\/$/, "")}/decisions`)
