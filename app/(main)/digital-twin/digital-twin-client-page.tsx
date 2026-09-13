@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQueryState, parseAsString, parseAsInteger, parseAsArrayOf } from 'nuqs';
 import { ImportTwinDialog, type ImportPayload } from '@/components/digital-twin/forms/ImportTwinDialog';
 import { DescribeTwinDialog } from '@/components/digital-twin/forms/DescribeTwinDialog';
+import { TemplateGalleryDialog } from '@/components/digital-twin/forms/TemplateGalleryDialog';
 import { saveSupplyChainToDatabase } from '@/lib/api/supply-chain';
 import { useUser } from '@/lib/stores/user';
 import { toast } from 'sonner';
@@ -431,6 +432,7 @@ export default function DigitalTwinClientPage() {
 
       <ImportTwinDialog isOpen={view === 'import'} onClose={() => setView(null, { scroll: false })} onImport={handleImportSuccess} />
       <DescribeTwinDialog isOpen={view === 'describe'} onClose={() => setView(null, { scroll: false })} onImport={handleImportSuccess} />
+      <TemplateGalleryDialog isOpen={view === 'templates'} onClose={() => setView(null, { scroll: false })} onImport={handleImportSuccess} />
     </>
   );
 } 

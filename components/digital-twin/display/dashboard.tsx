@@ -1,6 +1,6 @@
 "use client";
 
-import { FileSpreadsheet, Wand2 } from 'lucide-react';
+import { FileSpreadsheet, LayoutTemplate, Wand2 } from 'lucide-react';
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -219,6 +219,13 @@ export default function DigitalTwinDashboard() {
             Sync
           </button>
           <button
+            onClick={() => setView('templates')}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs border border-theme-border-subtle text-theme-text-secondary hover:text-theme-text-primary hover:border-theme-border-default transition-colors rounded-theme-md bg-theme-bg-surface"
+          >
+            <LayoutTemplate size={13} />
+            <span className="whitespace-nowrap">Templates</span>
+          </button>
+          <button
             onClick={() => setView('describe')}
             className="flex items-center gap-2 px-3 py-1.5 text-xs border border-theme-blue/30 bg-theme-blue-soft text-theme-blue hover:bg-theme-blue/15 transition-colors rounded-theme-md"
           >
@@ -256,13 +263,12 @@ export default function DigitalTwinDashboard() {
               <p className="text-xs text-theme-text-secondary mb-6 leading-relaxed">
                 No operation network graphs have been registered. Create your first graph to begin resilience modeling.
               </p>
-              <button
-                onClick={() => setView('create')}
-                className="inline-flex items-center gap-2 px-4 py-2 text-xs bg-theme-text-primary text-theme-bg-primary hover:bg-theme-text-primary/95 transition-colors font-semibold rounded-theme-md"
-              >
-                <PlusIcon size={12} />
-                Register First Graph
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <button onClick={() => setView('describe')} className="inline-flex items-center gap-2 px-4 py-2 text-xs bg-theme-blue text-white hover:opacity-90 transition-colors font-semibold rounded-theme-md"><Wand2 size={12} /> Describe in words</button>
+                <button onClick={() => setView('templates')} className="inline-flex items-center gap-2 px-4 py-2 text-xs border border-theme-border-subtle text-theme-text-secondary hover:text-theme-text-primary rounded-theme-md"><LayoutTemplate size={12} /> Templates</button>
+                <button onClick={() => setView('import')} className="inline-flex items-center gap-2 px-4 py-2 text-xs border border-theme-border-subtle text-theme-text-secondary hover:text-theme-text-primary rounded-theme-md"><FileSpreadsheet size={12} /> Import CSV</button>
+                <button onClick={() => setView('create')} className="inline-flex items-center gap-2 px-4 py-2 text-xs border border-theme-border-subtle text-theme-text-secondary hover:text-theme-text-primary rounded-theme-md"><PlusIcon size={12} /> Build by hand</button>
+              </div>
             </div>
           </div>
         ) : (
