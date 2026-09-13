@@ -61,7 +61,8 @@ No GCP account needed. The Python service runs as a Docker web service; the web 
 1. `vercel` → import the repo (framework: Next.js, root `/`).
 2. Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
    `AGENT_SERVICE_URL=<agent-service url>`, `AGENT_SERVICE_SECRET` (same value), `CRON_SECRET`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`,
-   `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `TRACKING_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL=<vercel url>`.
+   `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `TRACKING_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL=<vercel url>`, and `DEMO_PREFER_REPLAY=true`
+   when the model is on a free tier (the three `/demo` presets then replay the committed recordings instantly; custom disruptions run live).
 3. Deploy. `vercel.json` raises the function timeouts for the streaming routes and registers the cron endpoints
    (Vercel's Hobby plan runs crons once a day; for the 15-minute Sentinel loop point a free external scheduler such as
    cron-job.org at `GET /api/cron/scan` with header `Authorization: Bearer $CRON_SECRET`, and `/api/cron/sync` every 30 min).

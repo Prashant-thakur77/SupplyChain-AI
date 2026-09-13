@@ -27,6 +27,8 @@ export async function POST(req: NextRequest) {
     if (recording) return replayStream(recording)
     return NextResponse.json({ error: "No recording available for this scenario yet." }, { status: 404 })
   }
+  // Hosted demo on a free-tier model: presets replay instantly (labelled as a replay); custom disruptions always run live.
+  if (recording && process.env.DEMO_PREFER_REPLAY === "true" && !body.live) return replayStream(recording)
   try {
     const upstream = await agentClient.proxyStream("/incident", { supply_chain_id: demoTwin.supply_chain_id, user_id: "demo", event: body.event, twin: demoTwin, persist: false })
     return isPreset ? recordStream(upstream, key) : upstream
