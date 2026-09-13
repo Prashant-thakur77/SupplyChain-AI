@@ -4,6 +4,7 @@ import { RefreshCw } from "lucide-react"
 import { NotificationFeed } from "@/components/dashboard/notification-feed"
 import { AgentStatusCard } from "@/components/dashboard/AgentStatusCard"
 import { DigestCard } from "@/components/dashboard/DigestCard"
+import { GettingStarted } from "@/components/dashboard/GettingStarted"
 import { useDashboardMetrics } from "@/components/dashboard/useDashboardMetrics"
 
 export default function DashboardPage() {
@@ -188,6 +189,7 @@ export default function DashboardPage() {
 
           {/* BODY GRID */}
           <div className="body-grid">
+            {!m.isLoading && m.totalSupplyChains === 0 && <GettingStarted />}
             <div className="grid w-full gap-4 lg:grid-cols-[1.4fr_1fr]"><AgentStatusCard /><DigestCard /></div>
             {/* Full Width: Alerts Panel */}
             <div className="panel w-full">

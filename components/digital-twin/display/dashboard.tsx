@@ -253,15 +253,15 @@ export default function DigitalTwinDashboard() {
       <div className="flex-1 overflow-y-auto px-6 py-8">
         {supplyChains.length === 0 ? (
           <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
-            <div className="text-center max-w-sm p-10 border border-theme-border-subtle rounded-theme-lg bg-theme-bg-surface shadow-sm">
+            <div data-tour="twin-registry" className="text-center max-w-sm p-10 border border-theme-border-subtle rounded-theme-lg bg-theme-bg-surface shadow-sm">
               <div className="w-12 h-12 border border-theme-border-subtle rounded-full bg-theme-bg-secondary/50 flex items-center justify-center mx-auto mb-4 text-theme-text-muted">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
               </div>
-              <h3 className="text-base font-bold text-theme-text-primary mb-2">Registry Empty</h3>
+              <h3 className="text-base font-bold text-theme-text-primary mb-2">No twin yet</h3>
               <p className="text-xs text-theme-text-secondary mb-6 leading-relaxed">
-                No operation network graphs have been registered. Create your first graph to begin resilience modeling.
+                Your digital twin is the network the agent watches: sites, lanes, what moves. Describe it in words and the agent drafts it, or import a spreadsheet.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <button onClick={() => setView('describe')} className="inline-flex items-center gap-2 px-4 py-2 text-xs bg-theme-blue text-white hover:opacity-90 transition-colors font-semibold rounded-theme-md"><Wand2 size={12} /> Describe in words</button>
