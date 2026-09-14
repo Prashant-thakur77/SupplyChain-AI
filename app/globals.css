@@ -4,59 +4,59 @@
 
 @layer base {
   :root {
-    --background: 240 6% 97%; /* #F7F7F8 cool neutral ground */
-    --foreground: 240 10% 5%; /* #0B0B0F ink */
+    --background: 210 40% 98%; /* #F8FAFC */
+    --foreground: 222 47% 11%; /* #0F172A */
 
-    --muted: 240 5% 58%; /* #8E8E99 */
-    --muted-foreground: 240 5% 34%; /* #52525B */
+    --muted: 215 20% 65%; /* #94A3B8 */
+    --muted-foreground: 215 19% 35%; /* #475569 */
 
     --popover: 0 0% 100%;
     --popover-foreground: 40 10% 9%;
 
-    --border: 240 6% 88%; /* #DCDCE1 */
-    --input: 240 6% 88%;
+    --border: 214 32% 91%; /* #E2E8F0 */
+    --input: 214 32% 91%;
 
     --card: 0 0% 100%;
     --card-foreground: 40 10% 9%;
 
-    --primary: 229 80% 53%; /* #2748E8 */
+    --primary: 243 75% 59%; /* #4F46E5 */
     --primary-foreground: 60 23% 97%;
 
-    --secondary: 240 6% 94%; /* #EFEFF2 */
+    --secondary: 210 40% 96%; /* #F1F5F9 */
     --secondary-foreground: 40 10% 9%;
 
-    --accent: 229 80% 47%; /* #1A36D4 */
+    --accent: 244 55% 51%; /* #4338CA */
     --accent-foreground: 60 23% 97%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --ring: 229 80% 53%;
+    --ring: 243 75% 59%;
 
     --radius: 0.75rem;
 
     /* Premium Theme Tokens */
-    --bg-primary: #F7F7F8;
-    --bg-secondary: #EFEFF2;
+    --bg-primary: #F8FAFC;
+    --bg-secondary: #F1F5F9;
     --bg-surface: #FFFFFF;
-    --bg-glass: rgba(255, 255, 255, 0.72);
-    --border-subtle: #E8E8EC;
-    --border-default: #DCDCE1;
-    --text-primary: #0B0B0F;
-    --text-secondary: #52525B;
-    --text-muted: #8E8E99;
-    --accent-blue: #2748E8;
+    --bg-glass: rgba(255, 255, 255, 0.78);
+    --border-subtle: #E2E8F0;
+    --border-default: #CBD5E1;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --text-muted: #94A3B8;
+    --accent-blue: #4F46E5;
     --accent-blue-soft: #EEF2FF;
-    --accent-blue-hover: #1A36D4;
-    --accent-green: #15803D;
-    --accent-green-soft: #ECFDF3;
-    --accent-amber: #B45309;
-    --accent-amber-soft: #FFF6E5;
-    --accent-red: #B91C1C;
+    --accent-blue-hover: #4338CA;
+    --accent-green: #059669;
+    --accent-green-soft: #ECFDF5;
+    --accent-amber: #D97706;
+    --accent-amber-soft: #FFFBEB;
+    --accent-red: #DC2626;
     --accent-red-soft: #FEF2F2;
-    --shadow-sm: 0 1px 2px rgba(11, 11, 15, 0.05), 0 1px 1px rgba(11, 11, 15, 0.03);
-    --shadow-md: 0 6px 20px rgba(11, 11, 15, 0.06), 0 2px 6px rgba(11, 11, 15, 0.04);
-    --shadow-lg: 0 20px 50px rgba(11, 11, 15, 0.10), 0 6px 16px rgba(11, 11, 15, 0.05);
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 1px rgba(15, 23, 42, 0.03);
+    --shadow-md: 0 6px 20px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 20px 50px rgba(15, 23, 42, 0.10), 0 6px 16px rgba(15, 23, 42, 0.05);
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 18px;
@@ -71,50 +71,50 @@
     --primary-muted: oklch(0.556 0.005 50);
     --primary-invert: oklch(1 0 0);
 
-    --sidebar-background: 240 6% 96%;
+    --sidebar-background: 210 40% 97%;
     --sidebar-foreground: 40 10% 15%;
-    --sidebar-primary: 229 80% 53%;
+    --sidebar-primary: 243 75% 59%;
     --sidebar-primary-foreground: 60 23% 97%;
-    --sidebar-accent: 240 6% 94%;
+    --sidebar-accent: 210 40% 96%;
     --sidebar-accent-foreground: 40 10% 9%;
     --sidebar-border: 37 17% 83%;
     --sidebar-ring: 229 80% 53%;
   }
 
   .dark, [data-theme="dark"] {
-    --background: 240 6% 4%; /* #0A0A0C */
-    --foreground: 240 8% 95%; /* #F2F2F5 */
+    --background: 222 47% 7%; /* #0B1120 */
+    --foreground: 210 40% 96%; /* #F1F5F9 */
 
-    --muted: 240 4% 42%;
-    --muted-foreground: 240 5% 62%;
+    --muted: 215 16% 47%;
+    --muted-foreground: 215 20% 65%;
 
-    --popover: 36 8% 11%; /* #121215 */
+    --popover: 36 8% 11%; /* #111827 */
     --popover-foreground: 36 17% 92%;
 
-    --border: 240 5% 16%; /* #262629 */
+    --border: 217 33% 17%; /* #1E293B */
     --input: 36 4% 20%;
 
-    --card: 240 6% 8%; /* #121215 */
-    --card-foreground: 240 8% 95%;
+    --card: 221 39% 11%; /* #111827 */
+    --card-foreground: 210 40% 96%;
 
     --primary: 228 100% 65%; /* #4B6EFF */
     --primary-foreground: 0 0% 7%;
 
-    --secondary: 240 5% 11%; /* #1A1A1E */
-    --secondary-foreground: 240 8% 95%;
+    --secondary: 219 35% 13%; /* #16202F */
+    --secondary-foreground: 210 40% 96%;
 
     /* Premium Theme Dark Mode Tokens */
-    --bg-primary: #0A0A0C;
-    --bg-secondary: #141417;
-    --bg-surface: #121215;
-    --bg-glass: rgba(18, 18, 21, 0.78);
-    --border-subtle: #202024;
-    --border-default: #2B2B31;
-    --text-primary: #F2F2F5;
-    --text-secondary: #A1A1AA;
-    --text-muted: #6B6B76;
-    --accent-blue: #5B7CFF;
-    --accent-blue-soft: #161D3A;
+    --bg-primary: #0B1120;
+    --bg-secondary: #16202F;
+    --bg-surface: #111827;
+    --bg-glass: rgba(17, 24, 39, 0.8);
+    --border-subtle: #1E293B;
+    --border-default: #2D3A4F;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --accent-blue: #818CF8;
+    --accent-blue-soft: #1E1B4B;
     --accent-green: #34D399;
     --accent-green-soft: #0F2A1E;
     --accent-amber: #FBBF24;

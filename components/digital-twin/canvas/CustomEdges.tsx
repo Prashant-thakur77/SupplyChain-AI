@@ -79,7 +79,7 @@ export const TransportEdge = ({
         id={id}
         style={{
           strokeWidth: (isDisrupted || isAtRisk) ? 3 : 2,
-          stroke: (isDisrupted || isAtRisk) ? '#B91C1C' : 'var(--border-default)',
+          stroke: (isDisrupted || isAtRisk) ? '#DC2626' : 'var(--border-default)',
           strokeDasharray: (isDisrupted || isAtRisk) ? '5,5' : 'none',
           animation: (isDisrupted || isAtRisk) ? 'dashdraw 1.5s linear infinite' : 'none',
           ...style

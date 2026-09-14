@@ -111,15 +111,15 @@ export function ProductTour() {
     <div className="fixed inset-0 z-[1000]" role="dialog" aria-modal="true" aria-label="Product tour">
       {/* Spotlight: the box-shadow paints the dim layer everywhere except the anchor. */}
       {spot ? (
-        <div className="pointer-events-none absolute rounded-[14px] transition-all duration-300 ease-out" style={{ top: spot.top, left: spot.left, width: spot.width, height: spot.height, boxShadow: "0 0 0 9999px rgba(11,11,15,0.55), 0 0 0 3px rgba(39,72,232,0.9), 0 0 40px 6px rgba(39,72,232,0.35)" }} />
+        <div className="pointer-events-none absolute rounded-[14px] transition-all duration-300 ease-out" style={{ top: spot.top, left: spot.left, width: spot.width, height: spot.height, boxShadow: "0 0 0 9999px rgba(15,23,42,0.55), 0 0 0 3px rgba(39,72,232,0.9), 0 0 40px 6px rgba(39,72,232,0.35)" }} />
       ) : (
-        <div className="absolute inset-0 bg-[rgba(11,11,15,0.55)]" />
+        <div className="absolute inset-0 bg-[rgba(15,23,42,0.55)]" />
       )}
       {/* Click-catcher so the page underneath does not react while touring. */}
       <div className="absolute inset-0" onClick={() => finish(false)} />
 
       <div
-        className={cn("absolute w-[340px] max-w-[calc(100vw-32px)] rounded-2xl border border-theme-border-subtle bg-theme-bg-surface p-4 shadow-[0_30px_80px_-30px_rgba(11,11,15,0.6)] transition-all duration-300 ease-out", card.top === -1 && "bottom-4 left-4 right-4 w-auto max-w-none")}
+        className={cn("absolute w-[340px] max-w-[calc(100vw-32px)] rounded-2xl border border-theme-border-subtle bg-theme-bg-surface p-4 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.6)] transition-all duration-300 ease-out", card.top === -1 && "bottom-4 left-4 right-4 w-auto max-w-none")}
         style={card.top === -1 ? undefined : { top: card.top, left: card.left }}
         onClick={(e) => e.stopPropagation()}
       >

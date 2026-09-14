@@ -9,17 +9,17 @@ import { Truck, Anchor, Factory, Warehouse, Route, Store } from 'lucide-react';
 const nodeTypeConfigs = {
   supplier: {
     label: 'SUPPLIER',
-    colorHex: '#2748E8',
+    colorHex: '#4F46E5',
     icon: Truck
   },
   port: {
     label: 'PORT',
-    colorHex: '#15803D',
+    colorHex: '#059669',
     icon: Anchor
   },
   factory: {
     label: 'FACTORY',
-    colorHex: '#B45309',
+    colorHex: '#D97706',
     icon: Factory
   },
   warehouse: {
@@ -29,7 +29,7 @@ const nodeTypeConfigs = {
   },
   distribution: {
     label: 'DISTRIBUTION',
-    colorHex: '#B91C1C',
+    colorHex: '#DC2626',
     icon: Route
   },
   retailer: {
@@ -39,7 +39,7 @@ const nodeTypeConfigs = {
   },
   manufacturer: {
     label: 'MANUFACTURER',
-    colorHex: '#B45309',
+    colorHex: '#D97706',
     icon: Factory
   }
 };
@@ -77,28 +77,28 @@ const BaseNode = memo(({
 
   // Status mapping
   let statusText = 'Healthy';
-  let statusColorClass = 'bg-[#15803D]';
+  let statusColorClass = 'bg-[#059669]';
 
   if (isDisrupted) {
     statusText = 'Disrupted';
-    statusColorClass = 'bg-[#B91C1C]';
+    statusColorClass = 'bg-[#DC2626]';
   } else if (isHighRisk) {
     statusText = 'High Risk';
-    statusColorClass = 'bg-[#B91C1C]';
+    statusColorClass = 'bg-[#DC2626]';
   } else if (isWatch) {
     statusText = 'Watch';
-    statusColorClass = 'bg-[#B45309]';
+    statusColorClass = 'bg-[#D97706]';
   } else if (data.status) {
     statusText = data.status;
     const lowerStatus = statusText.toLowerCase();
-    if (lowerStatus === 'healthy') statusColorClass = 'bg-[#15803D]';
-    else if (lowerStatus === 'watch') statusColorClass = 'bg-[#B45309]';
-    else if (lowerStatus === 'disrupted' || lowerStatus === 'critical') statusColorClass = 'bg-[#B91C1C]';
+    if (lowerStatus === 'healthy') statusColorClass = 'bg-[#059669]';
+    else if (lowerStatus === 'watch') statusColorClass = 'bg-[#D97706]';
+    else if (lowerStatus === 'disrupted' || lowerStatus === 'critical') statusColorClass = 'bg-[#DC2626]';
   }
 
   const borderHex = data.nodeColor || config.colorHex;
   const borderStyle = {
-    border: `1px solid ${isHighRisk ? '#B91C1C' : borderHex}`
+    border: `1px solid ${isHighRisk ? '#DC2626' : borderHex}`
   };
 
   const isRootDisruption = disruptedNodes.length > 0 && disruptedNodes[0] === id;
@@ -116,7 +116,7 @@ const BaseNode = memo(({
       : '';
 
   const selectedClass = selected 
-    ? 'ring-2 ring-[#2748E8] ring-offset-2 dark:ring-offset-zinc-950 scale-[1.02]' 
+    ? 'ring-2 ring-[#4F46E5] ring-offset-2 dark:ring-offset-zinc-950 scale-[1.02]' 
     : '';
 
   return (
@@ -134,7 +134,7 @@ const BaseNode = memo(({
           type="target"
           position={Position.Left}
           isConnectable={isConnectable}
-          className="!w-2.5 !h-2.5 !bg-theme-border-default hover:!bg-[#2748E8] transition-colors"
+          className="!w-2.5 !h-2.5 !bg-theme-border-default hover:!bg-[#4F46E5] transition-colors"
         />
       )}
       {showRightHandle && (
@@ -142,27 +142,27 @@ const BaseNode = memo(({
           type="source"
           position={Position.Right}
           isConnectable={isConnectable}
-          className="!w-2.5 !h-2.5 !bg-theme-border-default hover:!bg-[#2748E8] transition-colors"
+          className="!w-2.5 !h-2.5 !bg-theme-border-default hover:!bg-[#4F46E5] transition-colors"
         />
       )}
 
       {/* High Risk Badge */}
       {isHighRisk && (
-        <span className="absolute top-2.5 right-2 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase bg-[#B91C1C] text-white">
+        <span className="absolute top-2.5 right-2 px-1.5 py-0.5 rounded text-[8px] font-bold tracking-wider uppercase bg-[#DC2626] text-white">
           HIGH RISK
         </span>
       )}
 
       {/* Top row: icon + type label */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <Icon className="w-3.5 h-3.5" style={{ color: isHighRisk ? '#B91C1C' : borderHex }} />
-        <span className="text-[9px] font-bold tracking-wider uppercase" style={{ color: isHighRisk ? '#B91C1C' : borderHex }}>
+        <Icon className="w-3.5 h-3.5" style={{ color: isHighRisk ? '#DC2626' : borderHex }} />
+        <span className="text-[9px] font-bold tracking-wider uppercase" style={{ color: isHighRisk ? '#DC2626' : borderHex }}>
           {config.label}
         </span>
       </div>
 
       {/* Middle row: node name */}
-      <div className="font-semibold text-xs leading-tight text-[#0B0B0F] dark:text-[#F2F2F5] mb-2 truncate" title={data.label}>
+      <div className="font-semibold text-xs leading-tight text-[#0F172A] dark:text-[#F1F5F9] mb-2 truncate" title={data.label}>
         {data.label}
       </div>
 
@@ -227,7 +227,7 @@ export const TemplateGroupNode = memo(({ data, selected }: NodeProps) => {
   
   return (
     <div 
-      className={`template-group h-full w-full border border-dashed border-[#DCDCE1] dark:border-zinc-800 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] ${templateSelectionClass}`}
+      className={`template-group h-full w-full border border-dashed border-[#CBD5E1] dark:border-zinc-800 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] ${templateSelectionClass}`}
       data-label={data.label}
       title="Double-click to ungroup this template"
     >

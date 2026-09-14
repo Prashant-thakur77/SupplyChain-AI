@@ -377,12 +377,12 @@ function SimulationPageContent() {
       <style dangerouslySetInnerHTML={{__html: `
         /* PROBE WORKFLOW SIDEBAR */
         .probe-sidebar {
-          width: 218px; min-width: 218px; background: #F7F7F8; border-right: 1px solid #E8E8EC;
+          width: 218px; min-width: 218px; background: #F8FAFC; border-right: 1px solid #E2E8F0;
           padding: 24px 16px 20px; display: flex; flex-direction: column;
         }
         .probe-label {
           font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.12em; color: #8E8E99; margin-bottom: 20px;
+          letter-spacing: 0.12em; color: #94A3B8; margin-bottom: 20px;
         }
         .probe-steps { display: flex; flex-direction: column; gap: 0; flex: 1; }
         .probe-step { display: flex; align-items: flex-start; gap: 12px; position: relative; padding-bottom: 28px; text-align: left; }
@@ -391,28 +391,28 @@ function SimulationPageContent() {
         .probe-step:not(:last-child)::after {
           content: ''; position: absolute; left: 13px; top: 27px;
           width: 1.5px; height: calc(100% - 27px);
-          background: #E8E8EC;
+          background: #E2E8F0;
         }
         .step-circle {
           width: 27px; height: 27px; border-radius: 50%; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
           font-size: 0.75rem; font-weight: 700; position: relative; z-index: 1;
         }
-        .step-circle.active { background: #2748E8; color: #fff; }
-        .step-circle.done { background: #EDFAF3; border: 1.5px solid #15803D; color: #15803D; }
+        .step-circle.active { background: #4F46E5; color: #fff; }
+        .step-circle.done { background: #EDFAF3; border: 1.5px solid #059669; color: #059669; }
         .step-circle.pending {
-          background: #F7F7F8; border: 1.5px solid #DCDCE1; color: #8E8E99;
+          background: #F8FAFC; border: 1.5px solid #CBD5E1; color: #94A3B8;
         }
         .step-text { padding-top: 3px; }
-        .step-title { font-size: 0.82rem; font-weight: 600; color: #0B0B0F; }
-        .step-title.muted { color: #8E8E99; font-weight: 500; }
+        .step-title { font-size: 0.82rem; font-weight: 600; color: #0F172A; }
+        .step-title.muted { color: #94A3B8; font-weight: 500; }
 
         /* Issues badge in sidebar */
         .issues-badge-sidebar {
           display: inline-flex; align-items: center; gap: 7px; margin-top: auto;
           background: rgba(39,72,232,0.08); border: 1px solid rgba(39,72,232,0.3);
           border-radius: 100px; padding: 7px 12px;
-          font-size: 0.75rem; font-weight: 700; color: #2748E8; cursor: pointer;
+          font-size: 0.75rem; font-weight: 700; color: #4F46E5; cursor: pointer;
           width: fit-content;
         }
 
@@ -427,26 +427,26 @@ function SimulationPageContent() {
         .ph-left { display: flex; flex-direction: column; gap: 6px; }
         .ph-eyebrow {
           font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.12em; color: #8E8E99;
+          letter-spacing: 0.12em; color: #94A3B8;
         }
-        .ph-title { font-size: 1.55rem; font-weight: 800; color: #0B0B0F; letter-spacing: -0.03em; }
-        .ph-desc { font-size: 0.82rem; color: #52525B; line-height: 1.65; max-width: 540px; margin-top: 2px; }
+        .ph-title { font-size: 1.55rem; font-weight: 800; color: #0F172A; letter-spacing: -0.03em; }
+        .ph-desc { font-size: 0.82rem; color: #475569; line-height: 1.65; max-width: 540px; margin-top: 2px; }
         .step-badge {
-          font-size: 0.72rem; font-weight: 600; color: #52525B;
-          background: #EFEFF2; border: 1px solid #E8E8EC; border-radius: 8px;
+          font-size: 0.72rem; font-weight: 600; color: #475569;
+          background: #F1F5F9; border: 1px solid #E2E8F0; border-radius: 8px;
           padding: 5px 12px; white-space: nowrap; margin-top: 4px;
         }
 
-        .page-divider { height: 1px; background: #E8E8EC; }
+        .page-divider { height: 1px; background: #E2E8F0; }
 
         /* Dark Mode support */
-        .dark .probe-sidebar { background: #0A0A0C; border-right-color: #2A2825; }
+        .dark .probe-sidebar { background: #0B1120; border-right-color: #2A2825; }
         .dark .probe-step:not(:last-child)::after { background: #2A2825; }
-        .dark .step-circle.pending { background: #0A0A0C; border-color: #353330; color: #6B6560; }
-        .dark .step-title { color: #F2F2F5; }
+        .dark .step-circle.pending { background: #0B1120; border-color: #353330; color: #6B6560; }
+        .dark .step-title { color: #F1F5F9; }
         .dark .step-title.muted { color: #6B6560; }
         .dark .issues-badge-sidebar { background: #1A1212; border-color: rgba(220,38,38,0.2); color: #ef4444; }
-        .dark .ph-title { color: #F2F2F5; }
+        .dark .ph-title { color: #F1F5F9; }
         .dark .ph-desc { color: #A09890; }
         .dark .step-badge { background: #191817; border-color: #2A2825; color: #A09890; }
         .dark .page-divider { background: #2A2825; }
@@ -468,7 +468,7 @@ function SimulationPageContent() {
                   {view === 'form' || view === 'simulation' ? '✓' : 1}
                 </div>
                 <div className="step-text">
-                  <div className={`step-title ${view === 'templates' ? 'active' : 'muted'}`} style={view === 'templates' ? {color:'#2748E8'} : {}}>
+                  <div className={`step-title ${view === 'templates' ? 'active' : 'muted'}`} style={view === 'templates' ? {color:'#4F46E5'} : {}}>
                     Select Preset
                   </div>
                 </div>
@@ -485,7 +485,7 @@ function SimulationPageContent() {
                   {view === 'simulation' ? '✓' : 2}
                 </div>
                 <div className="step-text">
-                  <div className={`step-title ${view === 'form' ? 'active' : 'muted'}`} style={view === 'form' ? {color:'#2748E8'} : {}}>
+                  <div className={`step-title ${view === 'form' ? 'active' : 'muted'}`} style={view === 'form' ? {color:'#4F46E5'} : {}}>
                     Configure Parameters
                   </div>
                 </div>
@@ -502,7 +502,7 @@ function SimulationPageContent() {
                   3
                 </div>
                 <div className="step-text">
-                  <div className={`step-title ${view === 'simulation' ? 'active' : 'muted'}`} style={view === 'simulation' ? {color:'#2748E8'} : {}}>
+                  <div className={`step-title ${view === 'simulation' ? 'active' : 'muted'}`} style={view === 'simulation' ? {color:'#4F46E5'} : {}}>
                     Execute Probe
                   </div>
                 </div>

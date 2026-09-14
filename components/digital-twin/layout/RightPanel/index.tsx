@@ -47,26 +47,26 @@ import AddressAutocompleteMap from '@/components/ui/AutoComplete';
 const getTypeConfig = (typeStr: string, isDisrupted: boolean) => {
   const normType = (typeStr || '').toLowerCase();
   if (normType.includes('supplier')) {
-    return { label: 'SUPPLIER', icon: Package, colorClass: 'text-[#2748E8] border-[#2748E8]', colorHex: '#2748E8' };
+    return { label: 'SUPPLIER', icon: Package, colorClass: 'text-[#4F46E5] border-[#4F46E5]', colorHex: '#4F46E5' };
   }
   if (normType.includes('port')) {
-    return { label: 'PORT', icon: Anchor, colorClass: 'text-[#15803D] border-[#15803D]', colorHex: '#15803D' };
+    return { label: 'PORT', icon: Anchor, colorClass: 'text-[#059669] border-[#059669]', colorHex: '#059669' };
   }
   if (normType.includes('factory') || normType.includes('manufacturer') || normType.includes('production')) {
-    return { label: 'FACTORY', icon: Factory, colorClass: 'text-[#B45309] border-[#B45309]', colorHex: '#B45309' };
+    return { label: 'FACTORY', icon: Factory, colorClass: 'text-[#D97706] border-[#D97706]', colorHex: '#D97706' };
   }
   if (normType.includes('warehouse')) {
     return { label: 'WAREHOUSE', icon: Warehouse, colorClass: 'text-[#7C3AED] border-[#7C3AED]', colorHex: '#7C3AED' };
   }
   if (normType.includes('distribution')) {
-    return { label: 'DISTRIBUTION', icon: Route, colorClass: 'text-[#B91C1C] border-[#B91C1C]', colorHex: '#B91C1C' };
+    return { label: 'DISTRIBUTION', icon: Route, colorClass: 'text-[#DC2626] border-[#DC2626]', colorHex: '#DC2626' };
   }
   if (normType.includes('retail') || normType.includes('customer')) {
     return { 
       label: 'RETAILER', 
       icon: Store, 
-      colorClass: isDisrupted ? 'text-[#B91C1C] border-[#B91C1C]' : 'text-[#6B7280] border-[#6B7280]', 
-      colorHex: isDisrupted ? '#B91C1C' : '#6B7280' 
+      colorClass: isDisrupted ? 'text-[#DC2626] border-[#DC2626]' : 'text-[#6B7280] border-[#6B7280]', 
+      colorHex: isDisrupted ? '#DC2626' : '#6B7280' 
     };
   }
   return { label: 'WAREHOUSE', icon: Warehouse, colorClass: 'text-[#7C3AED] border-[#7C3AED]', colorHex: '#7C3AED' };
@@ -262,14 +262,14 @@ const RightPanel: FC<RightPanelProps> = ({
                 shouldSkipConfirmation ? (
                   <button
                     onClick={handleDirectDelete}
-                    className="text-[#B91C1C] hover:bg-[#FEF2F2] dark:hover:bg-[#2A1515] p-1.5 rounded-lg transition-all"
+                    className="text-[#DC2626] hover:bg-[#FEF2F2] dark:hover:bg-[#2A1515] p-1.5 rounded-lg transition-all"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 ) : (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <button className="text-[#B91C1C] hover:bg-[#FEF2F2] dark:hover:bg-[#2A1515] p-1.5 rounded-lg transition-all">
+                      <button className="text-[#DC2626] hover:bg-[#FEF2F2] dark:hover:bg-[#2A1515] p-1.5 rounded-lg transition-all">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </AlertDialogTrigger>
@@ -353,18 +353,18 @@ const RightPanel: FC<RightPanelProps> = ({
                     <div className="flex gap-2">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
                         isNodeDisrupted 
-                          ? 'bg-[#FEF2F2] text-[#B91C1C] border border-[#B91C1C]/20' 
-                          : 'bg-[#EDFAF3] text-[#15803D] border border-[#15803D]/20'
+                          ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#DC2626]/20' 
+                          : 'bg-[#EDFAF3] text-[#059669] border border-[#059669]/20'
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${isNodeDisrupted ? 'bg-[#B91C1C]' : 'bg-[#15803D]'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${isNodeDisrupted ? 'bg-[#DC2626]' : 'bg-[#059669]'}`} />
                         {isNodeDisrupted ? 'Disrupted' : 'Healthy'}
                       </span>
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                         isHighRisk 
-                          ? 'bg-[#FEF2F2] text-[#B91C1C] border border-[#B91C1C]/20' 
+                          ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#DC2626]/20' 
                           : isWatch 
-                            ? 'bg-[#FEF3C7] text-[#B45309] border border-[#B45309]/20'
-                            : 'bg-[#EDFAF3] text-[#15803D] border border-[#15803D]/20'
+                            ? 'bg-[#FFFBEB] text-[#D97706] border border-[#D97706]/20'
+                            : 'bg-[#EDFAF3] text-[#059669] border border-[#059669]/20'
                       }`}>
                         {isHighRisk ? 'High Risk' : isWatch ? 'Medium Risk' : 'Low Risk'}
                       </span>
@@ -375,9 +375,9 @@ const RightPanel: FC<RightPanelProps> = ({
                         <span>Risk Score</span>
                         <span>{Math.round(riskScore * 100)} / 100</span>
                       </div>
-                      <div className="w-full bg-[#EFEFF2] dark:bg-zinc-800 rounded-full h-2">
+                      <div className="w-full bg-[#F1F5F9] dark:bg-zinc-800 rounded-full h-2">
                         <div 
-                          className="bg-[#B91C1C] h-2 rounded-full transition-all duration-300"
+                          className="bg-[#DC2626] h-2 rounded-full transition-all duration-300"
                           style={{ width: `${Math.round(riskScore * 100)}%` }}
                         />
                       </div>
@@ -387,7 +387,7 @@ const RightPanel: FC<RightPanelProps> = ({
                         max="100"
                         value={Math.round(riskScore * 100)}
                         onChange={(e) => handleInputChange('riskScore', parseFloat(e.target.value) / 100)}
-                        className="w-full h-1 bg-[#EFEFF2] dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
+                        className="w-full h-1 bg-[#F1F5F9] dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
                       />
                     </div>
                   </div>
@@ -439,7 +439,7 @@ const RightPanel: FC<RightPanelProps> = ({
                         {connections.map((conn, idx) => {
                           const ConnIcon = conn.icon;
                           return (
-                            <div key={idx} className="flex items-center justify-between p-2 bg-[#EFEFF2] dark:bg-[#191817] rounded-lg border border-theme-border-subtle text-xs font-semibold">
+                            <div key={idx} className="flex items-center justify-between p-2 bg-[#F1F5F9] dark:bg-[#191817] rounded-lg border border-theme-border-subtle text-xs font-semibold">
                               <div className="flex items-center gap-2 truncate">
                                 <ConnIcon className="w-4 h-4" style={{ color: conn.colorHex }} />
                                 <span className="text-theme-text-primary truncate">{conn.label}</span>
@@ -502,7 +502,7 @@ const RightPanel: FC<RightPanelProps> = ({
                   });
                 }
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EFEFF2] dark:bg-[#191817] hover:bg-[#DCDCE1] dark:hover:bg-[#2A2825] text-theme-text-primary text-xs font-semibold rounded-lg border border-theme-border-subtle transition-all"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#F1F5F9] dark:bg-[#191817] hover:bg-[#CBD5E1] dark:hover:bg-[#2A2825] text-theme-text-primary text-xs font-semibold rounded-lg border border-theme-border-subtle transition-all"
             >
               <Activity className="w-3.5 h-3.5" />
               Analyse this node
@@ -511,7 +511,7 @@ const RightPanel: FC<RightPanelProps> = ({
             {isNodeDisrupted ? (
               <button
                 onClick={clearDisruptions}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EDFAF3] hover:bg-[#EDFAF3]/80 text-[#15803D] text-xs font-semibold rounded-lg border border-[#15803D]/20 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EDFAF3] hover:bg-[#EDFAF3]/80 text-[#059669] text-xs font-semibold rounded-lg border border-[#059669]/20 transition-all"
               >
                 <Check className="w-3.5 h-3.5" />
                 Clear disruption
@@ -519,7 +519,7 @@ const RightPanel: FC<RightPanelProps> = ({
             ) : (
               <button
                 onClick={() => simulateDisruption(selectedElement.id)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EFEFF2] dark:bg-[#191817] hover:bg-[#DCDCE1] dark:hover:bg-[#2A2825] text-[#B91C1C] text-xs font-semibold rounded-lg border border-[#B91C1C]/20 hover:border-[#B91C1C]/40 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#F1F5F9] dark:bg-[#191817] hover:bg-[#CBD5E1] dark:hover:bg-[#2A2825] text-[#DC2626] text-xs font-semibold rounded-lg border border-[#DC2626]/20 hover:border-[#DC2626]/40 transition-all"
               >
                 <ShieldAlert className="w-3.5 h-3.5" />
                 Simulate disruption

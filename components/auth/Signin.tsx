@@ -156,7 +156,7 @@ const SigninPage = () => {
       <AuthHeader />
       <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-theme-bg-primary px-4 pt-16">
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(ellipse_70%_55%_at_50%_-8%,rgba(39,72,232,0.12),transparent_65%)]" />
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(11,11,15,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,11,15,0.035)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_55%_55%_at_50%_45%,#000_30%,transparent_75%)]" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.035)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_55%_55%_at_50%_45%,#000_30%,transparent_75%)]" />
         <div className="relative w-full max-w-[880px] grid gap-8 lg:grid-cols-[1fr_400px] items-center">
         <div className="hidden lg:block">
           <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-theme-blue">SupplyChain AI</div>
@@ -167,7 +167,7 @@ const SigninPage = () => {
           </ul>
         </div>
 
-      <Card className="w-full max-w-[400px] justify-self-center rounded-theme-lg border-theme-border-subtle bg-theme-bg-surface/90 shadow-[0_30px_80px_-40px_rgba(11,11,15,0.4)] backdrop-blur">
+      <Card className="w-full max-w-[400px] justify-self-center rounded-theme-lg border-theme-border-subtle bg-theme-bg-surface/90 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.4)] backdrop-blur">
         <CardHeader>
           <CardTitle className="font-display text-2xl text-center text-theme-text-primary">
             {isSignUpMode ? 'Create Account' : 'Welcome Back'}

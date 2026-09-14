@@ -141,11 +141,11 @@ const LeftPanel: FC<LeftPanelProps> = ({
   ];
 
   const nodeTypesToRender = [
-    { id: 'Supplier', label: 'Supplier', icon: Package, color: 'text-[#2748E8] border-[#2748E8]' },
-    { id: 'Port', label: 'Port', icon: Anchor, color: 'text-[#15803D] border-[#15803D]' },
-    { id: 'Factory', label: 'Factory', icon: Factory, color: 'text-[#B45309] border-[#B45309]' },
+    { id: 'Supplier', label: 'Supplier', icon: Package, color: 'text-[#4F46E5] border-[#4F46E5]' },
+    { id: 'Port', label: 'Port', icon: Anchor, color: 'text-[#059669] border-[#059669]' },
+    { id: 'Factory', label: 'Factory', icon: Factory, color: 'text-[#D97706] border-[#D97706]' },
     { id: 'Warehouse', label: 'Warehouse', icon: Warehouse, color: 'text-[#7C3AED] border-[#7C3AED]' },
-    { id: 'Distribution', label: 'Distribution', icon: Route, color: 'text-[#B91C1C] border-[#B91C1C]' },
+    { id: 'Distribution', label: 'Distribution', icon: Route, color: 'text-[#DC2626] border-[#DC2626]' },
     { id: 'Retailer', label: 'Retail', icon: Store, color: 'text-[#6B7280] border-[#6B7280]' }
   ];
 
@@ -268,7 +268,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
               <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1.5">SUPPLY CHAIN</label>
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 bg-theme-bg-surface border border-theme-border-subtle rounded-lg text-xs font-semibold text-theme-text-primary hover:bg-[#EFEFF2] dark:hover:bg-[#191817] transition-all"
+                className="w-full flex items-center justify-between px-3 py-2 bg-theme-bg-surface border border-theme-border-subtle rounded-lg text-xs font-semibold text-theme-text-primary hover:bg-[#F1F5F9] dark:hover:bg-[#191817] transition-all"
               >
                 <div className="flex items-center gap-2">
                   <GitBranch className="w-3.5 h-3.5 text-theme-text-secondary" />
@@ -285,7 +285,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
                         setSelectedSupplyChain?.(option.id);
                         setIsDropdownOpen(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-theme-text-primary hover:bg-[#EFEFF2] dark:hover:bg-[#191817] transition-colors"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-theme-text-primary hover:bg-[#F1F5F9] dark:hover:bg-[#191817] transition-colors"
                     >
                       {option.name}
                     </button>
@@ -332,7 +332,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
                       onDragEnd={onDragEnd}
                       draggable={!simulationMode}
                       disabled={simulationMode || !onLoadTemplate}
-                      className="w-full flex items-center justify-between p-2.5 bg-theme-bg-surface border border-theme-border-subtle rounded-lg hover:bg-[#EFEFF2] dark:hover:bg-[#191817] hover:border-theme-border-default transition-all cursor-grab active:cursor-grabbing text-left shadow-sm disabled:opacity-50"
+                      className="w-full flex items-center justify-between p-2.5 bg-theme-bg-surface border border-theme-border-subtle rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#191817] hover:border-theme-border-default transition-all cursor-grab active:cursor-grabbing text-left shadow-sm disabled:opacity-50"
                     >
                       <div className="flex items-center gap-2 truncate">
                         <span className="text-sm">{template.icon}</span>
@@ -361,7 +361,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
                 variant="outline"
                 onClick={onClearAllNodes}
                 disabled={simulationMode}
-                className="w-full border-[#B91C1C]/30 hover:border-[#B91C1C] text-[#B91C1C] hover:bg-[#FEF2F2]/30 dark:hover:bg-[#2A1515]/30 font-semibold text-xs py-2 rounded-lg flex items-center justify-center gap-2 bg-transparent transition-all shadow-none"
+                className="w-full border-[#DC2626]/30 hover:border-[#DC2626] text-[#DC2626] hover:bg-[#FEF2F2]/30 dark:hover:bg-[#2A1515]/30 font-semibold text-xs py-2 rounded-lg flex items-center justify-center gap-2 bg-transparent transition-all shadow-none"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Clear all nodes

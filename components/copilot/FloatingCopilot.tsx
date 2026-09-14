@@ -28,7 +28,7 @@ export function FloatingCopilot() {
         {open ? <X className="h-5 w-5" /> : <Bot className="h-6 w-6" />}
       </button>
       {open && (
-        <div className="fixed bottom-24 right-6 z-[90] flex h-[min(600px,calc(100vh-130px))] w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-theme-border-subtle bg-theme-bg-surface shadow-[0_30px_80px_-30px_rgba(11,11,15,0.6)]">
+        <div className="fixed bottom-24 right-6 z-[90] flex h-[min(600px,calc(100vh-130px))] w-[min(420px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-theme-border-subtle bg-theme-bg-surface shadow-[0_30px_80px_-30px_rgba(15,23,42,0.6)]">
           <div className="flex items-center gap-2 border-b border-theme-border-subtle px-4 py-3">
             <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-theme-blue-soft text-theme-blue"><Bot className="h-4 w-4" /></span>
             <div className="min-w-0"><div className="text-sm font-semibold text-theme-text-primary">Copilot</div><div className="truncate text-[11px] text-theme-text-muted">{onCanvas ? "Reasoning on the canvas you are editing" : chainName ? `On ${chainName}` : "Build a twin to ask about your network"}</div></div>

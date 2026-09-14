@@ -261,11 +261,11 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
           {/* Canvas overlay (top-left): pill badges showing node count + edge count + risk count */}
           <div className="absolute top-4 left-4 z-10 flex gap-2">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border border-theme-border-subtle bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm text-theme-text-primary shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
               <span>{nodes.filter(n => n.type !== 'group').length} nodes</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border border-theme-border-subtle bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm text-theme-text-primary shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#2748E8]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4F46E5]" />
               <span>{edges.length} edges</span>
             </div>
             {(() => {
@@ -282,10 +282,10 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
               return (
                 <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border backdrop-blur-sm shadow-sm transition-colors duration-200 ${
                   riskCount > 0 
-                    ? 'border-[#B91C1C] bg-[#FEF2F2]/95 dark:bg-[#2A1515]/95 text-[#B91C1C]'
+                    ? 'border-[#DC2626] bg-[#FEF2F2]/95 dark:bg-[#2A1515]/95 text-[#DC2626]'
                     : 'border-theme-border-subtle bg-white/95 dark:bg-zinc-900/95 text-theme-text-primary'
                 }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${riskCount > 0 ? 'bg-[#B91C1C] animate-pulse' : 'bg-zinc-400'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${riskCount > 0 ? 'bg-[#DC2626] animate-pulse' : 'bg-zinc-400'}`} />
                   <span>{riskCount} at risk</span>
                 </div>
               );
@@ -304,8 +304,8 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
             }
             .react-flow__controls-button {
               background: white !important;
-              color: #0B0B0F !important;
-              border: 1px solid #E8E8EC !important;
+              color: #0F172A !important;
+              border: 1px solid #E2E8F0 !important;
               border-radius: 6px !important;
               width: 32px !important;
               height: 32px !important;
@@ -315,8 +315,8 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
               box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
             }
             .dark .react-flow__controls-button {
-              background: #121215 !important;
-              color: #F2F2F5 !important;
+              background: #111827 !important;
+              color: #F1F5F9 !important;
               border-color: #353330 !important;
             }
             .react-flow__controls-button:hover {

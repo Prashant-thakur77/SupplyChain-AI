@@ -50,7 +50,7 @@ export function AutonomyPolicyCard({ userId }: { userId: string }) {
             <select value={sel} onChange={(e) => pick(e.target.value)} className="mt-1 w-full rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-3 py-2 text-sm text-theme-text-primary">{twins.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select>
           </label>
           <label className="flex items-center gap-3 rounded-theme-md border border-theme-border-subtle p-3 text-sm text-theme-text-primary sm:col-span-2">
-            <input type="checkbox" checked={f.auto_approve} onChange={(e) => setForm({ ...f, auto_approve: e.target.checked })} className="h-4 w-4 accent-[#2748E8]" />
+            <input type="checkbox" checked={f.auto_approve} onChange={(e) => setForm({ ...f, auto_approve: e.target.checked })} className="h-4 w-4 accent-[#4F46E5]" />
             <span><span className="font-semibold">Let the agent approve reroutes on its own</span><span className="block text-xs text-theme-text-secondary">Only the recommended reroute, only inside every limit below, never when the Analyst flags "needs review" or a lane has no bypass. You get a notification, not a question.</span></span>
           </label>
           {[["max_added_cost", "Max added cost (USD)", 100], ["max_added_days", "Max added days", 0.5], ["expire_hours", "Pending decisions expire after (hours)", 1]].map(([k, l, step]) => (
@@ -59,10 +59,10 @@ export function AutonomyPolicyCard({ userId }: { userId: string }) {
             </label>
           ))}
           <label className="text-xs text-theme-text-secondary">Min confidence ({Math.round(Number(f.min_confidence) * 100)}%)
-            <input type="range" min={0.5} max={1} step={0.05} value={f.min_confidence} onChange={(e) => setForm({ ...f, min_confidence: Number(e.target.value) })} className="mt-2 w-full accent-[#2748E8]" />
+            <input type="range" min={0.5} max={1} step={0.05} value={f.min_confidence} onChange={(e) => setForm({ ...f, min_confidence: Number(e.target.value) })} className="mt-2 w-full accent-[#4F46E5]" />
           </label>
           <label className="text-xs text-theme-text-secondary">Carbon weight ({Math.round(Number(f.carbon_weight ?? 0) * 100)}%)<span className="block text-[10px] text-theme-text-muted">0 = rank on cost only · 100 = every tonne CO₂e priced at the carbon price</span>
-            <input type="range" min={0} max={1} step={0.05} value={f.carbon_weight ?? 0} onChange={(e) => setForm({ ...f, carbon_weight: Number(e.target.value) })} className="mt-2 w-full accent-[#2748E8]" />
+            <input type="range" min={0} max={1} step={0.05} value={f.carbon_weight ?? 0} onChange={(e) => setForm({ ...f, carbon_weight: Number(e.target.value) })} className="mt-2 w-full accent-[#4F46E5]" />
           </label>
           <label className="text-xs text-theme-text-secondary">Carbon price (USD / tCO₂e)
             <input type="number" step={5} value={f.carbon_price ?? 100} onChange={(e) => setForm({ ...f, carbon_price: Number(e.target.value) })} className="mt-1 w-full rounded-theme-md border border-theme-border-subtle bg-theme-bg-secondary px-3 py-2 text-sm text-theme-text-primary" />
