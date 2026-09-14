@@ -42,7 +42,7 @@ interface ApiResponse {
 
 export default function DigitalTwinDashboard() {
   const [supplyChains, setSupplyChains] = useState<SupplyChainData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);  // skeleton until the first fetch settles — never flash the empty state
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -141,7 +141,7 @@ export default function DigitalTwinDashboard() {
     setSupplyChainToDelete(null);
   };
 
-  if (userLoading || loading) {
+  if (userLoading || loading || (!dataFetched && !error)) {
     return (
       <div className="relative min-h-full flex-1 flex flex-col bg-theme-bg-primary overflow-x-hidden text-theme-text-primary">
         <div className="border-b border-theme-border-subtle px-6 py-4 flex items-center justify-between">
