@@ -1,74 +1,67 @@
-# Agents for Humans: building an autonomous supply-chain resilience agent with Strands
+# Agents for Humans: a supply-chain resilience agent built with Strands Agents on Amazon Bedrock
 
-*Draft for builder.aws.com. Title must contain "Agents for Humans".*
+*Published on builder.aws.com. Title must contain "Agents for Humans".*
 
-## The chore
+## The chore I wanted to get rid of
 
-Operations managers at small manufacturers find out about port closures from the news and then spend a day in
-spreadsheets. I wanted an agent that watches for them and only interrupts with a framed decision. This post is about
-how the Strands Agents SDK shaped the design.
+If you run operations at a small manufacturer, you find out about a port closure the same way everyone else does: from the news. Then you lose a day in spreadsheets working out which orders are stuck, which route is still open and what it will cost. I wanted an agent that does the watching and the working out, and only shows up when there is a real decision to make.
 
-## 1. Agents are functions with typed outputs
+This post is about how the Strands Agents SDK shaped the design, and a few things I would do the same way again.
 
-Every agent in the service is a Strands `Agent` with `@tool`s and a Pydantic `structured_output_model`:
+## Every agent returns an object, not a paragraph
+
+Each agent in the service is a Strands `Agent` with a handful of `@tool` functions and a Pydantic `structured_output_model`:
 
 ```python
 res = agent(prompt, structured_output_model=Assessment)
-assessment = res.structured_output  # severity, confidence, failed_node_ids, affected_node_ids …
+assessment = res.structured_output   # severity, confidence, failed_node_ids, affected_node_ids
 ```
 
-That single decision made the rest of the system boring in the best way: the UI, the database and the next agent all
-consume objects, not prose.
+That one choice made everything downstream boring in the best way. The UI, the database and the next agent in the chain all consume typed objects. Nobody parses prose.
 
-## 2. Keep the math out of the model
+## The math never runs inside the model
 
-Operators act on the numbers, so routes are computed by Dijkstra and Yen's k-shortest in plain Python and *injected*
-into the Router agent's prompt. The Router ranks and explains; it can only return ids that exist. When the model was
-wrong about which nodes had "failed" (it listed downstream nodes), splitting `failed_node_ids` from
-`affected_node_ids` in the schema fixed the whole pipeline.
+Operators act on numbers, so the numbers cannot be guesses. Routes are computed by Dijkstra and Yen's k-shortest algorithm in plain Python and injected into the Router agent's prompt. The Router ranks the candidates and explains the trade-offs, and it can only return ids that actually exist.
 
-## 3. GraphBuilder for the parallel part
+The moment this paid for itself was when the Analyst kept listing downstream sites as "failed". Nothing was routable because the engine thought half the network was gone. Splitting `failed_node_ids` from `affected_node_ids` in the schema fixed the whole pipeline in an afternoon. When the contract is typed, bugs like that are visible.
+
+## GraphBuilder for the part that should run in parallel
+
+The incident pipeline is a Strands graph: the Router and the Impact analyst run at the same time, and the Strategist receives both results.
 
 ```python
 gb = GraphBuilder()
-gb.add_node(router, "router"); gb.add_node(impact, "impact"); gb.add_node(strategist, "strategist")
-gb.add_edge("router", "strategist"); gb.add_edge("impact", "strategist")
-gb.set_entry_point("router"); gb.set_entry_point("impact")
+gb.add_node(router_agent, "router")
+gb.add_node(impact_agent, "impact")
+gb.add_node(strategist_agent, "strategist")
+gb.add_edge("router", "strategist")
+gb.add_edge("impact", "strategist")
+gb.set_entry_point("router")
+gb.set_entry_point("impact")
 result = gb.build()(task)
-ranking = result.results["router"].result.structured_output
 ```
 
-Two entry points run concurrently; the strategist gets both outputs; `execution_order` and token usage stream to the UI.
+The execution order and token usage come back on the result, and I stream them to the browser so the operator can watch the graph work.
 
-## 4. Hooks for observability
+## Hooks make observability free
 
-A `HookProvider` on `BeforeInvocationEvent`/`AfterInvocationEvent` writes one row per agent run to `agent_traces`.
-The product's "Trace" drawer is just a query on that table.
+A `HookProvider` listening on `BeforeInvocationEvent` and `AfterInvocationEvent` writes one row per agent run to an `agent_traces` table: duration, tokens, success, which stage of which workflow. The product's Agent Ops page and the "trace" drawer on every decision are just queries on that table. I never wrote a logging layer.
 
-## 5. Amazon Bedrock and AgentCore
+## Amazon Bedrock and AgentCore
 
-`AGENT_MODEL_PROVIDER=bedrock` swaps the model for `BedrockModel` (a cross-region inference profile such as
-`us.anthropic.claude-sonnet-4-6`); nothing else in the agents changes, which is the point of Strands' model abstraction. The
-FastAPI service implements `POST /invocations` and `GET /ping`, with a `BedrockAgentCoreApp` entrypoint, so the same
-container deploys to Amazon Bedrock AgentCore Runtime — the IAM execution role, the least-privilege policy (Bedrock invoke,
-ECR pull, CloudWatch logs, X-Ray) and an EventBridge rule for the 15-minute Sentinel loop are in `infra/aws/`. AgentCore's
-session isolation and observability map cleanly onto the `agent_traces` rows the hooks already write.
+Setting `AGENT_MODEL_PROVIDER=bedrock` swaps the model for `BedrockModel` with a cross-region inference profile. Nothing else in the agents changes, which is the whole point of the Strands model abstraction.
 
-A second Strands feature I leaned on: `A2AServer`. The Lane Assessor agent is exposed over the Agent-to-Agent protocol at
-`/a2a`, so a procurement bot or a customer's own agent can ask "is Shenzhen → Rotterdam safe this week?" and get the exact
-engine numbers back.
+The FastAPI service also implements `POST /invocations` and `GET /ping`, with a `BedrockAgentCoreApp` entrypoint, so the same container deploys to Amazon Bedrock AgentCore Runtime. The IAM execution role, a least-privilege policy for Bedrock invoke, ECR pull, CloudWatch logs and X-Ray, and an EventBridge rule for the fifteen-minute Sentinel loop live in `infra/aws/`. AgentCore's session isolation and built-in observability line up neatly with the `agent_traces` rows the hooks already write.
 
-## 6. Surviving free tiers
+One more Strands feature I leaned on is `A2AServer`. The Lane Assessor agent is exposed over the Agent-to-Agent protocol at `/a2a`, so a procurement bot or a customer's own agent can ask "is Shenzhen to Rotterdam safe this week?" and get the exact engine numbers back.
 
-Not every builder has a billed model account on day one. Strands made it cheap to support four providers behind one flag
-(Bedrock, Gemini, OpenAI-compatible such as Groq, local Ollama), and the incident graph is written so that when a node
-fails — a rate limit, a refused structured-output tool — the deterministic engine still produces a decision, marked
-"partial" with reduced confidence, rather than nothing.
+## Surviving free tiers
 
-## What I'd tell another builder
+Not every builder has a billed model account on day one. Strands made it cheap to support four providers behind one flag: Bedrock, Gemini, anything OpenAI-compatible such as Groq, and a local Ollama model. The incident graph is written so that when a node fails, whether from a rate limit or a refused structured-output tool, the deterministic engine still produces a decision. It is marked partial with reduced confidence, but the operator gets something they can act on rather than nothing.
 
-- Put the structured schema first; prompts follow.
-- Compute what can be computed; let the agent rank and explain.
-- Stream the graph's node events — users trust what they can watch.
+## What I would tell another builder
+
+Write the output schema first and let the prompts follow. Compute whatever can be computed and let the agent rank and explain. And stream the graph's node events to the screen, because people trust what they can watch.
 
 Repo: https://github.com/Prashant-thakur77/SupplyChain-AI
+Live demo: https://supplychain-ai-nine.vercel.app/demo
