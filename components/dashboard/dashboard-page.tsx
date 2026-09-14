@@ -19,7 +19,7 @@ export default function DashboardPage() {
       <style dangerouslySetInnerHTML={{__html: `
         /* TOP BAR */
         .topbar {
-          height: 56px; background: #F6F3EE; border-bottom: 1px solid #E5DFD6;
+          height: 56px; background: #F7F7F8; border-bottom: 1px solid #E8E8EC;
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 28px; flex-shrink: 0;
         }
@@ -27,14 +27,14 @@ export default function DashboardPage() {
           .topbar { padding: 0 16px; }
         }
         .topbar-left { display: flex; flex-direction: column; }
-        .topbar-title { font-size: 1.1rem; font-weight: 700; color: #18160F; letter-spacing: -0.02em; }
-        .topbar-sub { font-size: 0.75rem; color: #9C9489; }
+        .topbar-title { font-size: 1.1rem; font-weight: 700; color: #0B0B0F; letter-spacing: -0.02em; }
+        .topbar-sub { font-size: 0.75rem; color: #8E8E99; }
         @media (max-width: 480px) {
           .topbar-sub { display: none; }
         }
         .topbar-right { display: flex; align-items: center; gap: 10px; }
-        .live-pill { display: flex; align-items: center; gap: 6px; background: #EDFAF3; border: 1px solid rgba(26,127,75,0.2); border-radius: 100px; padding: 4px 12px; font-size: 0.7rem; font-weight: 700; color: #1A7F4B; }
-        .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #1A7F4B; animation: pulse-live 1.5s ease-in-out infinite; }
+        .live-pill { display: flex; align-items: center; gap: 6px; background: #EDFAF3; border: 1px solid rgba(26,127,75,0.2); border-radius: 100px; padding: 4px 12px; font-size: 0.7rem; font-weight: 700; color: #15803D; }
+        .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #15803D; animation: pulse-live 1.5s ease-in-out infinite; }
         @keyframes pulse-live { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
 
         /* CONTENT AREA */
@@ -52,13 +52,13 @@ export default function DashboardPage() {
           .stats-row { grid-template-columns: 1fr; }
         }
         .stat-card {
-          background: #EFEBE3; border: 1px solid #E5DFD6; border-radius: 10px;
+          background: #EFEFF2; border: 1px solid #E8E8EC; border-radius: 10px;
           padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;
         }
-        .stat-card-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: #9C9489; }
-        .stat-card-val { font-size: 1.7rem; font-weight: 800; color: #18160F; letter-spacing: -0.04em; line-height: 1.1; }
+        .stat-card-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: #8E8E99; }
+        .stat-card-val { font-size: 1.7rem; font-weight: 800; color: #0B0B0F; letter-spacing: -0.04em; line-height: 1.1; }
         .stat-card-val.danger { color: #B91C1C; }
-        .stat-card-meta { font-size: 0.7rem; color: #9C9489; }
+        .stat-card-meta { font-size: 0.7rem; color: #8E8E99; }
         .stat-card-indicator { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
         .ind-dot { width: 6px; height: 6px; border-radius: 50%; }
 
@@ -66,54 +66,54 @@ export default function DashboardPage() {
         .body-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; }
 
         /* ALERTS PANEL */
-        .panel { background: #F6F3EE; border: 1px solid #E5DFD6; border-radius: 12px; overflow: hidden; }
+        .panel { background: #F7F7F8; border: 1px solid #E8E8EC; border-radius: 12px; overflow: hidden; }
         
         /* SIDEBAR PANELS */
         .side-panels { display: flex; flex-direction: column; gap: 16px; }
-        .mini-panel { background: #F6F3EE; border: 1px solid #E5DFD6; border-radius: 12px; overflow: hidden; }
-        .mini-panel-header { padding: 12px 14px; border-bottom: 1px solid #E5DFD6; font-size: 0.78rem; font-weight: 700; color: #18160F; }
+        .mini-panel { background: #F7F7F8; border: 1px solid #E8E8EC; border-radius: 12px; overflow: hidden; }
+        .mini-panel-header { padding: 12px 14px; border-bottom: 1px solid #E8E8EC; font-size: 0.78rem; font-weight: 700; color: #0B0B0F; }
         .node-health-list { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; }
-        .nh-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #E5DFD6; }
+        .nh-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #E8E8EC; }
         .nh-row:last-child { border-bottom: none; }
         .nh-left { display: flex; align-items: center; gap: 8px; }
         .nh-dot { width: 7px; height: 7px; border-radius: 50%; }
-        .nh-label { font-size: 0.78rem; color: #18160F; font-weight: 500; }
-        .nh-count { font-size: 0.72rem; font-weight: 700; color: #18160F; background: #EFEBE3; border: 1px solid #E5DFD6; border-radius: 100px; padding: 1px 8px; }
+        .nh-label { font-size: 0.78rem; color: #0B0B0F; font-weight: 500; }
+        .nh-count { font-size: 0.72rem; font-weight: 700; color: #0B0B0F; background: #EFEFF2; border: 1px solid #E8E8EC; border-radius: 100px; padding: 1px 8px; }
 
         /* SYSTEM STATUS */
         .sys-status-list { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
         .sys-row { display: flex; flex-direction: column; gap: 4px; }
-        .sys-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #9C9489; }
-        .sys-val { font-size: 1.3rem; font-weight: 800; color: #18160F; letter-spacing: -0.03em; line-height: 1.1; }
-        .sys-meta { font-size: 0.65rem; color: #9C9489; }
-        .sys-divider { height: 1px; background: #E5DFD6; margin: 2px 0; }
+        .sys-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #8E8E99; }
+        .sys-val { font-size: 1.3rem; font-weight: 800; color: #0B0B0F; letter-spacing: -0.03em; line-height: 1.1; }
+        .sys-meta { font-size: 0.65rem; color: #8E8E99; }
+        .sys-divider { height: 1px; background: #E8E8EC; margin: 2px 0; }
 
         /* EXPOSURE BAR */
         .exposure-bar-wrap { padding: 10px 14px 14px; }
         .exp-label-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-        .exp-label { font-size: 0.65rem; color: #9C9489; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+        .exp-label { font-size: 0.65rem; color: #8E8E99; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
         .exp-val { font-size: 0.75rem; font-weight: 700; color: #B91C1C; }
-        .exp-bar { height: 6px; background: #E5DFD6; border-radius: 100px; overflow: hidden; }
+        .exp-bar { height: 6px; background: #E8E8EC; border-radius: 100px; overflow: hidden; }
         .exp-fill { height: 100%; background: #B91C1C; border-radius: 100px; transition: width 0.3s ease; }
-        .exp-sub { font-size: 0.62rem; color: #9C9489; margin-top: 5px; }
+        .exp-sub { font-size: 0.62rem; color: #8E8E99; margin-top: 5px; }
 
         /* Dark Mode overrides */
-        .dark .topbar { background: #111010; border-bottom-color: #2A2825; }
-        .dark .topbar-title { color: #F0EDE7; }
+        .dark .topbar { background: #0A0A0C; border-bottom-color: #2A2825; }
+        .dark .topbar-title { color: #F2F2F5; }
         .dark .topbar-sub { color: #6B6560; }
         .dark .stat-card { background: #191817; border-color: #2A2825; }
         .dark .stat-card-label { color: #6B6560; }
-        .dark .stat-card-val { color: #F0EDE7; }
+        .dark .stat-card-val { color: #F2F2F5; }
         .dark .stat-card-val.danger { color: #ef4444; }
         .dark .stat-card-meta { color: #6B6560; }
-        .dark .panel { background: #111010; border-color: #2A2825; }
-        .dark .mini-panel { background: #111010; border-color: #2A2825; }
-        .dark .mini-panel-header { border-bottom-color: #2A2825; color: #F0EDE7; }
+        .dark .panel { background: #0A0A0C; border-color: #2A2825; }
+        .dark .mini-panel { background: #0A0A0C; border-color: #2A2825; }
+        .dark .mini-panel-header { border-bottom-color: #2A2825; color: #F2F2F5; }
         .dark .nh-row { border-bottom-color: #2A2825; }
-        .dark .nh-label { color: #F0EDE7; }
-        .dark .nh-count { background: #191817; border-color: #2A2825; color: #F0EDE7; }
+        .dark .nh-label { color: #F2F2F5; }
+        .dark .nh-count { background: #191817; border-color: #2A2825; color: #F2F2F5; }
         .dark .sys-label { color: #6B6560; }
-        .dark .sys-val { color: #F0EDE7; }
+        .dark .sys-val { color: #F2F2F5; }
         .dark .sys-meta { color: #6B6560; }
         .dark .sys-divider { background: #2A2825; }
         .dark .exp-label { color: #6B6560; }
@@ -181,7 +181,7 @@ export default function DashboardPage() {
               <div className="stat-card-val">{m.isLoading ? "…" : String(m.totalSupplyChains)}</div>
               <div className="stat-card-meta">{m.isLoading ? "…" : `${m.totalEdges} connections`}</div>
               <div className="stat-card-indicator">
-                <div className="ind-dot" style={{ background: '#1A7F4B' }}></div>
+                <div className="ind-dot" style={{ background: '#15803D' }}></div>
                 <span className="text-theme-green font-semibold text-[0.62rem]">all synced</span>
               </div>
             </div>

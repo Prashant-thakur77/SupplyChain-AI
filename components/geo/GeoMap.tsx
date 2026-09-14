@@ -75,14 +75,14 @@ export function GeoMap({ nodes: propNodes, edges: propEdges, className, showCont
     // nodes
     for (const { n, c } of positioned) {
       const kind = nodeKind(n), st = nodeStates[n.id]
-      const color = st === "failed" ? "#B91C1C" : st === "onRoute" ? "#1A7F4B" : st === "downstream" ? "#B45309" : TYPE_COLOR[kind] ?? "#334155"
+      const color = st === "failed" ? "#B91C1C" : st === "onRoute" ? "#15803D" : st === "downstream" ? "#B45309" : TYPE_COLOR[kind] ?? "#334155"
       if (st === "failed") L_.circleMarker(c, { radius: 18, color, weight: 1, fillColor: color, fillOpacity: 0.15, className: "geo-pulse" }).addTo(g)
       const risk = Number(n.data?.riskScore ?? 0)
       const m = L_.circleMarker(c, { radius: 7 + Math.min(4, Number(n.data?.capacity ?? 0) / 40), color: "#fff", weight: 2, fillColor: color, fillOpacity: 1 })
       m.bindPopup(`<div style="font:13px Inter,system-ui;min-width:180px"><div style="font-weight:700">${n.data?.label ?? n.id}</div>
-        <div style="color:#5C5850;text-transform:uppercase;font-size:10px;letter-spacing:.08em">${kind}${n.data?.country ? " · " + n.data.country : ""}</div>
+        <div style="color:#52525B;text-transform:uppercase;font-size:10px;letter-spacing:.08em">${kind}${n.data?.country ? " · " + n.data.country : ""}</div>
         <div style="margin-top:6px;font-size:12px">Capacity ${n.data?.capacity ?? "—"} · Risk ${n.data?.riskLevel ?? (risk ? Math.round(risk * 100) + "%" : "—")}${st ? `<br/><b style="color:${color}">${st === "failed" ? "FAILED" : st === "onRoute" ? "On reroute" : "Downstream impact"}</b>` : ""}</div>
-        ${n.data?.riskBreakdown?.reasons?.length ? `<div style="margin-top:6px;font-size:11px;color:#5C5850">Why: ${n.data.riskBreakdown.reasons.slice(0, 3).join(" · ")}</div>` : ""}</div>`)
+        ${n.data?.riskBreakdown?.reasons?.length ? `<div style="margin-top:6px;font-size:11px;color:#52525B">Why: ${n.data.riskBreakdown.reasons.slice(0, 3).join(" · ")}</div>` : ""}</div>`)
       m.on("click", () => setSelectedElement(n))
       if (showLabels) m.bindTooltip(String(n.data?.label ?? n.id), { permanent: true, direction: "top", offset: [0, -8], className: "geo-label" })
       m.addTo(g)
@@ -99,7 +99,7 @@ export function GeoMap({ nodes: propNodes, edges: propEdges, className, showCont
       <style>{`
         .leaflet-container{font-family:Inter,system-ui,sans-serif}
         .geo-tiles{filter:saturate(.35) brightness(1.06) contrast(.92)}
-        .geo-label{background:rgba(255,255,255,.9);border:1px solid #E5DFD6;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:600;color:#18160F;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+        .geo-label{background:rgba(255,255,255,.9);border:1px solid #E8E8EC;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:600;color:#0B0B0F;box-shadow:0 1px 2px rgba(0,0,0,.08)}
         .geo-label::before{display:none}
         .geo-pulse{animation:geoPulse 1.4s ease-out infinite;transform-origin:center;transform-box:fill-box}
         @keyframes geoPulse{0%{opacity:.6;transform:scale(.6)}100%{opacity:0;transform:scale(1.8)}}
@@ -120,7 +120,7 @@ export function GeoMap({ nodes: propNodes, edges: propEdges, className, showCont
           </div>
           <div className="absolute bottom-3 right-3 z-[500] rounded-xl border border-theme-border-subtle bg-white/95 px-3 py-2 text-[11px] shadow-sm backdrop-blur">
             <div className="flex flex-wrap gap-x-3 gap-y-1">{Object.entries(TYPE_COLOR).filter(([k]) => k !== "customer").map(([k, c]) => <span key={k} className="inline-flex items-center gap-1 capitalize text-theme-text-secondary"><span className="h-2.5 w-2.5 rounded-full border-2 border-white shadow" style={{ background: c }} />{k}</span>)}</div>
-            {Object.keys(nodeStates).length > 0 && <div className="mt-1 flex gap-3 border-t border-theme-border-subtle pt-1 text-theme-text-secondary"><span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-[#B91C1C]" />failed</span><span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-[#B45309]" />downstream</span><span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-[#1A7F4B]" />on reroute</span></div>}
+            {Object.keys(nodeStates).length > 0 && <div className="mt-1 flex gap-3 border-t border-theme-border-subtle pt-1 text-theme-text-secondary"><span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-[#B91C1C]" />failed</span><span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-[#B45309]" />downstream</span><span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-[#15803D]" />on reroute</span></div>}
             {missing > 0 && <div className="mt-1 text-theme-amber">{missing} site{missing === 1 ? "" : "s"} without coordinates — not shown.</div>}
           </div>
         </>

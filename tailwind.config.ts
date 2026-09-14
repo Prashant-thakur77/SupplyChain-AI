@@ -23,7 +23,7 @@ const config = {
     extend: {
       fontFamily: {
         sans: ["var(--font-inter)", ...fontFamily.sans],
-        display: ["var(--font-fraunces)", "Georgia", ...fontFamily.serif],
+        display: ["var(--font-inter)", ...fontFamily.sans],
       },
       colors: {
         border: "hsl(var(--border))",

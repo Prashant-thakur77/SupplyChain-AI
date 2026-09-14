@@ -261,7 +261,7 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
           {/* Canvas overlay (top-left): pill badges showing node count + edge count + risk count */}
           <div className="absolute top-4 left-4 z-10 flex gap-2">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border border-theme-border-subtle bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm text-theme-text-primary shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#1A7F4B]" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
               <span>{nodes.filter(n => n.type !== 'group').length} nodes</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border border-theme-border-subtle bg-white/95 dark:bg-zinc-900/95 backdrop-blur-sm text-theme-text-primary shadow-sm">
@@ -304,8 +304,8 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
             }
             .react-flow__controls-button {
               background: white !important;
-              color: #18160F !important;
-              border: 1px solid #E5DFD6 !important;
+              color: #0B0B0F !important;
+              border: 1px solid #E8E8EC !important;
               border-radius: 6px !important;
               width: 32px !important;
               height: 32px !important;
@@ -315,12 +315,12 @@ export default function DigitalTwinCanvas({ initialNodes, initialEdges, viewOnly
               box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
             }
             .dark .react-flow__controls-button {
-              background: #1E1D1B !important;
-              color: #F0EDE7 !important;
+              background: #121215 !important;
+              color: #F2F2F5 !important;
               border-color: #353330 !important;
             }
             .react-flow__controls-button:hover {
-              background: #FAFAF7 !important;
+              background: #FFFFFF !important;
             }
             .dark .react-flow__controls-button:hover {
               background: #2A2825 !important;

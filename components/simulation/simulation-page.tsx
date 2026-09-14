@@ -377,12 +377,12 @@ function SimulationPageContent() {
       <style dangerouslySetInnerHTML={{__html: `
         /* PROBE WORKFLOW SIDEBAR */
         .probe-sidebar {
-          width: 218px; min-width: 218px; background: #F6F3EE; border-right: 1px solid #E5DFD6;
+          width: 218px; min-width: 218px; background: #F7F7F8; border-right: 1px solid #E8E8EC;
           padding: 24px 16px 20px; display: flex; flex-direction: column;
         }
         .probe-label {
           font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.12em; color: #9C9489; margin-bottom: 20px;
+          letter-spacing: 0.12em; color: #8E8E99; margin-bottom: 20px;
         }
         .probe-steps { display: flex; flex-direction: column; gap: 0; flex: 1; }
         .probe-step { display: flex; align-items: flex-start; gap: 12px; position: relative; padding-bottom: 28px; text-align: left; }
@@ -391,7 +391,7 @@ function SimulationPageContent() {
         .probe-step:not(:last-child)::after {
           content: ''; position: absolute; left: 13px; top: 27px;
           width: 1.5px; height: calc(100% - 27px);
-          background: #E5DFD6;
+          background: #E8E8EC;
         }
         .step-circle {
           width: 27px; height: 27px; border-radius: 50%; flex-shrink: 0;
@@ -399,13 +399,13 @@ function SimulationPageContent() {
           font-size: 0.75rem; font-weight: 700; position: relative; z-index: 1;
         }
         .step-circle.active { background: #2748E8; color: #fff; }
-        .step-circle.done { background: #EDFAF3; border: 1.5px solid #1A7F4B; color: #1A7F4B; }
+        .step-circle.done { background: #EDFAF3; border: 1.5px solid #15803D; color: #15803D; }
         .step-circle.pending {
-          background: #F6F3EE; border: 1.5px solid #D6CFC4; color: #9C9489;
+          background: #F7F7F8; border: 1.5px solid #DCDCE1; color: #8E8E99;
         }
         .step-text { padding-top: 3px; }
-        .step-title { font-size: 0.82rem; font-weight: 600; color: #18160F; }
-        .step-title.muted { color: #9C9489; font-weight: 500; }
+        .step-title { font-size: 0.82rem; font-weight: 600; color: #0B0B0F; }
+        .step-title.muted { color: #8E8E99; font-weight: 500; }
 
         /* Issues badge in sidebar */
         .issues-badge-sidebar {
@@ -427,26 +427,26 @@ function SimulationPageContent() {
         .ph-left { display: flex; flex-direction: column; gap: 6px; }
         .ph-eyebrow {
           font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.12em; color: #9C9489;
+          letter-spacing: 0.12em; color: #8E8E99;
         }
-        .ph-title { font-size: 1.55rem; font-weight: 800; color: #18160F; letter-spacing: -0.03em; }
-        .ph-desc { font-size: 0.82rem; color: #5C5850; line-height: 1.65; max-width: 540px; margin-top: 2px; }
+        .ph-title { font-size: 1.55rem; font-weight: 800; color: #0B0B0F; letter-spacing: -0.03em; }
+        .ph-desc { font-size: 0.82rem; color: #52525B; line-height: 1.65; max-width: 540px; margin-top: 2px; }
         .step-badge {
-          font-size: 0.72rem; font-weight: 600; color: #5C5850;
-          background: #EFEBE3; border: 1px solid #E5DFD6; border-radius: 8px;
+          font-size: 0.72rem; font-weight: 600; color: #52525B;
+          background: #EFEFF2; border: 1px solid #E8E8EC; border-radius: 8px;
           padding: 5px 12px; white-space: nowrap; margin-top: 4px;
         }
 
-        .page-divider { height: 1px; background: #E5DFD6; }
+        .page-divider { height: 1px; background: #E8E8EC; }
 
         /* Dark Mode support */
-        .dark .probe-sidebar { background: #111010; border-right-color: #2A2825; }
+        .dark .probe-sidebar { background: #0A0A0C; border-right-color: #2A2825; }
         .dark .probe-step:not(:last-child)::after { background: #2A2825; }
-        .dark .step-circle.pending { background: #111010; border-color: #353330; color: #6B6560; }
-        .dark .step-title { color: #F0EDE7; }
+        .dark .step-circle.pending { background: #0A0A0C; border-color: #353330; color: #6B6560; }
+        .dark .step-title { color: #F2F2F5; }
         .dark .step-title.muted { color: #6B6560; }
         .dark .issues-badge-sidebar { background: #1A1212; border-color: rgba(220,38,38,0.2); color: #ef4444; }
-        .dark .ph-title { color: #F0EDE7; }
+        .dark .ph-title { color: #F2F2F5; }
         .dark .ph-desc { color: #A09890; }
         .dark .step-badge { background: #191817; border-color: #2A2825; color: #A09890; }
         .dark .page-divider { background: #2A2825; }

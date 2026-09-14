@@ -166,7 +166,7 @@ export const useDigitalTwinStore = create<DigitalTwinState>((set, get) => ({
           ? '#fee2e2' // high risk 
           : Math.random() > 0.4 
             ? '#fef3c7' // medium risk
-            : '#dcfce7' // low risk
+            : '#ECFDF3' // low risk
       }
     }));
     

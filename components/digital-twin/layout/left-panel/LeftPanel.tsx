@@ -142,7 +142,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
 
   const nodeTypesToRender = [
     { id: 'Supplier', label: 'Supplier', icon: Package, color: 'text-[#2748E8] border-[#2748E8]' },
-    { id: 'Port', label: 'Port', icon: Anchor, color: 'text-[#1A7F4B] border-[#1A7F4B]' },
+    { id: 'Port', label: 'Port', icon: Anchor, color: 'text-[#15803D] border-[#15803D]' },
     { id: 'Factory', label: 'Factory', icon: Factory, color: 'text-[#B45309] border-[#B45309]' },
     { id: 'Warehouse', label: 'Warehouse', icon: Warehouse, color: 'text-[#7C3AED] border-[#7C3AED]' },
     { id: 'Distribution', label: 'Distribution', icon: Route, color: 'text-[#B91C1C] border-[#B91C1C]' },
@@ -268,7 +268,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
               <label className="text-[10px] font-bold text-theme-text-muted uppercase tracking-wider block mb-1.5">SUPPLY CHAIN</label>
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 bg-theme-bg-surface border border-theme-border-subtle rounded-lg text-xs font-semibold text-theme-text-primary hover:bg-[#EFEBE3] dark:hover:bg-[#191817] transition-all"
+                className="w-full flex items-center justify-between px-3 py-2 bg-theme-bg-surface border border-theme-border-subtle rounded-lg text-xs font-semibold text-theme-text-primary hover:bg-[#EFEFF2] dark:hover:bg-[#191817] transition-all"
               >
                 <div className="flex items-center gap-2">
                   <GitBranch className="w-3.5 h-3.5 text-theme-text-secondary" />
@@ -285,7 +285,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
                         setSelectedSupplyChain?.(option.id);
                         setIsDropdownOpen(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-theme-text-primary hover:bg-[#EFEBE3] dark:hover:bg-[#191817] transition-colors"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-theme-text-primary hover:bg-[#EFEFF2] dark:hover:bg-[#191817] transition-colors"
                     >
                       {option.name}
                     </button>
@@ -332,7 +332,7 @@ const LeftPanel: FC<LeftPanelProps> = ({
                       onDragEnd={onDragEnd}
                       draggable={!simulationMode}
                       disabled={simulationMode || !onLoadTemplate}
-                      className="w-full flex items-center justify-between p-2.5 bg-theme-bg-surface border border-theme-border-subtle rounded-lg hover:bg-[#EFEBE3] dark:hover:bg-[#191817] hover:border-theme-border-default transition-all cursor-grab active:cursor-grabbing text-left shadow-sm disabled:opacity-50"
+                      className="w-full flex items-center justify-between p-2.5 bg-theme-bg-surface border border-theme-border-subtle rounded-lg hover:bg-[#EFEFF2] dark:hover:bg-[#191817] hover:border-theme-border-default transition-all cursor-grab active:cursor-grabbing text-left shadow-sm disabled:opacity-50"
                     >
                       <div className="flex items-center gap-2 truncate">
                         <span className="text-sm">{template.icon}</span>

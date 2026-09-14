@@ -50,7 +50,7 @@ const getTypeConfig = (typeStr: string, isDisrupted: boolean) => {
     return { label: 'SUPPLIER', icon: Package, colorClass: 'text-[#2748E8] border-[#2748E8]', colorHex: '#2748E8' };
   }
   if (normType.includes('port')) {
-    return { label: 'PORT', icon: Anchor, colorClass: 'text-[#1A7F4B] border-[#1A7F4B]', colorHex: '#1A7F4B' };
+    return { label: 'PORT', icon: Anchor, colorClass: 'text-[#15803D] border-[#15803D]', colorHex: '#15803D' };
   }
   if (normType.includes('factory') || normType.includes('manufacturer') || normType.includes('production')) {
     return { label: 'FACTORY', icon: Factory, colorClass: 'text-[#B45309] border-[#B45309]', colorHex: '#B45309' };
@@ -354,9 +354,9 @@ const RightPanel: FC<RightPanelProps> = ({
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 ${
                         isNodeDisrupted 
                           ? 'bg-[#FEF2F2] text-[#B91C1C] border border-[#B91C1C]/20' 
-                          : 'bg-[#EDFAF3] text-[#1A7F4B] border border-[#1A7F4B]/20'
+                          : 'bg-[#EDFAF3] text-[#15803D] border border-[#15803D]/20'
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${isNodeDisrupted ? 'bg-[#B91C1C]' : 'bg-[#1A7F4B]'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${isNodeDisrupted ? 'bg-[#B91C1C]' : 'bg-[#15803D]'}`} />
                         {isNodeDisrupted ? 'Disrupted' : 'Healthy'}
                       </span>
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -364,7 +364,7 @@ const RightPanel: FC<RightPanelProps> = ({
                           ? 'bg-[#FEF2F2] text-[#B91C1C] border border-[#B91C1C]/20' 
                           : isWatch 
                             ? 'bg-[#FEF3C7] text-[#B45309] border border-[#B45309]/20'
-                            : 'bg-[#EDFAF3] text-[#1A7F4B] border border-[#1A7F4B]/20'
+                            : 'bg-[#EDFAF3] text-[#15803D] border border-[#15803D]/20'
                       }`}>
                         {isHighRisk ? 'High Risk' : isWatch ? 'Medium Risk' : 'Low Risk'}
                       </span>
@@ -375,7 +375,7 @@ const RightPanel: FC<RightPanelProps> = ({
                         <span>Risk Score</span>
                         <span>{Math.round(riskScore * 100)} / 100</span>
                       </div>
-                      <div className="w-full bg-[#EFEBE3] dark:bg-zinc-800 rounded-full h-2">
+                      <div className="w-full bg-[#EFEFF2] dark:bg-zinc-800 rounded-full h-2">
                         <div 
                           className="bg-[#B91C1C] h-2 rounded-full transition-all duration-300"
                           style={{ width: `${Math.round(riskScore * 100)}%` }}
@@ -387,7 +387,7 @@ const RightPanel: FC<RightPanelProps> = ({
                         max="100"
                         value={Math.round(riskScore * 100)}
                         onChange={(e) => handleInputChange('riskScore', parseFloat(e.target.value) / 100)}
-                        className="w-full h-1 bg-[#EFEBE3] dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
+                        className="w-full h-1 bg-[#EFEFF2] dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white"
                       />
                     </div>
                   </div>
@@ -439,7 +439,7 @@ const RightPanel: FC<RightPanelProps> = ({
                         {connections.map((conn, idx) => {
                           const ConnIcon = conn.icon;
                           return (
-                            <div key={idx} className="flex items-center justify-between p-2 bg-[#EFEBE3] dark:bg-[#191817] rounded-lg border border-theme-border-subtle text-xs font-semibold">
+                            <div key={idx} className="flex items-center justify-between p-2 bg-[#EFEFF2] dark:bg-[#191817] rounded-lg border border-theme-border-subtle text-xs font-semibold">
                               <div className="flex items-center gap-2 truncate">
                                 <ConnIcon className="w-4 h-4" style={{ color: conn.colorHex }} />
                                 <span className="text-theme-text-primary truncate">{conn.label}</span>
@@ -502,7 +502,7 @@ const RightPanel: FC<RightPanelProps> = ({
                   });
                 }
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EFEBE3] dark:bg-[#191817] hover:bg-[#D6CFC4] dark:hover:bg-[#2A2825] text-theme-text-primary text-xs font-semibold rounded-lg border border-theme-border-subtle transition-all"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EFEFF2] dark:bg-[#191817] hover:bg-[#DCDCE1] dark:hover:bg-[#2A2825] text-theme-text-primary text-xs font-semibold rounded-lg border border-theme-border-subtle transition-all"
             >
               <Activity className="w-3.5 h-3.5" />
               Analyse this node
@@ -511,7 +511,7 @@ const RightPanel: FC<RightPanelProps> = ({
             {isNodeDisrupted ? (
               <button
                 onClick={clearDisruptions}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EDFAF3] hover:bg-[#EDFAF3]/80 text-[#1A7F4B] text-xs font-semibold rounded-lg border border-[#1A7F4B]/20 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EDFAF3] hover:bg-[#EDFAF3]/80 text-[#15803D] text-xs font-semibold rounded-lg border border-[#15803D]/20 transition-all"
               >
                 <Check className="w-3.5 h-3.5" />
                 Clear disruption
@@ -519,7 +519,7 @@ const RightPanel: FC<RightPanelProps> = ({
             ) : (
               <button
                 onClick={() => simulateDisruption(selectedElement.id)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EFEBE3] dark:bg-[#191817] hover:bg-[#D6CFC4] dark:hover:bg-[#2A2825] text-[#B91C1C] text-xs font-semibold rounded-lg border border-[#B91C1C]/20 hover:border-[#B91C1C]/40 transition-all"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#EFEFF2] dark:bg-[#191817] hover:bg-[#DCDCE1] dark:hover:bg-[#2A2825] text-[#B91C1C] text-xs font-semibold rounded-lg border border-[#B91C1C]/20 hover:border-[#B91C1C]/40 transition-all"
               >
                 <ShieldAlert className="w-3.5 h-3.5" />
                 Simulate disruption

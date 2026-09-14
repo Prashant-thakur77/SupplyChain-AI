@@ -136,7 +136,7 @@ const SimulationToolbar: FC<SimulationToolbarProps> = ({
         <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-6">
           <span className="text-sm font-bold text-theme-text-primary tracking-tight uppercase hidden sm:block">Digital Twin</span>
           
-          <div className="flex items-center bg-[#EFEBE3] dark:bg-[#191817] p-1 rounded-full border border-theme-border-subtle">
+          <div className="flex items-center bg-[#EFEFF2] dark:bg-[#191817] p-1 rounded-full border border-theme-border-subtle">
             <button
               onClick={() => setControlTowerMode(false)}
               className={`px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-200 ${
@@ -162,7 +162,7 @@ const SimulationToolbar: FC<SimulationToolbarProps> = ({
 
         {/* Right Section: Auto-save + Outlined Button */}
         <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1A7F4B]">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#15803D]">
             <Check className="w-4 h-4 stroke-[3px]" />
             <span className="hidden sm:inline">Auto-saved</span>
           </div>
@@ -170,7 +170,7 @@ const SimulationToolbar: FC<SimulationToolbarProps> = ({
           <button
             onClick={handleSaveClick}
             disabled={isSaving}
-            className="px-4 py-1.5 text-xs font-semibold rounded-lg border border-[#D6CFC4] hover:border-theme-text-primary text-theme-text-primary hover:bg-[#EFEBE3] dark:hover:bg-[#191817] transition-all disabled:opacity-50"
+            className="px-4 py-1.5 text-xs font-semibold rounded-lg border border-[#DCDCE1] hover:border-theme-text-primary text-theme-text-primary hover:bg-[#EFEFF2] dark:hover:bg-[#191817] transition-all disabled:opacity-50"
           >
             {isSaving ? 'Saving...' : 'Save snapshot'}
           </button>

@@ -14,7 +14,7 @@ const nodeTypeConfigs = {
   },
   port: {
     label: 'PORT',
-    colorHex: '#1A7F4B',
+    colorHex: '#15803D',
     icon: Anchor
   },
   factory: {
@@ -77,7 +77,7 @@ const BaseNode = memo(({
 
   // Status mapping
   let statusText = 'Healthy';
-  let statusColorClass = 'bg-[#1A7F4B]';
+  let statusColorClass = 'bg-[#15803D]';
 
   if (isDisrupted) {
     statusText = 'Disrupted';
@@ -91,7 +91,7 @@ const BaseNode = memo(({
   } else if (data.status) {
     statusText = data.status;
     const lowerStatus = statusText.toLowerCase();
-    if (lowerStatus === 'healthy') statusColorClass = 'bg-[#1A7F4B]';
+    if (lowerStatus === 'healthy') statusColorClass = 'bg-[#15803D]';
     else if (lowerStatus === 'watch') statusColorClass = 'bg-[#B45309]';
     else if (lowerStatus === 'disrupted' || lowerStatus === 'critical') statusColorClass = 'bg-[#B91C1C]';
   }
@@ -162,7 +162,7 @@ const BaseNode = memo(({
       </div>
 
       {/* Middle row: node name */}
-      <div className="font-semibold text-xs leading-tight text-[#18160F] dark:text-[#F0EDE7] mb-2 truncate" title={data.label}>
+      <div className="font-semibold text-xs leading-tight text-[#0B0B0F] dark:text-[#F2F2F5] mb-2 truncate" title={data.label}>
         {data.label}
       </div>
 
@@ -227,7 +227,7 @@ export const TemplateGroupNode = memo(({ data, selected }: NodeProps) => {
   
   return (
     <div 
-      className={`template-group h-full w-full border border-dashed border-[#D6CFC4] dark:border-zinc-800 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] ${templateSelectionClass}`}
+      className={`template-group h-full w-full border border-dashed border-[#DCDCE1] dark:border-zinc-800 rounded-lg bg-black/[0.02] dark:bg-white/[0.02] ${templateSelectionClass}`}
       data-label={data.label}
       title="Double-click to ungroup this template"
     >
