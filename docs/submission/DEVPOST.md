@@ -54,6 +54,7 @@ Strands Agents SDK · Python · FastAPI · Pydantic · Amazon Bedrock (provider)
 - Repo: https://github.com/Prashant-thakur77/SupplyChain-AI (MIT)
 - Live demo: `https://supplychain-ai-nine.vercel.app/demo`
 - Video: `<VIDEO_URL>`
+- builder.aws blog post (bonus): https://builder.aws.com/post/3JJBfcbc8A4VmCn2v48hRMVwUs3_p/agents-for-humans-a-supply-chain-resilience-agent-built-with-strands-agents-on-amazon-bedrock
 - Architecture diagram: `docs/architecture.png`
 
 ## AI Builders Hackathon — extra fields

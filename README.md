@@ -9,7 +9,7 @@
   </p>
 </p>
 
-> **Live demo (no login):** `https://supplychain-ai-nine.vercel.app/demo` · **Video (5 min):** `<VIDEO_URL>` · **Track:** Agents for Humans → *Professional Agents*
+> **Build story:** [builder.aws post](https://builder.aws.com/post/3JJBfcbc8A4VmCn2v48hRMVwUs3_p/agents-for-humans-a-supply-chain-resilience-agent-built-with-strands-agents-on-amazon-bedrock) · **Live demo (no login):** `https://supplychain-ai-nine.vercel.app/demo` · **Video (5 min):** `<VIDEO_URL>` · **Track:** Agents for Humans → *Professional Agents*
 
 ---
 
