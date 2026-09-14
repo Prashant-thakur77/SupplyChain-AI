@@ -115,6 +115,12 @@
     --text-muted: #6B6B76;
     --accent-blue: #5B7CFF;
     --accent-blue-soft: #161D3A;
+    --accent-green: #34D399;
+    --accent-green-soft: #0F2A1E;
+    --accent-amber: #FBBF24;
+    --accent-amber-soft: #2A2109;
+    --accent-red: #F87171;
+    --accent-red-soft: #2E1414;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
     --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.45);
